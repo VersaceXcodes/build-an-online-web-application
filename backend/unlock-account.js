@@ -6,9 +6,13 @@
  * Example: node unlock-account.js john.smith@example.com
  */
 
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
-const path = require('path');
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '.env') });
