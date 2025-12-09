@@ -166,6 +166,14 @@ const UV_Checkout_Step1: React.FC = () => {
       setFulfillmentMethod(cartFulfillmentMethod);
     }
   }, [cartFulfillmentMethod]);
+  
+  // Ensure pickupTimeOption is always 'asap' by default when collection is selected
+  useEffect(() => {
+    if (fulfillmentMethod === 'collection' && !pickupTimeOption) {
+      console.log('[EFFECT] Setting default pickupTimeOption to asap');
+      setPickupTimeOption('asap');
+    }
+  }, [fulfillmentMethod, pickupTimeOption]);
 
   // Auto-select default address
   useEffect(() => {
@@ -225,59 +233,85 @@ const UV_Checkout_Step1: React.FC = () => {
 
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
+    
+    console.log('[VALIDATE] Starting validation...');
+    console.log('[VALIDATE] fulfillmentMethod:', fulfillmentMethod);
+    console.log('[VALIDATE] pickupTimeOption:', pickupTimeOption);
 
     // Customer info validation
     if (!customerEmail) {
+      console.log('[VALIDATE] ERROR: Email is missing');
       errors.customer_email = 'Email is required';
     } else if (!validateEmail(customerEmail)) {
+      console.log('[VALIDATE] ERROR: Email format invalid');
       errors.customer_email = 'Invalid email format';
     }
 
     if (!customerName || customerName.trim().length < 2) {
+      console.log('[VALIDATE] ERROR: Name is missing or too short');
       errors.customer_name = 'Full name is required';
     }
 
     if (!customerPhone) {
+      console.log('[VALIDATE] ERROR: Phone is missing');
       errors.customer_phone = 'Phone number is required';
     } else if (!validatePhone(customerPhone)) {
+      console.log('[VALIDATE] ERROR: Phone format invalid');
       errors.customer_phone = 'Invalid phone number format';
     }
 
     // Account creation validation
     if (createAccount && !isAuthenticated) {
       if (!accountPassword || accountPassword.length < 8) {
+        console.log('[VALIDATE] ERROR: Password too short');
         errors.account_password = 'Password must be at least 8 characters';
       }
     }
 
     // Delivery address validation
     if (fulfillmentMethod === 'delivery') {
+      console.log('[VALIDATE] Validating delivery address...');
       if (!deliveryAddressLine1) {
+        console.log('[VALIDATE] ERROR: Address line 1 missing');
         errors.delivery_address_line1 = 'Address is required';
       }
       if (!deliveryCity) {
+        console.log('[VALIDATE] ERROR: City missing');
         errors.delivery_city = 'City is required';
       }
       if (!deliveryPostalCode) {
+        console.log('[VALIDATE] ERROR: Postal code missing');
         errors.delivery_postal_code = 'Postal code is required';
       } else if (!validatePostalCode(deliveryPostalCode)) {
+        console.log('[VALIDATE] ERROR: Postal code format invalid');
         errors.delivery_postal_code = 'Invalid postal code format';
       }
       
       // Check minimum order for delivery
       if (cartSubtotal < minimumOrderForDelivery) {
+        console.log('[VALIDATE] ERROR: Cart subtotal below minimum for delivery');
         errors.general = `Minimum order for delivery is €${minimumOrderForDelivery.toFixed(2)}`;
       }
     }
 
     // Collection pickup time validation
     if (fulfillmentMethod === 'collection') {
-      // Scheduled pickup validation (only validate if scheduled is selected)
-      if (pickupTimeOption === 'scheduled') {
+      console.log('[VALIDATE] Validating collection pickup time...');
+      console.log('[VALIDATE] pickupTimeOption:', pickupTimeOption);
+      
+      // Ensure pickupTimeOption is set (defensive check)
+      if (!pickupTimeOption || (pickupTimeOption !== 'asap' && pickupTimeOption !== 'scheduled')) {
+        console.log('[VALIDATE] ERROR: pickupTimeOption is invalid:', pickupTimeOption);
+        errors.general = 'Please select a pickup time option (ASAP or Scheduled)';
+      } else if (pickupTimeOption === 'scheduled') {
+        // Scheduled pickup validation
+        console.log('[VALIDATE] Validating scheduled pickup...');
         if (!scheduledPickupDate) {
+          console.log('[VALIDATE] ERROR: Scheduled pickup date missing');
           errors.scheduled_pickup_date = 'Pickup date is required';
         }
         if (!scheduledPickupTime) {
+          console.log('[VALIDATE] ERROR: Scheduled pickup time missing');
           errors.scheduled_pickup_time = 'Pickup time is required';
         }
         
@@ -286,27 +320,50 @@ const UV_Checkout_Step1: React.FC = () => {
           const scheduledDateTime = new Date(`${scheduledPickupDate}T${scheduledPickupTime}`);
           const minDateTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
           if (scheduledDateTime < minDateTime) {
+            console.log('[VALIDATE] ERROR: Scheduled time too soon');
             errors.scheduled_pickup_date = 'Pickup must be at least 2 hours in advance';
           }
         }
+      } else {
+        console.log('[VALIDATE] ASAP pickup selected - validation passed');
       }
-      // Note: No need to validate pickupTimeOption existence since it's always initialized to 'asap'
     }
 
+    console.log('[VALIDATE] Validation complete. Errors:', errors);
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const handleContinueToPayment = () => {
+    console.log('=== VALIDATION DEBUG ===');
+    console.log('fulfillmentMethod:', fulfillmentMethod);
+    console.log('pickupTimeOption:', pickupTimeOption);
+    console.log('customerEmail:', customerEmail);
+    console.log('customerName:', customerName);
+    console.log('customerPhone:', customerPhone);
+    
     if (!validateForm()) {
+      // Log all validation errors for debugging
+      console.log('Validation failed. Errors:', formErrors);
+      
       // Scroll to first error
       const firstError = document.querySelector('[data-error="true"]');
       if (firstError) {
         firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
-      showToast('error', 'Please fix the errors before continuing');
+      
+      // Show more specific error message
+      const errorFields = Object.keys(formErrors);
+      if (errorFields.length > 0) {
+        const firstErrorField = errorFields[0].replace(/_/g, ' ');
+        showToast('error', `Please fix the following: ${firstErrorField}`);
+      } else {
+        showToast('error', 'Please fix the errors before continuing');
+      }
       return;
     }
+    
+    console.log('Validation passed! Proceeding to payment...');
 
     // Store checkout data in sessionStorage
     const checkoutData = {
