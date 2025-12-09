@@ -386,7 +386,7 @@ const UV_Checkout_Step1: React.FC = () => {
       scheduled_for: pickupTimeOption === 'scheduled' ? `${scheduledPickupDate}T${scheduledPickupTime}` : null,
     };
 
-    sessionStorage.setItem('kake_checkout_data', JSON.stringify(checkoutData));
+    sessionStorage.setItem('kake_checkout_session', JSON.stringify(checkoutData));
     navigate('/checkout/payment');
   };
 
