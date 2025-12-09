@@ -268,8 +268,8 @@ app.get('/api/locations', async (req, res) => {
     const { is_collection_enabled, is_delivery_enabled } = req.query;
     let query = 'SELECT * FROM locations WHERE 1=1';
     const values = [];
-    if (is_collection_enabled !== undefined) { query += ` AND is_collection_enabled = $${values.length + 1}`; values.push(is_collection_enabled === 'true'); }
-    if (is_delivery_enabled !== undefined) { query += ` AND is_delivery_enabled = $${values.length + 1}`; values.push(is_delivery_enabled === 'true'); }
+    if (is_collection_enabled !== undefined) { query += ` AND is_collection_enabled = $${values.length + 1}`; values.push(is_collection_enabled === 'true' || is_collection_enabled === true); }
+    if (is_delivery_enabled !== undefined) { query += ` AND is_delivery_enabled = $${values.length + 1}`; values.push(is_delivery_enabled === 'true' || is_delivery_enabled === true); }
     query += ' ORDER BY location_name';
     const result = await client.query(query, values);
     client.release();
@@ -297,7 +297,10 @@ app.get('/api/locations/:location_id', async (req, res) => {
 app.get('/api/products', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { query, location_name, category, availability_status, is_featured, min_price, max_price, dietary_tags, hide_out_of_stock, sort_by = 'created_at', sort_order = 'desc', limit = 20, offset = 0 } = req.query;
+    const { query, location_name, category, availability_status, is_featured, min_price, max_price, dietary_tags, hide_out_of_stock, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
+    
     let sqlQuery = 'SELECT DISTINCT p.* FROM products p';
     const values = [];
     const conditions = ['p.is_archived = false'];
@@ -309,24 +312,24 @@ app.get('/api/products', async (req, res) => {
     }
     if (category) { conditions.push(`p.category = $${idx++}`); values.push(category); }
     if (availability_status) { conditions.push(`p.availability_status = $${idx++}`); values.push(availability_status); }
-    if (is_featured !== undefined) { conditions.push(`p.is_featured = $${idx++}`); values.push(is_featured === 'true'); }
-    if (min_price) { conditions.push(`p.price >= $${idx++}`); values.push(parseFloat(min_price)); }
-    if (max_price) { conditions.push(`p.price <= $${idx++}`); values.push(parseFloat(max_price)); }
+    if (is_featured !== undefined) { conditions.push(`p.is_featured = $${idx++}`); values.push(is_featured === 'true' || is_featured === true); }
+    if (min_price) { conditions.push(`p.price >= $${idx++}`); values.push(parseFloat(String(min_price))); }
+    if (max_price) { conditions.push(`p.price <= $${idx++}`); values.push(parseFloat(String(max_price))); }
     if (dietary_tags) { conditions.push(`p.dietary_tags LIKE $${idx++}`); values.push(`%${dietary_tags}%`); }
-    if (hide_out_of_stock === 'true') conditions.push(`p.availability_status != 'out_of_stock'`);
+    if (hide_out_of_stock === 'true' || hide_out_of_stock === true) conditions.push(`p.availability_status != 'out_of_stock'`);
     if (query) { conditions.push(`(p.product_name ILIKE $${idx} OR p.short_description ILIKE $${idx})`); values.push(`%${query}%`); idx++; }
     conditions.push(`(p.available_from_date IS NULL OR p.available_from_date <= NOW())`);
     conditions.push(`(p.available_until_date IS NULL OR p.available_until_date >= NOW())`);
     sqlQuery += ` WHERE ${conditions.join(' AND ')}`;
     const orderMap = { product_name: 'p.product_name', price: 'p.price', created_at: 'p.created_at' };
-    sqlQuery += ` ORDER BY ${orderMap[sort_by] || 'p.created_at'} ${sort_order.toUpperCase()}`;
+    sqlQuery += ` ORDER BY ${orderMap[String(sort_by)] || 'p.created_at'} ${String(sort_order).toUpperCase()}`;
     sqlQuery += ` LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(sqlQuery, values);
     const countQuery = `SELECT COUNT(DISTINCT p.product_id) FROM products p ${location_name ? 'INNER JOIN product_locations pl ON p.product_id = pl.product_id' : ''} WHERE ${conditions.join(' AND ')}`;
     const countResult = await client.query(countQuery, values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(p => ({ ...p, price: parseFloat(p.price), compare_at_price: p.compare_at_price ? parseFloat(p.compare_at_price) : null, stock_quantity: p.stock_quantity ? parseFloat(p.stock_quantity) : null, low_stock_threshold: p.low_stock_threshold ? parseFloat(p.low_stock_threshold) : null })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(p => ({ ...p, price: parseFloat(p.price), compare_at_price: p.compare_at_price ? parseFloat(p.compare_at_price) : null, stock_quantity: p.stock_quantity ? parseFloat(p.stock_quantity) : null, low_stock_threshold: p.low_stock_threshold ? parseFloat(p.low_stock_threshold) : null })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch products', error, 'PRODUCTS_FETCH_ERROR'));
@@ -523,7 +526,9 @@ app.post('/api/orders', async (req, res) => {
 app.get('/api/orders', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { user_id, location_name, order_type, order_status, fulfillment_method, payment_status, date_from, date_to, search, revenue_min, revenue_max, sort_by = 'created_at', sort_order = 'desc', limit = 20, offset = 0 } = req.query;
+    const { user_id, location_name, order_type, order_status, fulfillment_method, payment_status, date_from, date_to, search, revenue_min, revenue_max, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM orders WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -547,16 +552,16 @@ app.get('/api/orders', authenticateToken, async (req, res) => {
     if (date_from) { query += ` AND created_at >= $${idx++}`; values.push(date_from); }
     if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(date_to); }
     if (search) { query += ` AND (order_number ILIKE $${idx} OR customer_name ILIKE $${idx})`; values.push(`%${search}%`); idx++; }
-    if (revenue_min) { query += ` AND total_amount >= $${idx++}`; values.push(parseFloat(revenue_min)); }
-    if (revenue_max) { query += ` AND total_amount <= $${idx++}`; values.push(parseFloat(revenue_max)); }
+    if (revenue_min) { query += ` AND total_amount >= $${idx++}`; values.push(parseFloat(String(revenue_min))); }
+    if (revenue_max) { query += ` AND total_amount <= $${idx++}`; values.push(parseFloat(String(revenue_max))); }
     const orderMap = { created_at: 'created_at', total_amount: 'total_amount', order_number: 'order_number' };
-    query += ` ORDER BY ${orderMap[sort_by] || 'created_at'} ${sort_order.toUpperCase()}`;
+    query += ` ORDER BY ${orderMap[String(sort_by)] || 'created_at'} ${String(sort_order).toUpperCase()}`;
     query += ` LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(o => ({ ...o, subtotal: parseFloat(o.subtotal), delivery_fee: parseFloat(o.delivery_fee), discount_amount: parseFloat(o.discount_amount), tax_amount: parseFloat(o.tax_amount), total_amount: parseFloat(o.total_amount), loyalty_points_used: parseFloat(o.loyalty_points_used), loyalty_points_earned: parseFloat(o.loyalty_points_earned), guest_count: o.guest_count ? parseFloat(o.guest_count) : null })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(o => ({ ...o, subtotal: parseFloat(o.subtotal), delivery_fee: parseFloat(o.delivery_fee), discount_amount: parseFloat(o.discount_amount), tax_amount: parseFloat(o.tax_amount), total_amount: parseFloat(o.total_amount), loyalty_points_used: parseFloat(o.loyalty_points_used), loyalty_points_earned: parseFloat(o.loyalty_points_earned), guest_count: o.guest_count ? parseFloat(o.guest_count) : null })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch orders', error, 'ORDERS_FETCH_ERROR'));
@@ -752,7 +757,9 @@ app.delete('/api/addresses/:address_id', authenticateToken, async (req, res) => 
 app.get('/api/loyalty-points/transactions', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { transaction_type, date_from, date_to, limit = 20, offset = 0 } = req.query;
+    const { transaction_type, date_from, date_to } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM loyalty_points_transactions WHERE user_id = $1';
     const values = [req.user.user_id];
     let idx = 2;
@@ -760,11 +767,11 @@ app.get('/api/loyalty-points/transactions', authenticateToken, async (req, res) 
     if (date_from) { query += ` AND created_at >= $${idx++}`; values.push(date_from); }
     if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(date_to); }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(t => ({ ...t, points_change: parseFloat(t.points_change), balance_after: parseFloat(t.balance_after) })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(t => ({ ...t, points_change: parseFloat(t.points_change), balance_after: parseFloat(t.balance_after) })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch transactions', error, 'TRANSACTIONS_FETCH_ERROR'));
@@ -778,7 +785,11 @@ app.get('/api/loyalty-points/balance', authenticateToken, async (req, res) => {
 app.get('/api/feedback/customer', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { order_id, reviewed_status, min_rating, max_rating, date_from, date_to, limit = 20, offset = 0 } = req.query;
+    const { order_id, reviewed_status, date_from, date_to } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
+    const min_rating = req.query.min_rating ? parseInt(String(req.query.min_rating)) : undefined;
+    const max_rating = req.query.max_rating ? parseInt(String(req.query.max_rating)) : undefined;
     let query = 'SELECT cf.*, o.order_number, o.location_name FROM customer_feedback cf INNER JOIN orders o ON cf.order_id = o.order_id WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -795,16 +806,16 @@ app.get('/api/feedback/customer', authenticateToken, async (req, res) => {
     }
     if (order_id) { query += ` AND cf.order_id = $${idx++}`; values.push(order_id); }
     if (reviewed_status) { query += ` AND cf.reviewed_status = $${idx++}`; values.push(reviewed_status); }
-    if (min_rating) { query += ` AND cf.overall_rating >= $${idx++}`; values.push(parseInt(min_rating)); }
-    if (max_rating) { query += ` AND cf.overall_rating <= $${idx++}`; values.push(parseInt(max_rating)); }
+    if (min_rating !== undefined) { query += ` AND cf.overall_rating >= $${idx++}`; values.push(min_rating); }
+    if (max_rating !== undefined) { query += ` AND cf.overall_rating <= $${idx++}`; values.push(max_rating); }
     if (date_from) { query += ` AND cf.created_at >= $${idx++}`; values.push(date_from); }
     if (date_to) { query += ` AND cf.created_at <= $${idx++}`; values.push(date_to); }
     query += ` ORDER BY cf.created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT cf.*, o.order_number, o.location_name', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(f => ({ ...f, overall_rating: parseFloat(f.overall_rating), product_rating: parseFloat(f.product_rating), fulfillment_rating: parseFloat(f.fulfillment_rating) })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(f => ({ ...f, overall_rating: parseFloat(f.overall_rating), product_rating: parseFloat(f.product_rating), fulfillment_rating: parseFloat(f.fulfillment_rating) })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch feedback', error, 'FEEDBACK_FETCH_ERROR'));
@@ -920,7 +931,9 @@ app.post('/api/feedback/customer/:feedback_id/review', authenticateToken, requir
 app.get('/api/feedback/staff', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { location_name, feedback_type, status, priority, date_from, date_to, limit = 20, offset = 0 } = req.query;
+    const { location_name, feedback_type, status, priority, date_from, date_to } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM staff_feedback WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -935,11 +948,11 @@ app.get('/api/feedback/staff', authenticateToken, async (req, res) => {
     if (date_from) { query += ` AND created_at >= $${idx++}`; values.push(date_from); }
     if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(date_to); }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch staff feedback', error, 'STAFF_FEEDBACK_FETCH_ERROR'));
@@ -1018,7 +1031,9 @@ app.put('/api/feedback/staff/:feedback_id', authenticateToken, requireRole(['adm
 app.get('/api/inventory/alerts', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { location_name, alert_type, status, priority, date_from, date_to, search, limit = 20, offset = 0 } = req.query;
+    const { location_name, alert_type, status, priority, date_from, date_to, search } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM inventory_alerts WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -1030,11 +1045,11 @@ app.get('/api/inventory/alerts', authenticateToken, async (req, res) => {
     if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(date_to); }
     if (search) { query += ` AND (item_name ILIKE $${idx} OR reference_number ILIKE $${idx})`; values.push(`%${search}%`); idx++; }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(a => ({ ...a, current_quantity: a.current_quantity ? parseFloat(a.current_quantity) : null })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(a => ({ ...a, current_quantity: a.current_quantity ? parseFloat(a.current_quantity) : null })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch inventory alerts', error, 'ALERTS_FETCH_ERROR'));
@@ -1116,7 +1131,9 @@ app.put('/api/inventory/alerts/:alert_id', authenticateToken, requireRole(['admi
 app.get('/api/training/courses', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { category, status, is_required, query, limit = 20, offset = 0 } = req.query;
+    const { category, status, is_required, query } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let sqlQuery = 'SELECT * FROM training_courses WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -1126,10 +1143,10 @@ app.get('/api/training/courses', authenticateToken, async (req, res) => {
     }
     if (category) { sqlQuery += ` AND category = $${idx++}`; values.push(category); }
     if (status && req.user.user_type === 'admin') { sqlQuery += ` AND status = $${idx++}`; values.push(status); }
-    if (is_required !== undefined) { sqlQuery += ` AND is_required = $${idx++}`; values.push(is_required === 'true'); }
+    if (is_required !== undefined) { sqlQuery += ` AND is_required = $${idx++}`; values.push(is_required === 'true' || is_required === true); }
     if (query) { sqlQuery += ` AND (course_title ILIKE $${idx} OR short_description ILIKE $${idx})`; values.push(`%${query}%`); idx++; }
     sqlQuery += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(sqlQuery, values);
     const countResult = await client.query(sqlQuery.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     const coursesWithLessons = [];
@@ -1138,7 +1155,7 @@ app.get('/api/training/courses', authenticateToken, async (req, res) => {
       coursesWithLessons.push({ ...course, lessons: lessonsResult.rows });
     }
     client.release();
-    res.json({ data: coursesWithLessons, total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: coursesWithLessons, total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch courses', error, 'COURSES_FETCH_ERROR'));
@@ -1323,19 +1340,21 @@ app.post('/api/promo-codes/validate', async (req, res) => {
 app.get('/api/promo-codes', authenticateToken, requireRole(['admin']), async (req, res) => {
   const client = await pool.connect();
   try {
-    const { query, discount_type, is_active, limit = 20, offset = 0 } = req.query;
+    const { query, discount_type, is_active } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let sqlQuery = 'SELECT * FROM promo_codes WHERE 1=1';
     const values = [];
     let idx = 1;
     if (query) { sqlQuery += ` AND code ILIKE $${idx++}`; values.push(`%${query}%`); }
     if (discount_type) { sqlQuery += ` AND discount_type = $${idx++}`; values.push(discount_type); }
-    if (is_active !== undefined) { sqlQuery += ` AND is_active = $${idx++}`; values.push(is_active === 'true'); }
+    if (is_active !== undefined) { sqlQuery += ` AND is_active = $${idx++}`; values.push(is_active === 'true' || is_active === true); }
     sqlQuery += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(sqlQuery, values);
     const countResult = await client.query(sqlQuery.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch promo codes', error, 'PROMO_FETCH_ERROR'));
@@ -1423,7 +1442,7 @@ app.get('/api/stall-events', async (req, res) => {
     const values = [];
     if (is_visible !== undefined) {
       query += ' WHERE is_visible = $1';
-      values.push(is_visible === 'true');
+      values.push(is_visible === 'true' || is_visible === true);
     }
     query += ' ORDER BY event_date DESC';
     const result = await client.query(query, values);
@@ -1525,18 +1544,20 @@ app.delete('/api/favorites/:favorite_id', authenticateToken, async (req, res) =>
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   const client = await pool.connect();
   try {
-    const { is_read, notification_type, limit = 20, offset = 0 } = req.query;
+    const { is_read, notification_type } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM notifications WHERE user_id = $1';
     const values = [req.user.user_id];
     let idx = 2;
-    if (is_read !== undefined) { query += ` AND is_read = $${idx++}`; values.push(is_read === 'true'); }
+    if (is_read !== undefined) { query += ` AND is_read = $${idx++}`; values.push(is_read === 'true' || is_read === true); }
     if (notification_type) { query += ` AND notification_type = $${idx++}`; values.push(notification_type); }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    values.push(limit, offset);
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows, total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch notifications', error, 'NOTIFICATIONS_FETCH_ERROR'));
@@ -1678,7 +1699,9 @@ app.put('/api/settings/:setting_id', authenticateToken, requireRole(['admin']), 
 app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
   const client = await pool.connect();
   try {
-    const { query, user_type, account_status, sort_by = 'created_at', sort_order = 'desc', limit = 20, offset = 0 } = req.query;
+    const { query, user_type, account_status, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
     let sqlQuery = 'SELECT user_id, email, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, last_login_at, created_at, updated_at FROM users WHERE 1=1';
     const values = [];
     let idx = 1;
@@ -1686,12 +1709,12 @@ app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res
     if (user_type) { sqlQuery += ` AND user_type = $${idx++}`; values.push(user_type); }
     if (account_status) { sqlQuery += ` AND account_status = $${idx++}`; values.push(account_status); }
     const orderMap = { created_at: 'created_at', email: 'email', last_login_at: 'last_login_at' };
-    sqlQuery += ` ORDER BY ${orderMap[sort_by] || 'created_at'} ${sort_order.toUpperCase()} LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(parseInt(limit), parseInt(offset));
+    sqlQuery += ` ORDER BY ${orderMap[String(sort_by)] || 'created_at'} ${String(sort_order).toUpperCase()} LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
     const result = await client.query(sqlQuery, values);
     const countResult = await client.query(sqlQuery.replace('SELECT user_id, email, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, last_login_at, created_at, updated_at', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
-    res.json({ data: result.rows.map(u => ({ ...u, loyalty_points_balance: parseFloat(u.loyalty_points_balance) })), total: parseInt(countResult.rows[0].count), limit: parseInt(limit), offset: parseInt(offset), has_more: (parseInt(offset) + parseInt(limit)) < parseInt(countResult.rows[0].count) });
+    res.json({ data: result.rows.map(u => ({ ...u, loyalty_points_balance: parseFloat(u.loyalty_points_balance) })), total: parseInt(countResult.rows[0].count), limit, offset, has_more: (offset + limit) < parseInt(countResult.rows[0].count) });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch users', error, 'USERS_FETCH_ERROR'));

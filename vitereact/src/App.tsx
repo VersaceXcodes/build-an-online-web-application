@@ -233,7 +233,8 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     };
     
     initializeApp();
-  }, [initializeAuth, loadSystemSettings, fetchLocations, systemConfigLoaded]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   
   // Show loading spinner during initial auth check
   if (isLoading) {

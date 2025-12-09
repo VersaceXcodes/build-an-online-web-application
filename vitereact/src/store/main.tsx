@@ -835,12 +835,13 @@ export const useAppStore = create<AppStore>()(
             set((state) => ({
               location_state: {
                 ...state.location_state,
-                available_locations: locations,
+                available_locations: Array.isArray(locations) ? locations : [],
               },
             }));
           } catch (error: any) {
             console.error('Failed to fetch locations:', error);
-            get().show_toast('error', 'Failed to load locations');
+            // Don't show error toast for public endpoints
+            // get().show_toast('error', 'Failed to load locations');
           }
         },
 
@@ -1031,6 +1032,19 @@ export const useAppStore = create<AppStore>()(
 
         load_system_settings: async () => {
           try {
+            // Prevent loading settings if not authenticated for public endpoints
+            const token = get().authentication_state.auth_token;
+            if (!token) {
+              // Use defaults for unauthenticated users
+              set((state) => ({
+                system_config_state: {
+                  ...state.system_config_state,
+                  loaded: true,
+                },
+              }));
+              return;
+            }
+            
             const response = await api.get('/settings');
             const settings: SystemSetting[] = response.data;
 
