@@ -164,12 +164,8 @@ const UV_Checkout_Step1: React.FC = () => {
   useEffect(() => {
     if (cartFulfillmentMethod) {
       setFulfillmentMethod(cartFulfillmentMethod);
-      // Ensure pickup time option is set when switching to collection
-      if (cartFulfillmentMethod === 'collection' && !pickupTimeOption) {
-        setPickupTimeOption('asap');
-      }
     }
-  }, [cartFulfillmentMethod, pickupTimeOption]);
+  }, [cartFulfillmentMethod]);
 
   // Auto-select default address
   useEffect(() => {
@@ -187,10 +183,6 @@ const UV_Checkout_Step1: React.FC = () => {
   useEffect(() => {
     if (fulfillmentMethod === 'collection') {
       setDeliveryFee(0);
-      // Ensure pickup time option is always set for collection
-      if (!pickupTimeOption) {
-        setPickupTimeOption('asap');
-      }
     } else if (fulfillmentMethod === 'delivery' && locationDetails) {
       // Check if cart meets free delivery threshold
       const freeThreshold = locationDetails.free_delivery_threshold || 0;
@@ -200,7 +192,7 @@ const UV_Checkout_Step1: React.FC = () => {
         setDeliveryFee(Number(locationDetails.delivery_fee || 0));
       }
     }
-  }, [fulfillmentMethod, cartSubtotal, locationDetails, setDeliveryFee, pickupTimeOption]);
+  }, [fulfillmentMethod, cartSubtotal, locationDetails, setDeliveryFee]);
 
   // ====================================================================
   // HELPER FUNCTIONS
@@ -280,12 +272,7 @@ const UV_Checkout_Step1: React.FC = () => {
 
     // Collection pickup time validation
     if (fulfillmentMethod === 'collection') {
-      // Ensure pickup time option is selected (should always be set, but adding explicit validation)
-      if (!pickupTimeOption) {
-        errors.general = 'Please select a pickup time option';
-      }
-      
-      // Scheduled pickup validation
+      // Scheduled pickup validation (only validate if scheduled is selected)
       if (pickupTimeOption === 'scheduled') {
         if (!scheduledPickupDate) {
           errors.scheduled_pickup_date = 'Pickup date is required';
@@ -303,6 +290,7 @@ const UV_Checkout_Step1: React.FC = () => {
           }
         }
       }
+      // Note: No need to validate pickupTimeOption existence since it's always initialized to 'asap'
     }
 
     setFormErrors(errors);
@@ -689,7 +677,7 @@ const UV_Checkout_Step1: React.FC = () => {
                       </label>
                       
                       <div className="space-y-3">
-                        <label className="flex items-center space-x-3 cursor-pointer" data-pickup-option="asap">
+                         <label className="flex items-center space-x-3 cursor-pointer" data-pickup-option="asap">
                           <input
                             type="radio"
                             name="pickup_time"
@@ -698,12 +686,17 @@ const UV_Checkout_Step1: React.FC = () => {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setPickupTimeOption('asap');
-                                // Clear any scheduled pickup errors
-                                setFormErrors(prev => ({ 
-                                  ...prev, 
-                                  scheduled_pickup_date: undefined,
-                                  scheduled_pickup_time: undefined 
-                                }));
+                                // Clear any scheduled pickup errors and general pickup errors
+                                setFormErrors(prev => {
+                                  const newErrors = { ...prev };
+                                  delete newErrors.scheduled_pickup_date;
+                                  delete newErrors.scheduled_pickup_time;
+                                  // Clear general error if it's about pickup time
+                                  if (newErrors.general && newErrors.general.toLowerCase().includes('pickup')) {
+                                    delete newErrors.general;
+                                  }
+                                  return newErrors;
+                                });
                               }
                             }}
                             className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
@@ -714,7 +707,7 @@ const UV_Checkout_Step1: React.FC = () => {
                           </span>
                         </label>
 
-                        {currentLocationData.allow_scheduled_pickups && (
+                         {currentLocationData.allow_scheduled_pickups && (
                           <label className="flex items-center space-x-3 cursor-pointer" data-pickup-option="scheduled">
                             <input
                               type="radio"
@@ -724,6 +717,14 @@ const UV_Checkout_Step1: React.FC = () => {
                               onChange={(e) => {
                                 if (e.target.checked) {
                                   setPickupTimeOption('scheduled');
+                                  // Clear general pickup errors when switching to scheduled
+                                  setFormErrors(prev => {
+                                    const newErrors = { ...prev };
+                                    if (newErrors.general && newErrors.general.toLowerCase().includes('pickup')) {
+                                      delete newErrors.general;
+                                    }
+                                    return newErrors;
+                                  });
                                 }
                               }}
                               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
