@@ -8,6 +8,7 @@ const GV_SessionExpiryWarning: React.FC = () => {
   const secondsUntilExpiry = useAppStore(state => state.notification_state.session_expires_in_seconds);
   const currentUser = useAppStore(state => state.authentication_state.current_user);
   const stopSessionCountdown = useAppStore(state => state.stop_session_countdown);
+  const extendSession = useAppStore(state => state.extend_session);
   const logoutUser = useAppStore(state => state.logout_user);
 
   // Auto-logout when countdown reaches 0
@@ -24,10 +25,9 @@ const GV_SessionExpiryWarning: React.FC = () => {
 
   // Handle "Stay Logged In" button click
   const handleStayLoggedIn = () => {
-    // Reset the session warning countdown
+    // Extend the session and restart the timer
     // In production, this would call POST /api/auth/refresh-session
-    // For MVP, we reset the warning and user activity will extend the session
-    stopSessionCountdown();
+    extendSession();
   };
 
   // Handle dismiss (close) button

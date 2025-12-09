@@ -229,6 +229,7 @@ interface AppStore {
   // Notification Actions
   start_session_countdown: (seconds: number) => void;
   stop_session_countdown: () => void;
+  extend_session: () => void;
   set_unread_count: (count: number) => void;
 
   // System Config Actions
@@ -279,8 +280,32 @@ export const useAppStore = create<AppStore>()(
         }
       );
 
-      // Session countdown interval
+      // Session countdown interval and warning timer
       let session_countdown_interval: NodeJS.Timeout | null = null;
+      let session_warning_timeout: NodeJS.Timeout | null = null;
+
+      // Helper function to start session timer
+      const startSessionTimer = () => {
+        // Clear any existing timers
+        if (session_warning_timeout) {
+          clearTimeout(session_warning_timeout);
+          session_warning_timeout = null;
+        }
+        if (session_countdown_interval) {
+          clearInterval(session_countdown_interval);
+          session_countdown_interval = null;
+        }
+
+        // Start session expiry warning timer
+        // For security and testing: Show warning after 2 minutes of login, with 5 minutes to respond
+        const timeUntilWarningMs = 2 * 60 * 1000; // Show warning after 2 minutes
+        const warningDurationSeconds = 5 * 60; // 5 minutes countdown
+        
+        session_warning_timeout = setTimeout(() => {
+          // Start the countdown with 5 minutes (300 seconds) remaining
+          get().start_session_countdown(warningDurationSeconds);
+        }, timeUntilWarningMs);
+      };
 
       return {
         // ====================================================================
@@ -394,8 +419,14 @@ export const useAppStore = create<AppStore>()(
               },
             }));
 
-            // Connect WebSocket after successful login
+            // Connect WebSocket
             get().connect_socket();
+
+            // Start session timer for existing session
+            startSessionTimer();
+
+            // Start session timer
+            startSessionTimer();
 
             // Show success toast
             get().show_toast('success', `Welcome back, ${user.first_name}!`);
@@ -433,6 +464,13 @@ export const useAppStore = create<AppStore>()(
 
           // Disconnect socket
           get().disconnect_socket();
+
+          // Clear session timers
+          if (session_warning_timeout) {
+            clearTimeout(session_warning_timeout);
+            session_warning_timeout = null;
+          }
+          get().stop_session_countdown();
 
           // Clear cart
           get().clear_cart();
@@ -491,6 +529,9 @@ export const useAppStore = create<AppStore>()(
 
             // Connect WebSocket
             get().connect_socket();
+
+            // Start session timer
+            startSessionTimer();
 
             get().show_toast('success', `Welcome to Kake, ${user.first_name}!`);
           } catch (error: any) {
@@ -1015,6 +1056,17 @@ export const useAppStore = create<AppStore>()(
               session_expires_in_seconds: null,
             },
           }));
+        },
+
+        extend_session: () => {
+          // Stop the current countdown
+          get().stop_session_countdown();
+          
+          // Restart the session timer
+          startSessionTimer();
+          
+          // Show confirmation
+          get().show_toast('success', 'Session extended successfully');
         },
 
         set_unread_count: (count: number) => {
