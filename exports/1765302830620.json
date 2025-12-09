@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302830620,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_AdminUsers",
+      "version": "1765302629024"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_AdminUsers.tsx",
+      "type": "text",
+      "size": 51337,
+      "dependencies": false
+    }
+  ]
+}

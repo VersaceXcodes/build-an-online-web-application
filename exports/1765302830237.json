@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302830237,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_ConfirmationModal",
+      "version": "1765302629731"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/GV_ConfirmationModal.tsx",
+      "type": "text",
+      "size": 9729,
+      "dependencies": false
+    }
+  ]
+}
