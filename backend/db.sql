@@ -842,12 +842,12 @@ INSERT INTO staff_lesson_notes (note_id, user_id, lesson_id, note_text, created_
 
 -- SEED PROMO CODES
 INSERT INTO promo_codes (code_id, code, discount_type, discount_value, minimum_order_value, valid_from, valid_until, usage_limit, is_single_use, times_used, applicable_locations, applicable_products, is_active, created_at, updated_at) VALUES
-('promo_001', 'WELCOME10', 'percentage', 10, 15, '2024-01-01T00:00:00Z', '2024-12-31T23:59:59Z', NULL, false, 45, NULL, NULL, true, '2024-01-01T08:00:00Z', '2024-01-15T10:00:00Z'),
-('promo_002', 'CORPORATE10', 'percentage', 10, 50, '2024-01-01T00:00:00Z', '2024-12-31T23:59:59Z', NULL, false, 12, NULL, '["prod_017","prod_018"]', true, '2024-01-01T08:00:00Z', '2024-01-13T10:00:00Z'),
-('promo_003', 'SAVE10', 'fixed', 10, 20, '2024-01-01T00:00:00Z', '2024-01-31T23:59:59Z', 100, false, 1, NULL, NULL, true, '2024-01-01T08:00:00Z', '2024-01-14T18:00:00Z'),
-('promo_004', 'FREEDELIV', 'delivery', 0, 15, '2024-01-10T00:00:00Z', '2024-01-20T23:59:59Z', 200, false, 67, NULL, NULL, true, '2024-01-10T08:00:00Z', '2024-01-15T10:00:00Z'),
+('promo_001', 'WELCOME10', 'percentage', 10, 15, '2025-01-01T00:00:00Z', '2025-12-31T23:59:59Z', NULL, false, 45, NULL, NULL, true, '2024-01-01T08:00:00Z', '2025-12-09T23:59:00Z'),
+('promo_002', 'CORPORATE10', 'percentage', 10, 50, '2025-01-01T00:00:00Z', '2025-12-31T23:59:59Z', NULL, false, 12, NULL, '["prod_017","prod_018"]', true, '2024-01-01T08:00:00Z', '2025-12-09T23:59:00Z'),
+('promo_003', 'SAVE10', 'fixed', 10, 20, '2025-01-01T00:00:00Z', '2025-12-31T23:59:59Z', 100, false, 1, NULL, NULL, true, '2024-01-01T08:00:00Z', '2025-12-09T23:59:00Z'),
+('promo_004', 'FREEDELIV', 'delivery', 0, 15, '2025-01-01T00:00:00Z', '2025-12-31T23:59:59Z', 200, false, 67, NULL, NULL, true, '2024-01-10T08:00:00Z', '2025-12-09T23:59:00Z'),
 ('promo_005', 'NEWYEAR25', 'percentage', 25, 30, '2024-01-01T00:00:00Z', '2024-01-07T23:59:59Z', 50, false, 50, '["London Flagship","Manchester Store"]', NULL, false, '2023-12-28T08:00:00Z', '2024-01-07T23:59:59Z'),
-('promo_006', 'LOYALTY15', 'percentage', 15, 25, '2024-01-01T00:00:00Z', '2024-12-31T23:59:59Z', NULL, false, 89, NULL, NULL, true, '2024-01-01T08:00:00Z', '2024-01-15T10:00:00Z');
+('promo_006', 'LOYALTY15', 'percentage', 15, 25, '2025-01-01T00:00:00Z', '2025-12-31T23:59:59Z', NULL, false, 89, NULL, NULL, true, '2024-01-01T08:00:00Z', '2025-12-09T23:59:00Z');
 
 -- SEED PROMO CODE USAGE
 INSERT INTO promo_code_usage (usage_id, code_id, order_id, user_id, discount_applied, used_at) VALUES
