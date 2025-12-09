@@ -108,11 +108,16 @@ const UV_LocationInternal: React.FC = () => {
     retry: 1,
   });
   
-  // Find matching location from fetched data
+  // Helper function to convert location name to URL slug
+  const nameToSlug = (name: string): string => {
+    return name.toLowerCase().replace(/\s+/g, '-');
+  };
+
+  // Find matching location from fetched data by comparing URL slug
   const location_details = useMemo(() => {
     if (!locations || !location_name) return null;
     return locations.find(
-      loc => loc.location_name.toLowerCase() === location_name.toLowerCase()
+      loc => nameToSlug(loc.location_name) === location_name.toLowerCase()
     ) || null;
   }, [locations, location_name]);
   
@@ -147,7 +152,7 @@ const UV_LocationInternal: React.FC = () => {
     setFulfillmentMethod(method);
     setLocationDetails(location_details);
     
-    // Navigate to menu with fulfillment parameter
+    // Navigate to menu with fulfillment parameter (location_name is already the slug from URL params)
     navigate(`/location/${location_name}/menu?fulfillment=${method}`);
   };
   

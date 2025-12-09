@@ -139,23 +139,23 @@ const UV_Landing: React.FC = () => {
   // Derived state
   const show_event_section = active_event?.is_visible || false;
 
-  // Location card data with images
+  // Location card data with images - mapped to actual database locations
   const location_card_data = [
     {
-      name: 'Blanchardstown',
-      slug: 'blanchardstown',
+      name: 'London Flagship',
+      slug: 'london-flagship',
       image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&q=80',
       description: 'Collection & Delivery available',
     },
     {
-      name: 'Tallaght',
-      slug: 'tallaght',
+      name: 'Manchester Store',
+      slug: 'manchester-store',
       image: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=800&q=80',
       description: 'Collection & Delivery available',
     },
     {
-      name: 'Glasnevin',
-      slug: 'glasnevin',
+      name: 'Birmingham Store',
+      slug: 'birmingham-store',
       image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',
       description: 'Order via Just Eat & Deliveroo',
     },
@@ -223,8 +223,9 @@ const UV_Landing: React.FC = () => {
           {!locations_loading && !locations_error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
               {location_card_data.map((card) => {
+                // Match location by name (exact match)
                 const location = locations.find(
-                  (loc) => loc.location_name.toLowerCase() === card.slug.toLowerCase()
+                  (loc) => loc.location_name === card.name
                 );
 
                 return (

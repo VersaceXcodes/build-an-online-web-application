@@ -79,10 +79,35 @@ const UV_Menu: React.FC = () => {
   const [search_input, setSearchInput] = useState(searchParams.get('search') || '');
 
   // ============================================================================
+  // FETCH LOCATIONS TO CONVERT SLUG TO NAME
+  // ============================================================================
+
+  const { data: locations } = useQuery({
+    queryKey: ['locations'],
+    queryFn: async () => {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations`
+      );
+      return response.data;
+    },
+    staleTime: 60000,
+  });
+
+  // Helper to convert slug to location name
+  const slugToLocationName = (slug: string): string => {
+    if (!locations) return slug;
+    const location = locations.find((loc: any) => 
+      loc.location_name.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase()
+    );
+    return location ? location.location_name : slug;
+  };
+
+  // ============================================================================
   // PARSE URL PARAMETERS INTO STATE
   // ============================================================================
 
-  const current_location_name = location_name || 'blanchardstown';
+  const location_slug = location_name || 'london-flagship';
+  const current_location_name = slugToLocationName(location_slug);
   const current_fulfillment_method = searchParams.get('fulfillment') || null;
 
   const active_filters = useMemo(() => ({
