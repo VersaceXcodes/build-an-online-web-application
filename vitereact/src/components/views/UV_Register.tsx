@@ -153,14 +153,14 @@ const UV_Register: React.FC = () => {
 
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users`,
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/auth/check-email`,
         {
-          params: { query: email_to_check },
+          params: { email: email_to_check },
         }
       );
 
-      // Check if users array is empty (email is available)
-      const is_available = response.data.data?.length === 0;
+      // Check if email is available
+      const is_available = response.data.available === true;
 
       if (!is_available) {
         setFormErrors((prev) => ({

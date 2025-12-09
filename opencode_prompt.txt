@@ -1,42 +1,708 @@
-VALIDATION FAILURE - Auth E2E Tests (Attempt 1/100)
+VALIDATION FAILURE - Auth E2E Tests (Attempt 2/100)
 
 The project validation failed at the "Auth E2E Tests" step. You need to analyze the error and fix it.
 
 ## Error Details:
+stderr | src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should complete full auth flow: register -> logout -> sign-in
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
 
-⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+stderr | src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should complete full auth flow: register -> logout -> sign-in
+Email availability check failed: AxiosError: Request failed with status code 401
+    at settle [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/settle.js:19:12[90m)[39m
+    at XMLHttpRequest.onloadend [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/adapters/xhr.js:59:7[90m)[39m
+    at XMLHttpRequest.invokeTheCallbackFunction [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28[90m)[39m
+    at XMLHttpRequest.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/create-event-accessor.js:35:32[90m)[39m
+    at innerInvokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+    at XMLHttpRequestImpl._dispatch [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:233:9[90m)[39m
+    at fireAnEvent [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/events.js:18:36[90m)[39m
+    at Request.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:891:5[90m)[39m
+[90m    at Request.emit (node:events:529:35)[39m
+    at Axios.request [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/Axios.js:45:41[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at check_email_availability [90m(/app/vitereact/[39msrc/components/views/UV_Register.tsx:155:24[90m)[39m {
+  code: [32m'ERR_BAD_REQUEST'[39m,
+  config: {
+    transitional: {
+      silentJSONParsing: [33mtrue[39m,
+      forcedJSONParsing: [33mtrue[39m,
+      clarifyTimeoutError: [33mfalse[39m
+    },
+    adapter: [ [32m'xhr'[39m, [32m'http'[39m, [32m'fetch'[39m ],
+    transformRequest: [ [36m[Function: transformRequest][39m ],
+    transformResponse: [ [36m[Function: transformResponse][39m ],
+    timeout: [33m0[39m,
+    xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+    xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+    maxContentLength: [33m-1[39m,
+    maxBodyLength: [33m-1[39m,
+    env: { FormData: [36m[Function][39m, Blob: [36m[class Blob][39m },
+    validateStatus: [36m[Function: validateStatus][39m,
+    headers: Object [AxiosHeaders] {
+      Accept: [32m'application/json, text/plain, */*'[39m,
+      [32m'Content-Type'[39m: [90mundefined[39m
+    },
+    params: { query: [32m'testuser1765307057894@example.com'[39m },
+    method: [32m'get'[39m,
+    url: [32m'http://localhost:3000/api/users'[39m,
+    allowAbsoluteUrls: [33mtrue[39m,
+    data: [90mundefined[39m
+  },
+  request: XMLHttpRequest {},
+  response: {
+    data: {
+      success: [33mfalse[39m,
+      message: [32m'Access token required'[39m,
+      timestamp: [32m'2025-12-09T19:04:18.527Z'[39m,
+      error_code: [32m'AUTH_TOKEN_MISSING'[39m
+    },
+    status: [33m401[39m,
+    statusText: [32m'Unauthorized'[39m,
+    headers: Object [AxiosHeaders] {
+      [32m'x-powered-by'[39m: [32m'Express'[39m,
+      [32m'access-control-allow-origin'[39m: [32m'*'[39m,
+      [32m'content-type'[39m: [32m'application/json; charset=utf-8'[39m,
+      [32m'content-length'[39m: [32m'124'[39m,
+      etag: [32m'W/"7c-9bxl1uJ+j3xodOo5RKn7TdYzq/s"'[39m,
+      date: [32m'Tue, 09 Dec 2025 19:04:18 GMT'[39m,
+      connection: [32m'keep-alive'[39m,
+      [32m'keep-alive'[39m: [32m'timeout=5'[39m
+    },
+    config: {
+      transitional: [36m[Object][39m,
+      adapter: [36m[Array][39m,
+      transformRequest: [36m[Array][39m,
+      transformResponse: [36m[Array][39m,
+      timeout: [33m0[39m,
+      xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+      xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+      maxContentLength: [33m-1[39m,
+      maxBodyLength: [33m-1[39m,
+      env: [36m[Object][39m,
+      validateStatus: [36m[Function: validateStatus][39m,
+      headers: [36m[Object [AxiosHeaders]][39m,
+      params: [36m[Object][39m,
+      method: [32m'get'[39m,
+      url: [32m'http://localhost:3000/api/users'[39m,
+      allowAbsoluteUrls: [33mtrue[39m,
+      data: [90mundefined[39m
+    },
+    request: XMLHttpRequest {}
+  },
+  status: [33m401[39m
+}
 
- FAIL  src/__tests__/auth.e2e.test.tsx [ src/__tests__/auth.e2e.test.tsx ]
-Error: Failed to resolve import "@/store/main" from "src/__tests__/auth.e2e.test.tsx". Does the file exist?
-  Plugin: vite:import-analysis
-  File: /app/vitereact/src/__tests__/auth.e2e.test.tsx:8:28
-  5  |  import { MemoryRouter } from "react-router-dom";
-  6  |  import App from "../App";
-  7  |  import { useAppStore } from "@/store/main";
-     |                               ^
-  8  |  const Wrapper = ({ children }) => /* @__PURE__ */ jsxDEV(MemoryRouter, { initialEntries: ["/login"], children }, void 0, false, {
-  9  |    fileName: "/app/vitereact/src/__tests__/auth.e2e.test.tsx",
- ❯ TransformPluginContext._formatError node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49258:41
- ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49253:16
- ❯ normalizeUrl node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64307:23
- ❯ node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64439:39
- ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:64366:7
- ❯ PluginContainer.transform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:49099:18
- ❯ loadAndTransform node_modules/vite/dist/node/chunks/dep-BK3b2jBa.js:51978:27
+stderr | src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should complete full auth flow: register -> logout -> sign-in
+Registration failed: AxiosError: Request failed with status code 500
+    at settle [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/settle.js:19:12[90m)[39m
+    at XMLHttpRequest.onloadend [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/adapters/xhr.js:59:7[90m)[39m
+    at XMLHttpRequest.invokeTheCallbackFunction [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28[90m)[39m
+    at XMLHttpRequest.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/create-event-accessor.js:35:32[90m)[39m
+    at innerInvokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+    at XMLHttpRequestImpl._dispatch [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:233:9[90m)[39m
+    at fireAnEvent [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/events.js:18:36[90m)[39m
+    at Request.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:891:5[90m)[39m
+[90m    at Request.emit (node:events:529:35)[39m
+    at Axios.request [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/Axios.js:45:41[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at register_user [90m(/app/vitereact/[39msrc/store/main.tsx:469:30[90m)[39m
+    at handle_submit [90m(/app/vitereact/[39msrc/components/views/UV_Register.tsx:309:7[90m)[39m {
+  code: [32m'ERR_BAD_RESPONSE'[39m,
+  config: {
+    transitional: {
+      silentJSONParsing: [33mtrue[39m,
+      forcedJSONParsing: [33mtrue[39m,
+      clarifyTimeoutError: [33mfalse[39m
+    },
+    adapter: [ [32m'xhr'[39m, [32m'http'[39m, [32m'fetch'[39m ],
+    transformRequest: [ [36m[Function: transformRequest][39m ],
+    transformResponse: [ [36m[Function: transformResponse][39m ],
+    timeout: [33m0[39m,
+    xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+    xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+    maxContentLength: [33m-1[39m,
+    maxBodyLength: [33m-1[39m,
+    env: { FormData: [36m[Function][39m, Blob: [36m[class Blob][39m },
+    validateStatus: [36m[Function: validateStatus][39m,
+    headers: Object [AxiosHeaders] {
+      Accept: [32m'application/json, text/plain, */*'[39m,
+      [32m'Content-Type'[39m: [32m'application/json'[39m
+    },
+    baseURL: [32m'http://localhost:3000/api'[39m,
+    method: [32m'post'[39m,
+    url: [32m'/auth/register'[39m,
+    data: [32m'{"email":"testuser1765307057894@example.com","password":"TestPassword123","first_name":"Test","last_name":"User","phone_number":"+353861234567","marketing_opt_in":false}'[39m,
+    allowAbsoluteUrls: [33mtrue[39m
+  },
+  request: XMLHttpRequest {},
+  response: {
+    data: {
+      success: [33mfalse[39m,
+      message: [32m'Registration failed'[39m,
+      timestamp: [32m'2025-12-09T19:04:18.847Z'[39m,
+      error_code: [32m'REGISTRATION_ERROR'[39m,
+      details: [36m[Object][39m
+    },
+    status: [33m500[39m,
+    statusText: [32m'Internal Server Error'[39m,
+    headers: Object [AxiosHeaders] {
+      [32m'x-powered-by'[39m: [32m'Express'[39m,
+      [32m'access-control-allow-origin'[39m: [32m'*'[39m,
+      [32m'content-type'[39m: [32m'application/json; charset=utf-8'[39m,
+      [32m'content-length'[39m: [32m'476'[39m,
+      etag: [32m'W/"1dc-cT2nEOIugS4W5pWodEp47qEdA/A"'[39m,
+      date: [32m'Tue, 09 Dec 2025 19:04:18 GMT'[39m,
+      connection: [32m'keep-alive'[39m,
+      [32m'keep-alive'[39m: [32m'timeout=5'[39m
+    },
+    config: {
+      transitional: [36m[Object][39m,
+      adapter: [36m[Array][39m,
+      transformRequest: [36m[Array][39m,
+      transformResponse: [36m[Array][39m,
+      timeout: [33m0[39m,
+      xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+      xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+      maxContentLength: [33m-1[39m,
+      maxBodyLength: [33m-1[39m,
+      env: [36m[Object][39m,
+      validateStatus: [36m[Function: validateStatus][39m,
+      headers: [36m[Object [AxiosHeaders]][39m,
+      baseURL: [32m'http://localhost:3000/api'[39m,
+      method: [32m'post'[39m,
+      url: [32m'/auth/register'[39m,
+      data: [32m'{"email":"testuser1765307057894@example.com","password":"TestPassword123","first_name":"Test","last_name":"User","phone_number":"+353861234567","marketing_opt_in":false}'[39m,
+      allowAbsoluteUrls: [33mtrue[39m
+    },
+    request: XMLHttpRequest {}
+  },
+  status: [33m500[39m
+}
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+stderr | src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should fail login with invalid credentials
+Login error: AxiosError: Request failed with status code 401
+    at settle [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/settle.js:19:12[90m)[39m
+    at XMLHttpRequest.onloadend [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/adapters/xhr.js:59:7[90m)[39m
+    at XMLHttpRequest.invokeTheCallbackFunction [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28[90m)[39m
+    at XMLHttpRequest.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/create-event-accessor.js:35:32[90m)[39m
+    at innerInvokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+    at XMLHttpRequestImpl._dispatch [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:233:9[90m)[39m
+    at fireAnEvent [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/events.js:18:36[90m)[39m
+    at Request.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:891:5[90m)[39m
+[90m    at Request.emit (node:events:529:35)[39m
+    at Axios.request [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/Axios.js:45:41[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at login_user [90m(/app/vitereact/[39msrc/store/main.tsx:377:30[90m)[39m
+    at handleSubmit [90m(/app/vitereact/[39msrc/components/views/UV_Login.tsx:152:7[90m)[39m {
+  code: [32m'ERR_BAD_REQUEST'[39m,
+  config: {
+    transitional: {
+      silentJSONParsing: [33mtrue[39m,
+      forcedJSONParsing: [33mtrue[39m,
+      clarifyTimeoutError: [33mfalse[39m
+    },
+    adapter: [ [32m'xhr'[39m, [32m'http'[39m, [32m'fetch'[39m ],
+    transformRequest: [ [36m[Function: transformRequest][39m ],
+    transformResponse: [ [36m[Function: transformResponse][39m ],
+    timeout: [33m0[39m,
+    xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+    xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+    maxContentLength: [33m-1[39m,
+    maxBodyLength: [33m-1[39m,
+    env: { FormData: [36m[Function][39m, Blob: [36m[class Blob][39m },
+    validateStatus: [36m[Function: validateStatus][39m,
+    headers: Object [AxiosHeaders] {
+      Accept: [32m'application/json, text/plain, */*'[39m,
+      [32m'Content-Type'[39m: [32m'application/json'[39m
+    },
+    baseURL: [32m'http://localhost:3000/api'[39m,
+    method: [32m'post'[39m,
+    url: [32m'/auth/login'[39m,
+    data: [32m'{"email":"nonexistent@example.com","password":"WrongPassword123","remember_me":false}'[39m,
+    allowAbsoluteUrls: [33mtrue[39m
+  },
+  request: XMLHttpRequest {},
+  response: {
+    data: {
+      success: [33mfalse[39m,
+      message: [32m'Invalid credentials'[39m,
+      timestamp: [32m'2025-12-09T19:04:39.160Z'[39m,
+      error_code: [32m'INVALID_CREDENTIALS'[39m
+    },
+    status: [33m401[39m,
+    statusText: [32m'Unauthorized'[39m,
+    headers: Object [AxiosHeaders] {
+      [32m'x-powered-by'[39m: [32m'Express'[39m,
+      [32m'access-control-allow-origin'[39m: [32m'*'[39m,
+      [32m'content-type'[39m: [32m'application/json; charset=utf-8'[39m,
+      [32m'content-length'[39m: [32m'123'[39m,
+      etag: [32m'W/"7b-jXtp+WlSoASrUktsoL4z2D4xcCM"'[39m,
+      date: [32m'Tue, 09 Dec 2025 19:04:39 GMT'[39m,
+      connection: [32m'keep-alive'[39m,
+      [32m'keep-alive'[39m: [32m'timeout=5'[39m
+    },
+    config: {
+      transitional: [36m[Object][39m,
+      adapter: [36m[Array][39m,
+      transformRequest: [36m[Array][39m,
+      transformResponse: [36m[Array][39m,
+      timeout: [33m0[39m,
+      xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+      xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+      maxContentLength: [33m-1[39m,
+      maxBodyLength: [33m-1[39m,
+      env: [36m[Object][39m,
+      validateStatus: [36m[Function: validateStatus][39m,
+      headers: [36m[Object [AxiosHeaders]][39m,
+      baseURL: [32m'http://localhost:3000/api'[39m,
+      method: [32m'post'[39m,
+      url: [32m'/auth/login'[39m,
+      data: [32m'{"email":"nonexistent@example.com","password":"WrongPassword123","remember_me":false}'[39m,
+      allowAbsoluteUrls: [33mtrue[39m
+    },
+    request: XMLHttpRequest {}
+  },
+  status: [33m401[39m
+}
+
+stderr | src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should prevent registration with duplicate email
+Email availability check failed: AxiosError: Request failed with status code 401
+    at settle [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/settle.js:19:12[90m)[39m
+    at XMLHttpRequest.onloadend [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/adapters/xhr.js:59:7[90m)[39m
+    at XMLHttpRequest.invokeTheCallbackFunction [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/generated/EventHandlerNonNull.js:14:28[90m)[39m
+    at XMLHttpRequest.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/create-event-accessor.js:35:32[90m)[39m
+    at innerInvokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:350:25[90m)[39m
+    at invokeEventListeners [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:286:3[90m)[39m
+    at XMLHttpRequestImpl._dispatch [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/events/EventTarget-impl.js:233:9[90m)[39m
+    at fireAnEvent [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/helpers/events.js:18:36[90m)[39m
+    at Request.<anonymous> [90m(/app/vitereact/[39mnode_modules/[4mjsdom[24m/lib/jsdom/living/xhr/XMLHttpRequest-impl.js:891:5[90m)[39m
+[90m    at Request.emit (node:events:529:35)[39m
+    at Axios.request [90m(file:///app/vitereact/[39mnode_modules/[4maxios[24m/lib/core/Axios.js:45:41[90m)[39m
+[90m    at processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at check_email_availability [90m(/app/vitereact/[39msrc/components/views/UV_Register.tsx:155:24[90m)[39m {
+  code: [32m'ERR_BAD_REQUEST'[39m,
+  config: {
+    transitional: {
+      silentJSONParsing: [33mtrue[39m,
+      forcedJSONParsing: [33mtrue[39m,
+      clarifyTimeoutError: [33mfalse[39m
+    },
+    adapter: [ [32m'xhr'[39m, [32m'http'[39m, [32m'fetch'[39m ],
+    transformRequest: [ [36m[Function: transformRequest][39m ],
+    transformResponse: [ [36m[Function: transformResponse][39m ],
+    timeout: [33m0[39m,
+    xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+    xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+    maxContentLength: [33m-1[39m,
+    maxBodyLength: [33m-1[39m,
+    env: { FormData: [36m[Function][39m, Blob: [36m[class Blob][39m },
+    validateStatus: [36m[Function: validateStatus][39m,
+    headers: Object [AxiosHeaders] {
+      Accept: [32m'application/json, text/plain, */*'[39m,
+      [32m'Content-Type'[39m: [90mundefined[39m
+    },
+    params: { query: [32m'john.smith@example.com'[39m },
+    method: [32m'get'[39m,
+    url: [32m'http://localhost:3000/api/users'[39m,
+    allowAbsoluteUrls: [33mtrue[39m,
+    data: [90mundefined[39m
+  },
+  request: XMLHttpRequest {},
+  response: {
+    data: {
+      success: [33mfalse[39m,
+      message: [32m'Access token required'[39m,
+      timestamp: [32m'2025-12-09T19:04:39.479Z'[39m,
+      error_code: [32m'AUTH_TOKEN_MISSING'[39m
+    },
+    status: [33m401[39m,
+    statusText: [32m'Unauthorized'[39m,
+    headers: Object [AxiosHeaders] {
+      [32m'x-powered-by'[39m: [32m'Express'[39m,
+      [32m'access-control-allow-origin'[39m: [32m'*'[39m,
+      [32m'content-type'[39m: [32m'application/json; charset=utf-8'[39m,
+      [32m'content-length'[39m: [32m'124'[39m,
+      etag: [32m'W/"7c-AR2S5CuKlrl1GIfuZkWllKNrfkk"'[39m,
+      date: [32m'Tue, 09 Dec 2025 19:04:39 GMT'[39m,
+      connection: [32m'keep-alive'[39m,
+      [32m'keep-alive'[39m: [32m'timeout=5'[39m
+    },
+    config: {
+      transitional: [36m[Object][39m,
+      adapter: [36m[Array][39m,
+      transformRequest: [36m[Array][39m,
+      transformResponse: [36m[Array][39m,
+      timeout: [33m0[39m,
+      xsrfCookieName: [32m'XSRF-TOKEN'[39m,
+      xsrfHeaderName: [32m'X-XSRF-TOKEN'[39m,
+      maxContentLength: [33m-1[39m,
+      maxBodyLength: [33m-1[39m,
+      env: [36m[Object][39m,
+      validateStatus: [36m[Function: validateStatus][39m,
+      headers: [36m[Object [AxiosHeaders]][39m,
+      params: [36m[Object][39m,
+      method: [32m'get'[39m,
+      url: [32m'http://localhost:3000/api/users'[39m,
+      allowAbsoluteUrls: [33mtrue[39m,
+      data: [90mundefined[39m
+    },
+    request: XMLHttpRequest {}
+  },
+  status: [33m401[39m
+}
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should complete full auth flow: register -> logout -> sign-in
+AssertionError: expected false to be true // Object.is equality
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"fixed top-0 left-0 right-0 bg-white shadow-md z-40"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-shrink-0"[39m
+            [36m>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center space-x-2"[39m
+                [33mhref[39m=[32m"/"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-2xl font-bold text-blue-600"[39m
+                [36m>[39m
+                  [0mKake[0m
+                [36m</div>[39m
+              [36m</a>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"hidden md:flex items-center space-x-6"[39m
+            [36m>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                [33mhref[39m=[32m"/"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-house w-4 h-4 mr-2"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mHome[0m
+              [36m</a>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                [33mhref[39m=[32m"/about"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-info w-4 h-4 mr-2"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 16v-4"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 8h.01"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mAbout[0m
+              [36m</a>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center space-x-4"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"Shopping cart with 0 items"[39m
+                [33mclass[39m=[32m"relative p-2 text-gray-700 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-all duration-200"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-shopping-cart w-6 h-6"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"8"[39m
+                    [33mcy[39m=[32m"21"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"19"[39m
+                    [33mcy[39m=[32m"21"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"hidden md:block"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center space-x-3"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                    [33mhref[39m=[32m"/login"[39m
+                  [36m>[39m
+                    [0mLogin[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"[39m
+                    [33mhref[39m=[32m"/register"[39m
+                  [36m>[39m
+                    [0mSign Up[0m
+                  [36m</a>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-label[39m=[32m"Toggle mobile menu"[39m
+                [33mclass[39m=[32m"md:hidden p-2 text-gray-700 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors"[39m
+              [3...
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- true[39m
+[31m+ false[39m
+
+ ❯ waitFor.timeout src/__tests__/auth.e2e.test.tsx:158:83
+    156|       () => {
+    157|         const state = useAppStore.getState();
+    158|         expect(state.authentication_state.authentication_status.is_aut…
+       |                                                                                   ^
+    159|         expect(state.authentication_state.auth_token).toBeTruthy();
+    160|         expect(state.authentication_state.current_user).toBeTruthy();
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/__tests__/auth.e2e.test.tsx > E2E Authentication Flow (Real API) > should prevent registration with duplicate email
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<nav[39m
+        [33mclass[39m=[32m"fixed top-0 left-0 right-0 bg-white shadow-md z-40"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between h-16"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-shrink-0"[39m
+            [36m>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center space-x-2"[39m
+                [33mhref[39m=[32m"/"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"text-2xl font-bold text-blue-600"[39m
+                [36m>[39m
+                  [0mKake[0m
+                [36m</div>[39m
+              [36m</a>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"hidden md:flex items-center space-x-6"[39m
+            [36m>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                [33mhref[39m=[32m"/"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-house w-4 h-4 mr-2"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mHome[0m
+              [36m</a>[39m
+              [36m<a[39m
+                [33mclass[39m=[32m"flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                [33mhref[39m=[32m"/about"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-info w-4 h-4 mr-2"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"12"[39m
+                    [33mcy[39m=[32m"12"[39m
+                    [33mr[39m=[32m"10"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 16v-4"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M12 8h.01"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+                [0mAbout[0m
+              [36m</a>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center space-x-4"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33maria-label[39m=[32m"Shopping cart with 0 items"[39m
+                [33mclass[39m=[32m"relative p-2 text-gray-700 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-all duration-200"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33mclass[39m=[32m"lucide lucide-shopping-cart w-6 h-6"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"8"[39m
+                    [33mcy[39m=[32m"21"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<circle[39m
+                    [33mcx[39m=[32m"19"[39m
+                    [33mcy[39m=[32m"21"[39m
+                    [33mr[39m=[32m"1"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"hidden md:block"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center space-x-3"[39m
+                [36m>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"[39m
+                    [33mhref[39m=[32m"/login"[39m
+                  [36m>[39m
+                    [0mLogin[0m
+                  [36m</a>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"[39m
+                    [33mhref[39m=[32m"/register"[39m
+                  [36m>[39m
+                    [0mSign Up[0m
+                  [36m</a>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-label[39m=[32m"Toggle mobile menu"[39m
+                [33mclass[39m=[32m"md:hidden p-2 text-gray-700 hover:text-blue-600 rounded-md hover:bg-blue-50 transition-colors"[39m
+              [3...
+ ❯ waitFor.timeout src/__tests__/auth.e2e.test.tsx:343:30
+    341|       () => {
+    342|         const errorMessage = screen.queryByText(/This email is already…
+    343|         expect(errorMessage).toBeInTheDocument();
+       |                              ^
+    344|       },
+    345|       { timeout: 10000 }
+ ❯ runWithExpensiveErrorDiagnosticsDisabled node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
 
 
 
 ## Validation Context:
 - Step: Auth E2E Tests
 - Working Directory: /app/vitereact
-- Attempt: 1/100
-- Previous failures for this step: 1
+- Attempt: 2/100
+- Previous failures for this step: 2
 
 ## Project Memory Summary:
-- Total validation attempts: 15
-- Common issues encountered: None
+- Total validation attempts: 16
+- Common issues encountered: Database connection issues
 - Known dependencies: @hookform/resolvers, @radix-ui/react-accordion, @radix-ui/react-alert-dialog, @radix-ui/react-aspect-ratio, @radix-ui/react-avatar, @radix-ui/react-checkbox, @radix-ui/react-collapsible, @radix-ui/react-context-menu, @radix-ui/react-dialog, @radix-ui/react-dropdown-menu
 - Missing dependencies: None
 
@@ -155,6 +821,7 @@ PROTECTED DIRECTORIES (DO NOT MODIFY):
 
 ## Previous Validation Failures for Auth E2E Tests:
 - 6:57:15 PM: 
+- 7:04:50 PM: 
 
 ## Your Task:
 1. **Analyze the Error**: Understand what specifically went wrong in the Auth E2E Tests step

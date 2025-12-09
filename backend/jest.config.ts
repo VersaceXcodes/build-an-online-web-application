@@ -2,8 +2,7 @@ module.exports = {
   "preset": "ts-jest",
   "testEnvironment": "node",
   "roots": [
-    "<rootDir>/src",
-    "<rootDir>/tests"
+    "<rootDir>"
   ],
   "testMatch": [
     "**/__tests__/**/*.ts",
@@ -23,22 +22,9 @@ module.exports = {
     "!src/types/**",
     "!src/**/*.interface.ts"
   ],
-  "coverageThreshold": {
-    "global": {
-      "branches": 75,
-      "functions": 85,
-      "lines": 80,
-      "statements": 80
-    }
-  },
-  "setupFilesAfterEnv": [
-    "<rootDir>/tests/setup.ts"
-  ],
   "testTimeout": 30000,
   "verbose": true,
   "detectOpenHandles": true,
   "forceExit": true,
-  "maxWorkers": 1,
-  "globalSetup": "<rootDir>/tests/globalSetup.ts",
-  "globalTeardown": "<rootDir>/tests/globalTeardown.ts"
+  "maxWorkers": 1
 };

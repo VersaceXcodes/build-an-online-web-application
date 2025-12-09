@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
+import bcrypt from 'bcryptjs';
 
 // Custom type definitions
 interface AuthRequest extends Request {
@@ -125,6 +126,24 @@ const requireRole = (roles: string[]) => (req: AuthRequest, res: Response, next:
   next();
 };
 
+// Public endpoint to check email availability
+app.get('/api/auth/check-email', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { email } = req.query;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json(createErrorResponse('Email parameter required', null, 'MISSING_EMAIL'));
+    }
+    const existingUser = await client.query('SELECT user_id FROM users WHERE email = $1', [email]);
+    const isAvailable = existingUser.rows.length === 0;
+    client.release();
+    res.json({ available: isAvailable });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Email check failed', error, 'EMAIL_CHECK_ERROR'));
+  }
+});
+
 app.post('/api/auth/register', async (req, res) => {
   const client = await pool.connect();
   try {
@@ -136,7 +155,8 @@ app.post('/api/auth/register', async (req, res) => {
     if (existingUser.rows.length > 0) return res.status(400).json(createErrorResponse('Email already exists', null, 'EMAIL_EXISTS'));
     const user_id = generateId('usr');
     const now = new Date().toISOString();
-    await client.query('INSERT INTO users (user_id, email, password_hash, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, failed_login_attempts, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [user_id, email, password, first_name, last_name, phone_number, 'customer', 'active', marketing_opt_in, 0, 0, now, now]);
+    const password_hash = await bcrypt.hash(password, 10);
+    await client.query('INSERT INTO users (user_id, email, password_hash, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, failed_login_attempts, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [user_id, email, password_hash, first_name, last_name, phone_number, 'customer', 'active', marketing_opt_in, 0, 0, now, now]);
     const token = jwt.sign({ user_id, email }, JWT_SECRET, { expiresIn: '7d' });
     const session_id = generateId('sess');
     const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -158,7 +178,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (userResult.rows.length === 0) return res.status(401).json(createErrorResponse('Invalid credentials', null, 'INVALID_CREDENTIALS'));
     const user = userResult.rows[0];
     if (user.locked_until && new Date(user.locked_until) > new Date()) return res.status(401).json(createErrorResponse('Account locked', null, 'ACCOUNT_LOCKED'));
-    if (user.password_hash !== password) {
+    const passwordMatch = await bcrypt.compare(password, user.password_hash);
+    if (!passwordMatch) {
       await client.query('UPDATE users SET failed_login_attempts = failed_login_attempts + 1, locked_until = CASE WHEN failed_login_attempts + 1 >= 5 THEN $1 ELSE NULL END WHERE user_id = $2', [new Date(Date.now() + 30 * 60 * 1000).toISOString(), user.user_id]);
       client.release();
       return res.status(401).json(createErrorResponse('Invalid credentials', null, 'INVALID_CREDENTIALS'));
