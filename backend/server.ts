@@ -180,7 +180,23 @@ app.post('/api/auth/login', async (req, res) => {
     const userResult = await client.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userResult.rows.length === 0) return res.status(401).json(createErrorResponse('Invalid credentials', null, 'INVALID_CREDENTIALS'));
     const user = userResult.rows[0];
-    if (user.locked_until && new Date(user.locked_until) > new Date()) return res.status(401).json(createErrorResponse('Account locked', null, 'ACCOUNT_LOCKED'));
+    
+    // Check if account is locked and if lockout period has expired
+    if (user.locked_until) {
+      const now = new Date();
+      const lockedUntil = new Date(user.locked_until);
+      
+      if (lockedUntil > now) {
+        // Account is still locked
+        const minutesRemaining = Math.ceil((lockedUntil.getTime() - now.getTime()) / (1000 * 60));
+        client.release();
+        return res.status(401).json(createErrorResponse(`Account locked. Please try again in ${minutesRemaining} minute${minutesRemaining > 1 ? 's' : ''}`, null, 'ACCOUNT_LOCKED'));
+      } else {
+        // Lockout period has expired, unlock the account
+        await client.query('UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE user_id = $1', [user.user_id]);
+      }
+    }
+    
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
       await client.query('UPDATE users SET failed_login_attempts = failed_login_attempts + 1, locked_until = CASE WHEN failed_login_attempts + 1 >= 5 THEN $1 ELSE NULL END WHERE user_id = $2', [new Date(Date.now() + 30 * 60 * 1000).toISOString(), user.user_id]);
@@ -1810,6 +1826,29 @@ app.get('/api/users/:user_id', async (req, res) => {
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch user', error, 'USER_FETCH_ERROR'));
+  }
+});
+
+app.post('/api/auth/unlock-account', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json(createErrorResponse('Email required', null, 'MISSING_EMAIL'));
+    
+    const userResult = await client.query('SELECT user_id, email, failed_login_attempts, locked_until FROM users WHERE email = $1', [email]);
+    if (userResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
+    }
+    
+    const user = userResult.rows[0];
+    await client.query('UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE user_id = $1', [user.user_id]);
+    
+    client.release();
+    res.json({ success: true, message: 'Account unlocked successfully', email: user.email });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to unlock account', error, 'UNLOCK_ERROR'));
   }
 });
 
