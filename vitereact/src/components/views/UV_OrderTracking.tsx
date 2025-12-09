@@ -14,7 +14,6 @@ import {
   X,
   Phone,
   Mail,
-  Calendar,
   FileText,
   QrCode
 } from 'lucide-react';

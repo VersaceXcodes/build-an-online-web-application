@@ -12,15 +12,12 @@ import {
   Send,
   Clock,
   CheckCircle,
-  XCircle,
   Eye,
   Shield,
   AlertCircle,
   Upload,
   X,
   Filter,
-  Search,
-  ChevronRight,
   RefreshCw
 } from 'lucide-react';
 

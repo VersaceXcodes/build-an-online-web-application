@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -58,7 +58,6 @@ const UV_Menu: React.FC = () => {
   
   const { location_name } = useParams<{ location_name: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  // const navigate = useNavigate();
 
   // ============================================================================
   // GLOBAL STATE ACCESS (Individual Selectors - CRITICAL!)
@@ -68,7 +67,6 @@ const UV_Menu: React.FC = () => {
   const setCartLocation = useAppStore(state => state.set_cart_location);
   const setFulfillmentMethod = useAppStore(state => state.set_fulfillment_method);
   const showToast = useAppStore(state => state.show_toast);
-  // const openCartPanel = useAppStore(state => state.open_cart_panel);
   const cartItems = useAppStore(state => state.cart_state.items);
   const selectedLocation = useAppStore(state => state.cart_state.selected_location);
 
@@ -266,10 +264,6 @@ const UV_Menu: React.FC = () => {
       ? current.filter(t => t !== tag)
       : [...current, tag];
     updateFilter('dietary_tags', newTags);
-  };
-
-  const _handleSortChange = (sortBy: string) => {
-    updateFilter('sort_by', sortBy);
   };
 
   const goToPage = (page: number) => {

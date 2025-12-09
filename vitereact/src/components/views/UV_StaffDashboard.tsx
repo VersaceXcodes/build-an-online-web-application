@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -9,14 +9,12 @@ import {
   CheckCircle, 
   AlertTriangle, 
   Search, 
-  Filter, 
   RefreshCw, 
   Phone, 
   Mail, 
   MapPin, 
   Printer,
   X,
-  ChevronDown,
   Truck,
   ShoppingBag
 } from 'lucide-react';

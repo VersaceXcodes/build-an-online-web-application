@@ -403,7 +403,7 @@ export const useAppStore = create<AppStore>()(
             const error_message =
               error.response?.data?.message || error.message || 'Login failed';
 
-            set((state) => ({
+            set(() => ({
               authentication_state: {
                 current_user: null,
                 auth_token: null,
@@ -761,7 +761,7 @@ export const useAppStore = create<AppStore>()(
 
         calculate_cart_totals: () => {
           const { cart_state, system_config_state } = get();
-          const { items, totals, applied_discounts } = cart_state;
+          const { items, applied_discounts } = cart_state;
 
           // Calculate subtotal
           const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -775,9 +775,10 @@ export const useAppStore = create<AppStore>()(
           const total_discount = loyalty_discount;
 
           // Calculate total
+          const current_delivery_fee = cart_state.totals.delivery_fee;
           const total = Math.max(
             0,
-            subtotal + totals.delivery_fee - total_discount
+            subtotal + current_delivery_fee - total_discount
           );
 
           set((state) => ({

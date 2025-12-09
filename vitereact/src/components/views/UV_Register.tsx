@@ -51,7 +51,6 @@ const UV_Register: React.FC = () => {
   );
   const register_user = useAppStore((state) => state.register_user);
   const clear_auth_error = useAppStore((state) => state.clear_auth_error);
-  const show_toast = useAppStore((state) => state.show_toast);
 
   // ========================================================================
   // LOCAL STATE

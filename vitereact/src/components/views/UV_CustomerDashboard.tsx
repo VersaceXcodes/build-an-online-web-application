@@ -16,13 +16,10 @@ import {
   Plus,
   Check,
   X,
-  Calendar,
   TrendingUp,
   RefreshCw,
   Eye,
   Lock,
-  Mail,
-  Phone,
   MapPinned,
   Home
 } from 'lucide-react';
