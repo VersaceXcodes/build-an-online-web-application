@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { CheckCircle, Package, MapPin, Calendar, CreditCard, Gift, Download, ArrowRight } from 'lucide-react';
+import { CheckCircle, Package, MapPin, Calendar, CreditCard, Gift, ArrowRight } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS (from Zod schemas)

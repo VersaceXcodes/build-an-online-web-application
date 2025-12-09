@@ -382,7 +382,7 @@ export const useAppStore = create<AppStore>()(
 
             const { user, token } = response.data;
 
-            set((state) => ({
+            set(() => ({
               authentication_state: {
                 current_user: user,
                 auth_token: token,
@@ -438,7 +438,7 @@ export const useAppStore = create<AppStore>()(
           get().clear_cart();
 
           // Clear auth state
-          set((state) => ({
+          set(() => ({
             authentication_state: {
               current_user: null,
               auth_token: null,
@@ -477,7 +477,7 @@ export const useAppStore = create<AppStore>()(
 
             const { user, token } = response.data;
 
-            set((state) => ({
+            set(() => ({
               authentication_state: {
                 current_user: user,
                 auth_token: token,
@@ -534,7 +534,7 @@ export const useAppStore = create<AppStore>()(
             const response = await api.get('/users/me');
             const user = response.data;
 
-            set((state) => ({
+            set(() => ({
               authentication_state: {
                 current_user: user,
                 auth_token: token,
@@ -550,7 +550,7 @@ export const useAppStore = create<AppStore>()(
             get().connect_socket();
           } catch (error) {
             // Token invalid, clear auth state
-            set((state) => ({
+            set(() => ({
               authentication_state: {
                 current_user: null,
                 auth_token: null,
@@ -697,9 +697,6 @@ export const useAppStore = create<AppStore>()(
         },
 
         apply_loyalty_points: (points: number) => {
-          const { system_config_state } = get();
-          const discount = points / system_config_state.points_redemption_rate;
-
           set((state) => ({
             cart_state: {
               ...state.cart_state,
@@ -797,7 +794,7 @@ export const useAppStore = create<AppStore>()(
         },
 
         clear_cart: () => {
-          set((state) => ({
+          set(() => ({
             cart_state: {
               items: [],
               selected_location: null,
@@ -1240,7 +1237,7 @@ export const useAppStore = create<AppStore>()(
 
           if (socket) {
             socket.disconnect();
-            set((state) => ({
+            set(() => ({
               websocket_state: {
                 socket: null,
                 is_connected: false,

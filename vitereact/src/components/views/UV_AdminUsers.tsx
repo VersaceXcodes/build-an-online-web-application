@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -193,28 +193,27 @@ const deactivateUser = async (
   return response.data;
 };
 
-const fetchUserDetails = async (
-  user_id: string,
-  auth_token: string
-): Promise<User> => {
-  const response = await axios.get(
-    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users/${user_id}`,
-    {
-      headers: {
-        Authorization: `Bearer ${auth_token}`,
-      },
-    }
-  );
+// const fetchUserDetails = async (
+//   user_id: string,
+//   auth_token: string
+// ): Promise<User> => {
+//   const response = await axios.get(
+//     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/users/${user_id}`,
+//     {
+//       headers: {
+//         Authorization: `Bearer ${auth_token}`,
+//       },
+//     }
+//   );
 
-  return response.data;
-};
+//   return response.data;
+// };
 
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
 const UV_AdminUsers: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
@@ -222,12 +221,8 @@ const UV_AdminUsers: React.FC = () => {
   const auth_token = useAppStore(
     (state) => state.authentication_state.auth_token
   );
-  const current_user = useAppStore(
-    (state) => state.authentication_state.current_user
-  );
+  const current_user = useAppStore((state) => state.authentication_state.current_user);
   const show_toast = useAppStore((state) => state.show_toast);
-  const show_confirmation = useAppStore((state) => state.show_confirmation);
-  const hide_confirmation = useAppStore((state) => state.hide_confirmation);
 
   // Parse URL params into filters
   const [user_filters, set_user_filters] = useState<UserFilters>({

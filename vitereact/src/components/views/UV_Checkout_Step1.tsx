@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { Package, MapPin, Clock, User, Mail, Phone, Calendar, AlertCircle } from 'lucide-react';
+import { Package, MapPin, Clock, User, AlertCircle } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -41,7 +41,7 @@ interface FormErrors {
 // API FUNCTIONS
 // ============================================================================
 
-const fetchSavedAddresses = async (userId: string, token: string): Promise<Address[]> => {
+const fetchSavedAddresses = async (_userId: string, token: string): Promise<Address[]> => {
   const response = await axios.get(
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/addresses`,
     {
@@ -91,7 +91,6 @@ const UV_Checkout_Step1: React.FC = () => {
   const applyPromoCode = useAppStore(state => state.apply_promo_code);
   const removePromoCode = useAppStore(state => state.remove_promo_code);
   const showToast = useAppStore(state => state.show_toast);
-  const calculateCartTotals = useAppStore(state => state.calculate_cart_totals);
 
   // ====================================================================
   // LOCAL STATE
@@ -127,14 +126,13 @@ const UV_Checkout_Step1: React.FC = () => {
 
   // Validation & UI State
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [validatingAddress, setValidatingAddress] = useState(false);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
 
   // ====================================================================
   // REACT QUERY - FETCH SAVED ADDRESSES
   // ====================================================================
 
-  const { data: savedAddresses = [], isLoading: loadingAddresses } = useQuery({
+  const { data: savedAddresses = [] } = useQuery({
     queryKey: ['addresses', currentUser?.user_id],
     queryFn: () => fetchSavedAddresses(currentUser!.user_id, authToken!),
     enabled: isAuthenticated && !!currentUser && !!authToken && fulfillmentMethod === 'delivery',
@@ -1100,7 +1098,7 @@ const UV_Checkout_Step1: React.FC = () => {
                               }}
                             />
                             <button
-                              onClick={(e) => {
+                              onClick={() => {
                                 const input = document.getElementById('promo_code') as HTMLInputElement;
                                 const code = input?.value.trim().toUpperCase();
                                 if (code) {

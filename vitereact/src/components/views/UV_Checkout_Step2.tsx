@@ -76,15 +76,15 @@ interface UpdateOrderStatusPayload {
   card_last_four?: string;
 }
 
-interface RegisterUserPayload {
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  phone_number: string;
-  user_type: string;
-  marketing_opt_in: boolean;
-}
+// interface RegisterUserPayload {
+//   email: string;
+//   password: string;
+//   first_name: string;
+//   last_name: string;
+//   phone_number: string;
+//   user_type: string;
+//   marketing_opt_in: boolean;
+// }
 
 // ============================================================================
 // MAIN COMPONENT
@@ -129,7 +129,7 @@ const UV_Checkout_Step2: React.FC = () => {
   const [cardExpiry, setCardExpiry] = useState<string>('');
   const [cardCvc, setCardCvc] = useState<string>('');
   
-  const [orderIdPending, setOrderIdPending] = useState<string | null>(null);
+  const [_orderIdPending, setOrderIdPending] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<boolean>(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 
@@ -225,12 +225,12 @@ const UV_Checkout_Step2: React.FC = () => {
   });
 
   // Register User Mutation (if create_account = true)
-  const registerUserMutation = useMutation({
-    mutationFn: async (userData: RegisterUserPayload) => {
-      // Use the global store action
-      await registerUser(userData);
-    },
-  });
+  // const registerUserMutation = useMutation({
+  //   mutationFn: async (userData: RegisterUserPayload) => {
+  //     // Use the global store action
+  //     await registerUser(userData);
+  //   },
+  // });
 
   // ====================================================================
   // FORM VALIDATION

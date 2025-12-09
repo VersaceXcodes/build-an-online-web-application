@@ -112,7 +112,7 @@ const UV_ResetPassword: React.FC = () => {
   // Reset password mutation
   const resetPasswordMutation = useMutation<ResetPasswordResponse, Error, ResetPasswordRequest>({
     mutationFn: resetPassword,
-    onSuccess: (data) => {
+    onSuccess: () => {
       setResetSuccess(true);
       showToast('success', 'Password reset successful! Redirecting to login...');
       

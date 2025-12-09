@@ -9,7 +9,7 @@ import {
   Package, 
   Star, 
   MessageSquare, 
-  Settings, 
+  
   ChevronRight,
   Edit2,
   Trash2,

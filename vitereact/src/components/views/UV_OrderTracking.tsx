@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
@@ -315,8 +315,6 @@ const UV_OrderTracking: React.FC = () => {
   const joinOrderRoom = useAppStore(state => state.join_order_room);
   const leaveOrderRoom = useAppStore(state => state.leave_order_room);
   const showToast = useAppStore(state => state.show_toast);
-  const showConfirmation = useAppStore(state => state.show_confirmation);
-  const hideConfirmation = useAppStore(state => state.hide_confirmation);
 
   // Local state
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
@@ -357,7 +355,7 @@ const UV_OrderTracking: React.FC = () => {
       }
       return cancelOrder(order_id || '', authToken, reason);
     },
-    onSuccess: (updatedOrder) => {
+    onSuccess: () => {
       showToast('success', 'Order cancelled successfully');
       setShowCancelModal(false);
       setCancelReason('');

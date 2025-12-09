@@ -60,8 +60,6 @@ const UV_StaffInventoryAlerts: React.FC = () => {
   const currentUser = useAppStore(state => state.authentication_state.current_user);
   const authToken = useAppStore(state => state.authentication_state.auth_token);
   const showToast = useAppStore(state => state.show_toast);
-  const showLoading = useAppStore(state => state.show_loading);
-  const hideLoading = useAppStore(state => state.hide_loading);
 
   // ============================================================================
   // URL PARAMETERS

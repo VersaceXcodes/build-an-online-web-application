@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -12,7 +12,6 @@ import {
   Filter,
   ChevronDown,
   MapPin,
-  User,
   Calendar,
   FileText,
   AlertCircle
@@ -138,8 +137,6 @@ const UV_AdminInventoryAlerts: React.FC = () => {
   const currentUser = useAppStore(state => state.authentication_state.current_user);
   const authToken = useAppStore(state => state.authentication_state.auth_token);
   const showToast = useAppStore(state => state.show_toast);
-  const showLoading = useAppStore(state => state.show_loading);
-  const hideLoading = useAppStore(state => state.hide_loading);
 
   // ====================================================================
   // URL PARAMETERS & FILTERS
@@ -315,7 +312,6 @@ const UV_AdminInventoryAlerts: React.FC = () => {
   }, [filters]);
 
   const alerts = alertsData?.alerts || [];
-  const totalAlerts = alertsData?.total || 0;
 
   // Count by status for stats
   const statsCounts = useMemo(() => {

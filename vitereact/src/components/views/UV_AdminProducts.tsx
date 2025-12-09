@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 import { 
   Plus, 
   Search, 
-  Filter, 
   X, 
   Edit2, 
   Trash2, 
@@ -16,7 +15,6 @@ import {
   Upload,
   AlertCircle,
   Tag,
-  MapPin,
   Package,
   Star,
   ChevronDown
@@ -86,13 +84,11 @@ interface ProductFilters {
 // ============================================================================
 
 const UV_AdminProducts: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   // Global state access - CRITICAL: Individual selectors only
   const authToken = useAppStore(state => state.authentication_state.auth_token);
-  const currentUser = useAppStore(state => state.authentication_state.current_user);
   const availableLocations = useAppStore(state => state.location_state.available_locations);
   const showToast = useAppStore(state => state.show_toast);
   const showConfirmation = useAppStore(state => state.show_confirmation);
@@ -548,7 +544,7 @@ const UV_AdminProducts: React.FC = () => {
     }
   };
 
-  const handleBulkAvailabilityUpdate = (status: 'in_stock' | 'out_of_stock') => {
+  const handleBulkAvailabilityUpdate = (_status: 'in_stock' | 'out_of_stock') => {
     showToast('info', 'Bulk update endpoint not yet implemented');
     // When endpoint exists: call bulk update API
   };
@@ -566,18 +562,18 @@ const UV_AdminProducts: React.FC = () => {
     );
   };
 
-  const addCustomTag = (tag: string) => {
-    if (tag && !productFormData.custom_tags.includes(tag)) {
-      handleProductFormChange('custom_tags', [...productFormData.custom_tags, tag]);
-    }
-  };
+  // const addCustomTag = (tag: string) => {
+  //   if (tag && !productFormData.custom_tags.includes(tag)) {
+  //     handleProductFormChange('custom_tags', [...productFormData.custom_tags, tag]);
+  //   }
+  // };
 
-  const removeCustomTag = (tag: string) => {
-    handleProductFormChange(
-      'custom_tags',
-      productFormData.custom_tags.filter(t => t !== tag)
-    );
-  };
+  // const removeCustomTag = (tag: string) => {
+  //   handleProductFormChange(
+  //     'custom_tags',
+  //     productFormData.custom_tags.filter(t => t !== tag)
+  //   );
+  // };
 
   const toggleLocationAssignment = (location: string) => {
     if (productFormData.location_assignments.includes(location)) {

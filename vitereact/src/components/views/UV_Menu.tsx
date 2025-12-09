@@ -58,7 +58,7 @@ const UV_Menu: React.FC = () => {
   
   const { location_name } = useParams<{ location_name: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // ============================================================================
   // GLOBAL STATE ACCESS (Individual Selectors - CRITICAL!)
@@ -68,7 +68,7 @@ const UV_Menu: React.FC = () => {
   const setCartLocation = useAppStore(state => state.set_cart_location);
   const setFulfillmentMethod = useAppStore(state => state.set_fulfillment_method);
   const showToast = useAppStore(state => state.show_toast);
-  const openCartPanel = useAppStore(state => state.open_cart_panel);
+  // const openCartPanel = useAppStore(state => state.open_cart_panel);
   const cartItems = useAppStore(state => state.cart_state.items);
   const selectedLocation = useAppStore(state => state.cart_state.selected_location);
 
@@ -268,7 +268,7 @@ const UV_Menu: React.FC = () => {
     updateFilter('dietary_tags', newTags);
   };
 
-  const handleSortChange = (sortBy: string) => {
+  const _handleSortChange = (sortBy: string) => {
     updateFilter('sort_by', sortBy);
   };
 

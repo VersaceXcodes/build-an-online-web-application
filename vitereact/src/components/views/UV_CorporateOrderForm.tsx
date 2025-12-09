@@ -90,7 +90,7 @@ const UV_CorporateOrderForm: React.FC = () => {
   // API: Fetch Active Drop of the Month
   // ============================================================================
 
-  const { data: active_drop, isLoading: drop_loading } = useQuery({
+  const { data: active_drop } = useQuery({
     queryKey: ['drop-of-the-month', 'active'],
     queryFn: async () => {
       const response = await axios.get<DropOfTheMonth>(
@@ -135,9 +135,8 @@ const UV_CorporateOrderForm: React.FC = () => {
       );
       return response.data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       // Update global auth state
-      const registerUser = useAppStore.getState().register_user;
       // Auth state already updated by register endpoint
       showToast('success', 'Account created successfully!');
     },

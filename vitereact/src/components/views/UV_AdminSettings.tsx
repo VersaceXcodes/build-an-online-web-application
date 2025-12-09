@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -6,11 +6,8 @@ import { useAppStore } from '@/store/main';
 import { 
   Settings, 
   MapPin, 
-  DollarSign, 
-  CreditCard, 
   Bell, 
   Building2,
-  Save,
   X,
   Edit,
   Check,
@@ -113,7 +110,6 @@ const UV_AdminSettings: React.FC = () => {
 
   // CRITICAL: Individual Zustand selectors - NO object destructuring
   const authToken = useAppStore(state => state.authentication_state.auth_token);
-  const currentUser = useAppStore(state => state.authentication_state.current_user);
   const showToast = useAppStore(state => state.show_toast);
 
   // URL param for active section
@@ -122,7 +118,6 @@ const UV_AdminSettings: React.FC = () => {
   // Local state for forms
   const [editingSettingId, setEditingSettingId] = useState<string | null>(null);
   const [editingSettingValue, setEditingSettingValue] = useState<string>('');
-  const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
 
   // React Query - Fetch system settings
   const {
@@ -206,7 +201,6 @@ const UV_AdminSettings: React.FC = () => {
   // Render setting input based on type
   const renderSettingInput = (setting: SystemSetting) => {
     const isEditing = editingSettingId === setting.setting_id;
-    const value = isEditing ? editingSettingValue : setting.setting_value;
 
     if (!isEditing) {
       return (

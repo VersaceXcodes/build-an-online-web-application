@@ -3,7 +3,7 @@ import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { Book, CheckCircle2, Circle, Clock, FileText, Play, ArrowLeft, ArrowRight, BookOpen, Filter, Search, AlertCircle, Award, Star } from 'lucide-react';
+import { Book, CheckCircle2, Circle, Clock, FileText, Play, ArrowLeft, ArrowRight, BookOpen, Search, AlertCircle, Award, Star } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -52,14 +52,14 @@ interface CourseProgress {
   last_accessed_at: string | null;
 }
 
-interface LessonCompletion {
-  completion_id: string;
-  user_id: string;
-  lesson_id: string;
-  is_completed: boolean;
-  personal_notes: string | null;
-  completed_at: string | null;
-}
+// interface LessonCompletion {
+//   completion_id: string;
+//   user_id: string;
+//   lesson_id: string;
+//   is_completed: boolean;
+//   personal_notes: string | null;
+//   completed_at: string | null;
+// }
 
 // ============================================================================
 // MAIN COMPONENT
@@ -74,8 +74,6 @@ const UV_StaffTraining: React.FC = () => {
   // Global state access - CRITICAL: Individual selectors only
   const currentUser = useAppStore(state => state.authentication_state.current_user);
   const showToast = useAppStore(state => state.show_toast);
-  const showLoading = useAppStore(state => state.show_loading);
-  const hideLoading = useAppStore(state => state.hide_loading);
 
   // URL Parameters
   const category_filter = searchParams.get('category') || null;
@@ -161,7 +159,7 @@ const UV_StaffTraining: React.FC = () => {
   });
 
   // Fetch all progress for catalog view
-  const { data: all_progress = [], isLoading: progress_loading } = useQuery({
+  const { data: all_progress = [] } = useQuery({
     queryKey: ['training_progress'],
     queryFn: fetchAllProgress,
     enabled: !course_id,
@@ -177,7 +175,7 @@ const UV_StaffTraining: React.FC = () => {
   });
 
   // Fetch course progress (when course_id exists)
-  const { data: course_progress, isLoading: course_progress_loading } = useQuery({
+  const { data: course_progress } = useQuery({
     queryKey: ['course_progress', course_id],
     queryFn: () => fetchCourseProgress(course_id!),
     enabled: !!course_id,
@@ -649,7 +647,7 @@ const UV_StaffTraining: React.FC = () => {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-gray-700">Your Progress</span>
                           <span className="text-sm text-gray-500">
-                            {course_lessons.filter(l => {
+                            {course_lessons.filter(() => {
                               // Check completion - this is simplified, in real app would query completion status
                               return false;
                             }).length} of {course_lessons.length} lessons completed
@@ -692,7 +690,7 @@ const UV_StaffTraining: React.FC = () => {
                     <div className="space-y-3">
                       {course_lessons
                         .sort((a, b) => a.lesson_order - b.lesson_order)
-                        .map((lesson, index) => {
+                        .map((lesson) => {
                           // Check if completed (simplified - would need actual query in production)
                           const is_completed = false;
 

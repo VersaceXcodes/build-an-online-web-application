@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -9,7 +9,6 @@ import {
   Calendar,
   Filter,
   Clock,
-  MapPin,
   FileJson,
   FileSpreadsheet,
   BarChart3,
@@ -21,9 +20,6 @@ import {
   AlertTriangle,
   ChevronDown,
   Plus,
-  Edit,
-  Trash2,
-  Play,
   Settings
 } from 'lucide-react';
 
@@ -66,7 +62,6 @@ interface ReportData {
 // ============================================================================
 
 const UV_AdminReports: React.FC = () => {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   
   // ========================================================================
@@ -74,11 +69,9 @@ const UV_AdminReports: React.FC = () => {
   // ========================================================================
   
   const authToken = useAppStore(state => state.authentication_state.auth_token);
-  const currentUser = useAppStore(state => state.authentication_state.current_user);
   const showToast = useAppStore(state => state.show_toast);
   const showLoading = useAppStore(state => state.show_loading);
   const hideLoading = useAppStore(state => state.hide_loading);
-  const showConfirmation = useAppStore(state => state.show_confirmation);
   const globalLocations = useAppStore(state => state.location_state.available_locations);
 
   // ========================================================================

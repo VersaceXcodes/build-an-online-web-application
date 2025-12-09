@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios, { AxiosError } from 'axios';
 import { useAppStore } from '@/store/main';
@@ -24,9 +24,6 @@ import {
   Mail,
   CreditCard,
   FileText,
-  ChevronRight,
-  ChevronDown,
-  Edit,
   RotateCcw
 } from 'lucide-react';
 
@@ -310,12 +307,10 @@ const getStatusIcon = (status: string) => {
 
 const UV_AdminOrders: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   
   // Zustand store access - CRITICAL: Individual selectors
   const authToken = useAppStore(state => state.authentication_state.auth_token);
-  const currentUser = useAppStore(state => state.authentication_state.current_user);
   const showToast = useAppStore(state => state.show_toast);
   const showConfirmation = useAppStore(state => state.show_confirmation);
   const hideConfirmation = useAppStore(state => state.hide_confirmation);
