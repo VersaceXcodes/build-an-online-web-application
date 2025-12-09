@@ -164,8 +164,12 @@ const UV_Checkout_Step1: React.FC = () => {
   useEffect(() => {
     if (cartFulfillmentMethod) {
       setFulfillmentMethod(cartFulfillmentMethod);
+      // Ensure pickup time option is set when switching to collection
+      if (cartFulfillmentMethod === 'collection' && !pickupTimeOption) {
+        setPickupTimeOption('asap');
+      }
     }
-  }, [cartFulfillmentMethod]);
+  }, [cartFulfillmentMethod, pickupTimeOption]);
 
   // Auto-select default address
   useEffect(() => {
@@ -183,6 +187,10 @@ const UV_Checkout_Step1: React.FC = () => {
   useEffect(() => {
     if (fulfillmentMethod === 'collection') {
       setDeliveryFee(0);
+      // Ensure pickup time option is always set for collection
+      if (!pickupTimeOption) {
+        setPickupTimeOption('asap');
+      }
     } else if (fulfillmentMethod === 'delivery' && locationDetails) {
       // Check if cart meets free delivery threshold
       const freeThreshold = locationDetails.free_delivery_threshold || 0;
@@ -192,7 +200,7 @@ const UV_Checkout_Step1: React.FC = () => {
         setDeliveryFee(Number(locationDetails.delivery_fee || 0));
       }
     }
-  }, [fulfillmentMethod, cartSubtotal, locationDetails, setDeliveryFee]);
+  }, [fulfillmentMethod, cartSubtotal, locationDetails, setDeliveryFee, pickupTimeOption]);
 
   // ====================================================================
   // HELPER FUNCTIONS
@@ -270,21 +278,29 @@ const UV_Checkout_Step1: React.FC = () => {
       }
     }
 
-    // Scheduled pickup validation
-    if (fulfillmentMethod === 'collection' && pickupTimeOption === 'scheduled') {
-      if (!scheduledPickupDate) {
-        errors.scheduled_pickup_date = 'Pickup date is required';
-      }
-      if (!scheduledPickupTime) {
-        errors.scheduled_pickup_time = 'Pickup time is required';
+    // Collection pickup time validation
+    if (fulfillmentMethod === 'collection') {
+      // Ensure pickup time option is selected (should always be set, but adding explicit validation)
+      if (!pickupTimeOption) {
+        errors.general = 'Please select a pickup time option';
       }
       
-      // Check if date/time is in the future (min 2 hours ahead)
-      if (scheduledPickupDate && scheduledPickupTime) {
-        const scheduledDateTime = new Date(`${scheduledPickupDate}T${scheduledPickupTime}`);
-        const minDateTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
-        if (scheduledDateTime < minDateTime) {
-          errors.scheduled_pickup_date = 'Pickup must be at least 2 hours in advance';
+      // Scheduled pickup validation
+      if (pickupTimeOption === 'scheduled') {
+        if (!scheduledPickupDate) {
+          errors.scheduled_pickup_date = 'Pickup date is required';
+        }
+        if (!scheduledPickupTime) {
+          errors.scheduled_pickup_time = 'Pickup time is required';
+        }
+        
+        // Check if date/time is in the future (min 2 hours ahead)
+        if (scheduledPickupDate && scheduledPickupTime) {
+          const scheduledDateTime = new Date(`${scheduledPickupDate}T${scheduledPickupTime}`);
+          const minDateTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
+          if (scheduledDateTime < minDateTime) {
+            errors.scheduled_pickup_date = 'Pickup must be at least 2 hours in advance';
+          }
         }
       }
     }
@@ -667,20 +683,31 @@ const UV_Checkout_Step1: React.FC = () => {
                     </div>
 
                     {/* Pickup Time Selection */}
-                    <div>
+                    <div className={formErrors.general && formErrors.general.includes('pickup') ? 'border-2 border-red-300 rounded-lg p-4' : ''}>
                       <label className="block text-sm font-medium text-gray-700 mb-3">
                         Pickup Time <span className="text-red-500">*</span>
                       </label>
                       
                       <div className="space-y-3">
-                        <label className="flex items-center space-x-3 cursor-pointer">
+                        <label className="flex items-center space-x-3 cursor-pointer" data-pickup-option="asap">
                           <input
                             type="radio"
                             name="pickup_time"
                             value="asap"
                             checked={pickupTimeOption === 'asap'}
-                            onChange={() => setPickupTimeOption('asap')}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setPickupTimeOption('asap');
+                                // Clear any scheduled pickup errors
+                                setFormErrors(prev => ({ 
+                                  ...prev, 
+                                  scheduled_pickup_date: undefined,
+                                  scheduled_pickup_time: undefined 
+                                }));
+                              }
+                            }}
                             className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                            data-testid="pickup-asap"
                           />
                           <span className="text-sm text-gray-700">
                             ASAP (Ready in {Number(currentLocationData.estimated_preparation_time_minutes || 20)} minutes)
@@ -688,14 +715,19 @@ const UV_Checkout_Step1: React.FC = () => {
                         </label>
 
                         {currentLocationData.allow_scheduled_pickups && (
-                          <label className="flex items-center space-x-3 cursor-pointer">
+                          <label className="flex items-center space-x-3 cursor-pointer" data-pickup-option="scheduled">
                             <input
                               type="radio"
                               name="pickup_time"
                               value="scheduled"
                               checked={pickupTimeOption === 'scheduled'}
-                              onChange={() => setPickupTimeOption('scheduled')}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setPickupTimeOption('scheduled');
+                                }
+                              }}
                               className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              data-testid="pickup-scheduled"
                             />
                             <span className="text-sm text-gray-700">Schedule for later</span>
                           </label>
