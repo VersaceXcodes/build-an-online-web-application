@@ -237,11 +237,40 @@ const UV_ProductDetail: React.FC = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favorites', currentUser?.user_id] });
+    onMutate: async (productId) => {
+      // Cancel outgoing refetches to prevent overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ['favorites', currentUser?.user_id] });
+      
+      // Snapshot previous value for rollback
+      const previousFavorites = queryClient.getQueryData<Favorite[]>(['favorites', currentUser?.user_id]);
+      
+      // Optimistically update to show favorited state immediately
+      queryClient.setQueryData<Favorite[]>(
+        ['favorites', currentUser?.user_id],
+        (old) => [
+          ...(old || []),
+          {
+            favorite_id: `temp_${Date.now()}`,
+            user_id: currentUser?.user_id || '',
+            product_id: productId,
+            created_at: new Date().toISOString(),
+          },
+        ]
+      );
+      
+      return { previousFavorites };
+    },
+    onSuccess: async () => {
+      // Wait for query to refetch to get the real favorite_id
+      await queryClient.invalidateQueries({ queryKey: ['favorites', currentUser?.user_id] });
+      await queryClient.refetchQueries({ queryKey: ['favorites', currentUser?.user_id] });
       showToast('success', 'Added to favorites');
     },
-    onError: (error: any) => {
+    onError: (error: any, _productId, context) => {
+      // Rollback to previous state on error
+      if (context?.previousFavorites) {
+        queryClient.setQueryData(['favorites', currentUser?.user_id], context.previousFavorites);
+      }
       showToast('error', error.response?.data?.message || 'Failed to add favorite');
     },
   });
@@ -258,11 +287,31 @@ const UV_ProductDetail: React.FC = () => {
       );
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['favorites', currentUser?.user_id] });
+    onMutate: async (favoriteId) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['favorites', currentUser?.user_id] });
+      
+      // Snapshot previous value
+      const previousFavorites = queryClient.getQueryData<Favorite[]>(['favorites', currentUser?.user_id]);
+      
+      // Optimistically remove from favorites
+      queryClient.setQueryData<Favorite[]>(
+        ['favorites', currentUser?.user_id],
+        (old) => (old || []).filter(fav => fav.favorite_id !== favoriteId)
+      );
+      
+      return { previousFavorites };
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['favorites', currentUser?.user_id] });
+      await queryClient.refetchQueries({ queryKey: ['favorites', currentUser?.user_id] });
       showToast('info', 'Removed from favorites');
     },
-    onError: (error: any) => {
+    onError: (error: any, _favoriteId, context) => {
+      // Rollback on error
+      if (context?.previousFavorites) {
+        queryClient.setQueryData(['favorites', currentUser?.user_id], context.previousFavorites);
+      }
       showToast('error', error.response?.data?.message || 'Failed to remove favorite');
     },
   });
@@ -308,11 +357,18 @@ const UV_ProductDetail: React.FC = () => {
       return;
     }
 
+    // Prevent action if already processing
+    if (addFavoriteMutation.isPending || removeFavoriteMutation.isPending) {
+      return;
+    }
+
     const favorite = favorites.find(fav => fav.product_id === product_id);
     
     if (favorite) {
-      // Remove from favorites
-      removeFavoriteMutation.mutate(favorite.favorite_id);
+      // Remove from favorites - only if favorite_id is not temporary
+      if (!favorite.favorite_id.startsWith('temp_')) {
+        removeFavoriteMutation.mutate(favorite.favorite_id);
+      }
     } else {
       // Add to favorites
       addFavoriteMutation.mutate(product_id!);

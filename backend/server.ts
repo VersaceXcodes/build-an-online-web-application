@@ -1611,11 +1611,20 @@ app.post('/api/favorites', authenticateToken, async (req: AuthRequest, res: Resp
   const client = await pool.connect();
   try {
     const { product_id } = req.body;
+    
+    // Check if favorite already exists
     const existingResult = await client.query('SELECT * FROM favorites WHERE user_id = $1 AND product_id = $2', [req.user.user_id, product_id]);
+    
     if (existingResult.rows.length > 0) {
+      // Idempotent behavior: Return existing favorite with 200 OK instead of error
       client.release();
-      return res.status(400).json(createErrorResponse('Product already in favorites', null, 'FAVORITE_EXISTS'));
+      return res.status(200).json({
+        ...existingResult.rows[0],
+        message: 'Product already in favorites'
+      });
     }
+    
+    // Create new favorite
     const favorite_id = generateId('fav');
     const now = new Date().toISOString();
     await client.query('INSERT INTO favorites (favorite_id, user_id, product_id, created_at) VALUES ($1, $2, $3, $4)', [favorite_id, req.user.user_id, product_id, now]);
