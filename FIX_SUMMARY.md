@@ -209,3 +209,42 @@ The login issue has been successfully fixed. Users can now:
 - Accounts automatically unlock after lockout period expires
 - Support team can manually unlock accounts when needed
 - See helpful error messages during lockout periods
+
+---
+
+## UPDATE: December 9, 2025 - Additional Fix for staff.london@bakery.com
+
+### Issue
+The staff account `staff.london@bakery.com` was locked after multiple failed login attempts during automated browser testing (test case: auth-007 - Role-Based Access Control - Staff).
+
+### Root Cause
+The password hash stored in the database did not match the expected password `StaffPassword123!`, causing legitimate login attempts to fail and trigger the account lockout mechanism.
+
+### Solution Applied
+1. ✅ Unlocked the account using `POST /api/auth/unlock-account`
+2. ✅ Corrected the password hash in the database to match `StaffPassword123!`
+3. ✅ Reset failed login attempts counter to 0
+4. ✅ Verified login functionality with successful authentication
+
+### Test Credentials (Verified Working)
+```
+Email: staff.london@bakery.com
+Password: StaffPassword123!
+Role: staff
+Location: London Flagship
+Status: Active and unlocked
+```
+
+### Quick Unlock Command
+```bash
+curl -X POST https://123build-an-online-web-application.launchpulse.ai/api/auth/unlock-account \
+  -H "Content-Type: application/json" \
+  -d '{"email":"staff.london@bakery.com"}'
+```
+
+### Files Updated
+- Database: users table (updated password_hash for staff.london@bakery.com)
+- `/app/test_users.json` - Added note about the fix
+- `/app/ACCOUNT_UNLOCK_FIX.md` - Detailed documentation
+
+**Test Status**: Ready for re-testing - The Role-Based Access Control - Staff test should now pass successfully.

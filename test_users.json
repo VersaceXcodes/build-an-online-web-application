@@ -382,7 +382,9 @@
     "session_management": "JWT tokens stored in sessions table with expiration tracking",
     "password_reset_flow": "Available via /api/auth/forgot-password and /api/auth/reset-password",
     "account_lockout": "After 5 failed login attempts, accounts lock for 30 minutes",
-    "remember_me": "Extended session duration (30 days vs 24 hours)"
+    "remember_me": "Extended session duration (30 days vs 24 hours)",
+    "account_unlock_api": "POST /api/auth/unlock-account with email to unlock locked accounts",
+    "last_fix": "2025-12-09: Fixed staff.london@bakery.com - password hash corrected and account unlocked"
   },
   "test_scenarios": {
     "successful_login": "Use any user credentials listed above with their assigned password",
