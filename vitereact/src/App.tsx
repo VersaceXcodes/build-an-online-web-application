@@ -245,22 +245,20 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
 };
 
 // ============================================================================
-// MAIN APP COMPONENT
+// APP ROUTES COMPONENT (without Router for testing flexibility)
 // ============================================================================
 
-const App: React.FC = () => {
+export const AppRoutes: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <AppInitializer>
-          <LayoutWrapper>
-            <Routes>
-              {/* ========================================== */}
-              {/* PUBLIC ROUTES */}
-              {/* ========================================== */}
-              
-              <Route path="/" element={<UV_Landing />} />
-              <Route path="/about" element={<UV_About />} />
+    <AppInitializer>
+      <LayoutWrapper>
+        <Routes>
+          {/* ========================================== */}
+          {/* PUBLIC ROUTES */}
+          {/* ========================================== */}
+          
+          <Route path="/" element={<UV_Landing />} />
+          <Route path="/about" element={<UV_About />} />
               
               {/* Location Routes */}
               <Route path="/location/:location_name" element={<UV_LocationInternal />} />
@@ -514,14 +512,26 @@ const App: React.FC = () => {
                 } 
               />
               
-              {/* ========================================== */}
-              {/* FALLBACK ROUTE */}
-              {/* ========================================== */}
-              
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </LayoutWrapper>
-        </AppInitializer>
+          {/* ========================================== */}
+          {/* FALLBACK ROUTE */}
+          {/* ========================================== */}
+          
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </LayoutWrapper>
+    </AppInitializer>
+  );
+};
+
+// ============================================================================
+// MAIN APP COMPONENT (with Router)
+// ============================================================================
+
+const App: React.FC = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <AppRoutes />
       </Router>
     </QueryClientProvider>
   );
