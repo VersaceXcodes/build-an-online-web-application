@@ -129,7 +129,7 @@ const UV_Checkout_Step2: React.FC = () => {
   const [cardExpiry, setCardExpiry] = useState<string>('');
   const [cardCvc, setCardCvc] = useState<string>('');
   
-  const [_orderIdPending, setOrderIdPending] = useState<string | null>(null);
+  const [, setOrderIdPending] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<boolean>(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
 

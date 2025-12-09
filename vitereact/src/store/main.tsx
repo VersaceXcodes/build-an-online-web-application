@@ -548,7 +548,7 @@ export const useAppStore = create<AppStore>()(
 
             // Connect WebSocket
             get().connect_socket();
-          } catch (error) {
+          } catch {
             // Token invalid, clear auth state
             set(() => ({
               authentication_state: {
@@ -1064,7 +1064,7 @@ export const useAppStore = create<AppStore>()(
               } else if (setting.setting_type === 'json') {
                 try {
                   value = JSON.parse(value);
-                } catch (e) {
+                } catch {
                   console.error('Failed to parse JSON setting:', setting.setting_key);
                 }
               }

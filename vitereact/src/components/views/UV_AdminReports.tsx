@@ -308,11 +308,12 @@ const UV_AdminReports: React.FC = () => {
         startDate = new Date(today.getFullYear(), today.getMonth(), 1);
         endDate = today;
         break;
-      case 'last_month':
+      case 'last_month': {
         const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         startDate = lastMonth;
         endDate = new Date(today.getFullYear(), today.getMonth(), 0);
         break;
+      }
     }
 
     setDateRangeStart(startDate.toISOString().split('T')[0]);

@@ -124,7 +124,7 @@ const UV_ResetPassword: React.FC = () => {
     onError: (error: any) => {
       const errorData: ErrorResponse = error.response?.data;
       const errorCode = errorData?.error_code;
-      let errorMessage = errorData?.message || 'Failed to reset password';
+      const errorMessage = errorData?.message || 'Failed to reset password';
       
       // Handle specific error codes
       if (errorCode === 'INVALID_TOKEN') {

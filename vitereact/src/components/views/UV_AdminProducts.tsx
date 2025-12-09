@@ -544,6 +544,7 @@ const UV_AdminProducts: React.FC = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleBulkAvailabilityUpdate = (_status: 'in_stock' | 'out_of_stock') => {
     showToast('info', 'Bulk update endpoint not yet implemented');
     // When endpoint exists: call bulk update API
