@@ -392,8 +392,8 @@ app.get('/api/products', async (req, res) => {
     if (dietary_tags) { conditions.push(`p.dietary_tags LIKE $${idx++}`); values.push(`%${dietary_tags}%`); }
     if (String(hide_out_of_stock) === 'true') conditions.push(`p.availability_status != 'out_of_stock'`);
     if (query) { conditions.push(`(p.product_name ILIKE $${idx} OR p.short_description ILIKE $${idx})`); values.push(`%${query}%`); idx++; }
-    conditions.push(`(p.available_from_date IS NULL OR p.available_from_date <= NOW())`);
-    conditions.push(`(p.available_until_date IS NULL OR p.available_until_date >= NOW())`);
+    conditions.push(`(p.available_from_date IS NULL OR p.available_from_date::timestamp <= NOW())`);
+    conditions.push(`(p.available_until_date IS NULL OR p.available_until_date::timestamp >= NOW())`);
     sqlQuery += ` WHERE ${conditions.join(' AND ')}`;
     const orderMap = { product_name: 'p.product_name', price: 'p.price', created_at: 'p.created_at' };
     sqlQuery += ` ORDER BY ${orderMap[String(sort_by)] || 'p.created_at'} ${String(sort_order).toUpperCase()}`;
