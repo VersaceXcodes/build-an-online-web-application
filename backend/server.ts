@@ -1,15 +1,49 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import jwt from 'jsonwebtoken';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { createServer } from 'http';
 import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
+
+// Custom type definitions
+interface AuthRequest extends Request {
+  user?: {
+    user_id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    phone_number: string;
+    user_type: string;
+    account_status: string;
+    loyalty_points_balance: number;
+  };
+}
+
+interface AuthSocket extends Socket {
+  user?: {
+    user_id: string;
+    email: string;
+    user_type: string;
+  };
+}
+
+interface ErrorResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  error_code?: string;
+  details?: {
+    name: string;
+    message: string;
+    stack?: string;
+  };
+}
 
 dotenv.config();
 
@@ -20,8 +54,8 @@ const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT = 5432, JWT
 
 const pool = new Pool(
   DATABASE_URL
-    ? { connectionString: DATABASE_URL, ssl: { require: true } }
-    : { host: PGHOST, database: PGDATABASE, user: PGUSER, password: PGPASSWORD, port: Number(PGPORT), ssl: { require: true } }
+    ? { connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } }
+    : { host: PGHOST, database: PGDATABASE, user: PGUSER, password: PGPASSWORD, port: Number(PGPORT), ssl: { rejectUnauthorized: false } }
 );
 
 const app = express();
@@ -39,8 +73,8 @@ app.use(express.json({ limit: '5mb' }));
 app.use(morgan('dev'));
 app.use(express.static(publicDir));
 
-function createErrorResponse(message, error, errorCode) {
-  const response = { success: false, message, timestamp: new Date().toISOString() };
+function createErrorResponse(message: string, error?: any, errorCode?: string): ErrorResponse {
+  const response: ErrorResponse = { success: false, message, timestamp: new Date().toISOString() };
   if (errorCode) response.error_code = errorCode;
   if (error) response.details = { name: error.name, message: error.message, stack: error.stack };
   return response;
@@ -60,25 +94,25 @@ function generateCollectionCode() {
   return `COL-${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
-const authenticateToken = async (req, res, next) => {
+const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json(createErrorResponse('Access token required', null, 'AUTH_TOKEN_MISSING'));
+  if (!token) return res.status(401).json(createErrorResponse('Access token required', undefined, 'AUTH_TOKEN_MISSING'));
   try {
     const client = await pool.connect();
     const sessionResult = await client.query('SELECT user_id, expires_at FROM sessions WHERE token = $1', [token]);
     if (sessionResult.rows.length === 0) {
       client.release();
-      return res.status(401).json(createErrorResponse('Invalid token', null, 'AUTH_TOKEN_INVALID'));
+      return res.status(401).json(createErrorResponse('Invalid token', undefined, 'AUTH_TOKEN_INVALID'));
     }
     const session = sessionResult.rows[0];
     if (new Date(session.expires_at) < new Date()) {
       client.release();
-      return res.status(401).json(createErrorResponse('Token expired', null, 'AUTH_TOKEN_EXPIRED'));
+      return res.status(401).json(createErrorResponse('Token expired', undefined, 'AUTH_TOKEN_EXPIRED'));
     }
     const userResult = await client.query('SELECT user_id, email, first_name, last_name, phone_number, user_type, account_status, loyalty_points_balance FROM users WHERE user_id = $1', [session.user_id]);
     client.release();
-    if (userResult.rows.length === 0) return res.status(401).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
+    if (userResult.rows.length === 0) return res.status(401).json(createErrorResponse('User not found', undefined, 'USER_NOT_FOUND'));
     req.user = userResult.rows[0];
     next();
   } catch (error) {
@@ -86,8 +120,8 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-const requireRole = (roles) => (req, res, next) => {
-  if (!roles.includes(req.user.user_type)) return res.status(403).json(createErrorResponse('Insufficient permissions', null, 'FORBIDDEN'));
+const requireRole = (roles: string[]) => (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !roles.includes(req.user.user_type)) return res.status(403).json(createErrorResponse('Insufficient permissions', undefined, 'FORBIDDEN'));
   next();
 };
 
@@ -143,7 +177,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.post('/api/auth/logout', authenticateToken, async (req, res) => {
+app.post('/api/auth/logout', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const token = req.headers['authorization'].split(' ')[1];
@@ -202,11 +236,11 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-app.get('/api/users/me', authenticateToken, async (req, res) => {
+app.get('/api/users/me', authenticateToken, async (req: AuthRequest, res: Response) => {
   res.json(req.user);
 });
 
-app.put('/api/users/me', authenticateToken, async (req, res) => {
+app.put('/api/users/me', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { first_name, last_name, phone_number, email, current_password, marketing_opt_in } = req.body;
@@ -243,7 +277,7 @@ app.put('/api/users/me', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/users/me/change-password', authenticateToken, async (req, res) => {
+app.post('/api/users/me/change-password', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { current_password, new_password } = req.body;
@@ -268,8 +302,8 @@ app.get('/api/locations', async (req, res) => {
     const { is_collection_enabled, is_delivery_enabled } = req.query;
     let query = 'SELECT * FROM locations WHERE 1=1';
     const values = [];
-    if (is_collection_enabled !== undefined) { query += ` AND is_collection_enabled = $${values.length + 1}`; values.push(is_collection_enabled === 'true' || is_collection_enabled === true); }
-    if (is_delivery_enabled !== undefined) { query += ` AND is_delivery_enabled = $${values.length + 1}`; values.push(is_delivery_enabled === 'true' || is_delivery_enabled === true); }
+    if (is_collection_enabled !== undefined) { query += ` AND is_collection_enabled = $${values.length + 1}`; values.push(String(is_collection_enabled) === 'true'); }
+    if (is_delivery_enabled !== undefined) { query += ` AND is_delivery_enabled = $${values.length + 1}`; values.push(String(is_delivery_enabled) === 'true'); }
     query += ' ORDER BY location_name';
     const result = await client.query(query, values);
     client.release();
@@ -312,11 +346,11 @@ app.get('/api/products', async (req, res) => {
     }
     if (category) { conditions.push(`p.category = $${idx++}`); values.push(category); }
     if (availability_status) { conditions.push(`p.availability_status = $${idx++}`); values.push(availability_status); }
-    if (is_featured !== undefined) { conditions.push(`p.is_featured = $${idx++}`); values.push(is_featured === 'true' || is_featured === true); }
+    if (is_featured !== undefined) { conditions.push(`p.is_featured = $${idx++}`); values.push(String(is_featured) === 'true'); }
     if (min_price) { conditions.push(`p.price >= $${idx++}`); values.push(parseFloat(String(min_price))); }
     if (max_price) { conditions.push(`p.price <= $${idx++}`); values.push(parseFloat(String(max_price))); }
     if (dietary_tags) { conditions.push(`p.dietary_tags LIKE $${idx++}`); values.push(`%${dietary_tags}%`); }
-    if (hide_out_of_stock === 'true' || hide_out_of_stock === true) conditions.push(`p.availability_status != 'out_of_stock'`);
+    if (String(hide_out_of_stock) === 'true') conditions.push(`p.availability_status != 'out_of_stock'`);
     if (query) { conditions.push(`(p.product_name ILIKE $${idx} OR p.short_description ILIKE $${idx})`); values.push(`%${query}%`); idx++; }
     conditions.push(`(p.available_from_date IS NULL OR p.available_from_date <= NOW())`);
     conditions.push(`(p.available_until_date IS NULL OR p.available_until_date >= NOW())`);
@@ -350,7 +384,7 @@ app.get('/api/products/:product_id', async (req, res) => {
   }
 });
 
-app.post('/api/products', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/products', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status = 'in_stock', stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured = false, available_for_corporate = true, available_from_date, available_until_date, location_assignments } = req.body;
@@ -371,7 +405,7 @@ app.post('/api/products', authenticateToken, requireRole(['admin']), async (req,
   }
 });
 
-app.put('/api/products/:product_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/products/:product_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const updates = [];
@@ -402,7 +436,7 @@ app.put('/api/products/:product_id', authenticateToken, requireRole(['admin']), 
   }
 });
 
-app.delete('/api/products/:product_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.delete('/api/products/:product_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('UPDATE products SET is_archived = true, updated_at = $1 WHERE product_id = $2', [new Date().toISOString(), req.params.product_id]);
@@ -523,7 +557,7 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.get('/api/orders', authenticateToken, async (req, res) => {
+app.get('/api/orders', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { user_id, location_name, order_type, order_status, fulfillment_method, payment_status, date_from, date_to, search, revenue_min, revenue_max, sort_by = 'created_at', sort_order = 'desc' } = req.query;
@@ -587,7 +621,7 @@ app.get('/api/orders/:order_id', async (req, res) => {
   }
 });
 
-app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
+app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff', 'admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -643,7 +677,7 @@ app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff',
   }
 });
 
-app.post('/api/orders/:order_id/cancel', authenticateToken, async (req, res) => {
+app.post('/api/orders/:order_id/cancel', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -686,7 +720,7 @@ app.post('/api/orders/:order_id/cancel', authenticateToken, async (req, res) => 
   }
 });
 
-app.get('/api/addresses', authenticateToken, async (req, res) => {
+app.get('/api/addresses', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM addresses WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC', [req.user.user_id]);
@@ -698,7 +732,7 @@ app.get('/api/addresses', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/addresses', authenticateToken, async (req, res) => {
+app.post('/api/addresses', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { address_label, address_line1, address_line2, city, postal_code, delivery_phone, delivery_instructions, is_default = false } = req.body;
@@ -715,7 +749,7 @@ app.post('/api/addresses', authenticateToken, async (req, res) => {
   }
 });
 
-app.put('/api/addresses/:address_id', authenticateToken, async (req, res) => {
+app.put('/api/addresses/:address_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const updates = [];
@@ -742,7 +776,7 @@ app.put('/api/addresses/:address_id', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/addresses/:address_id', authenticateToken, async (req, res) => {
+app.delete('/api/addresses/:address_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('DELETE FROM addresses WHERE address_id = $1 AND user_id = $2', [req.params.address_id, req.user.user_id]);
@@ -754,18 +788,18 @@ app.delete('/api/addresses/:address_id', authenticateToken, async (req, res) => 
   }
 });
 
-app.get('/api/loyalty-points/transactions', authenticateToken, async (req, res) => {
+app.get('/api/loyalty-points/transactions', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { transaction_type, date_from, date_to } = req.query;
     const limit = parseInt(String(req.query.limit || 20));
     const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM loyalty_points_transactions WHERE user_id = $1';
-    const values = [req.user.user_id];
+    const values: any[] = [req.user?.user_id];
     let idx = 2;
-    if (transaction_type) { query += ` AND transaction_type = $${idx++}`; values.push(transaction_type); }
-    if (date_from) { query += ` AND created_at >= $${idx++}`; values.push(date_from); }
-    if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(date_to); }
+    if (transaction_type) { query += ` AND transaction_type = $${idx++}`; values.push(String(transaction_type)); }
+    if (date_from) { query += ` AND created_at >= $${idx++}`; values.push(String(date_from)); }
+    if (date_to) { query += ` AND created_at <= $${idx++}`; values.push(String(date_to)); }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
     values.push(limit, offset);
     const result = await client.query(query, values);
@@ -778,11 +812,11 @@ app.get('/api/loyalty-points/transactions', authenticateToken, async (req, res) 
   }
 });
 
-app.get('/api/loyalty-points/balance', authenticateToken, async (req, res) => {
-  res.json({ balance: parseFloat(req.user.loyalty_points_balance), user_id: req.user.user_id });
+app.get('/api/loyalty-points/balance', authenticateToken, async (req: AuthRequest, res: Response) => {
+  res.json({ balance: parseFloat(String(req.user?.loyalty_points_balance || 0)), user_id: req.user?.user_id });
 });
 
-app.get('/api/feedback/customer', authenticateToken, async (req, res) => {
+app.get('/api/feedback/customer', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { order_id, reviewed_status, date_from, date_to } = req.query;
@@ -871,7 +905,7 @@ app.post('/api/feedback/customer', async (req, res) => {
   }
 });
 
-app.get('/api/feedback/customer/:feedback_id', authenticateToken, async (req, res) => {
+app.get('/api/feedback/customer/:feedback_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM customer_feedback WHERE feedback_id = $1', [req.params.feedback_id]);
@@ -884,7 +918,7 @@ app.get('/api/feedback/customer/:feedback_id', authenticateToken, async (req, re
   }
 });
 
-app.put('/api/feedback/customer/:feedback_id', authenticateToken, async (req, res) => {
+app.put('/api/feedback/customer/:feedback_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const feedbackResult = await client.query('SELECT * FROM customer_feedback WHERE feedback_id = $1', [req.params.feedback_id]);
@@ -910,7 +944,7 @@ app.put('/api/feedback/customer/:feedback_id', authenticateToken, async (req, re
   }
 });
 
-app.post('/api/feedback/customer/:feedback_id/review', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/feedback/customer/:feedback_id/review', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { reviewed_status, notes } = req.body;
@@ -928,7 +962,7 @@ app.post('/api/feedback/customer/:feedback_id/review', authenticateToken, requir
   }
 });
 
-app.get('/api/feedback/staff', authenticateToken, async (req, res) => {
+app.get('/api/feedback/staff', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_name, feedback_type, status, priority, date_from, date_to } = req.query;
@@ -959,7 +993,7 @@ app.get('/api/feedback/staff', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/feedback/staff', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
+app.post('/api/feedback/staff', authenticateToken, requireRole(['staff', 'admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_name, feedback_type, title, description, priority = 'medium', attachment_urls, is_anonymous = false } = req.body;
@@ -978,7 +1012,7 @@ app.post('/api/feedback/staff', authenticateToken, requireRole(['staff', 'admin'
   }
 });
 
-app.get('/api/feedback/staff/:feedback_id', authenticateToken, async (req, res) => {
+app.get('/api/feedback/staff/:feedback_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM staff_feedback WHERE feedback_id = $1', [req.params.feedback_id]);
@@ -991,7 +1025,7 @@ app.get('/api/feedback/staff/:feedback_id', authenticateToken, async (req, res) 
   }
 });
 
-app.put('/api/feedback/staff/:feedback_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/feedback/staff/:feedback_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -1028,7 +1062,7 @@ app.put('/api/feedback/staff/:feedback_id', authenticateToken, requireRole(['adm
   }
 });
 
-app.get('/api/inventory/alerts', authenticateToken, async (req, res) => {
+app.get('/api/inventory/alerts', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_name, alert_type, status, priority, date_from, date_to, search } = req.query;
@@ -1056,7 +1090,7 @@ app.get('/api/inventory/alerts', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/inventory/alerts', authenticateToken, requireRole(['staff', 'admin']), async (req, res) => {
+app.post('/api/inventory/alerts', authenticateToken, requireRole(['staff', 'admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_name, item_name, alert_type, current_quantity, notes, priority = 'medium' } = req.body;
@@ -1076,7 +1110,7 @@ app.post('/api/inventory/alerts', authenticateToken, requireRole(['staff', 'admi
   }
 });
 
-app.get('/api/inventory/alerts/:alert_id', authenticateToken, async (req, res) => {
+app.get('/api/inventory/alerts/:alert_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM inventory_alerts WHERE alert_id = $1', [req.params.alert_id]);
@@ -1089,7 +1123,7 @@ app.get('/api/inventory/alerts/:alert_id', authenticateToken, async (req, res) =
   }
 });
 
-app.put('/api/inventory/alerts/:alert_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/inventory/alerts/:alert_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { status, priority, resolution_notes } = req.body;
@@ -1128,7 +1162,7 @@ app.put('/api/inventory/alerts/:alert_id', authenticateToken, requireRole(['admi
   }
 });
 
-app.get('/api/training/courses', authenticateToken, async (req, res) => {
+app.get('/api/training/courses', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { category, status, is_required, query } = req.query;
@@ -1143,7 +1177,7 @@ app.get('/api/training/courses', authenticateToken, async (req, res) => {
     }
     if (category) { sqlQuery += ` AND category = $${idx++}`; values.push(category); }
     if (status && req.user.user_type === 'admin') { sqlQuery += ` AND status = $${idx++}`; values.push(status); }
-    if (is_required !== undefined) { sqlQuery += ` AND is_required = $${idx++}`; values.push(is_required === 'true' || is_required === true); }
+    if (is_required !== undefined) { sqlQuery += ` AND is_required = $${idx++}`; values.push(String(is_required) === 'true'); }
     if (query) { sqlQuery += ` AND (course_title ILIKE $${idx} OR short_description ILIKE $${idx})`; values.push(`%${query}%`); idx++; }
     sqlQuery += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
     values.push(limit, offset);
@@ -1162,7 +1196,7 @@ app.get('/api/training/courses', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/training/courses', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/training/courses', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { course_title, short_description, long_description, cover_image_url, category, tags, status = 'draft', is_required = false, estimated_duration_minutes, prerequisite_course_ids } = req.body;
@@ -1178,7 +1212,7 @@ app.post('/api/training/courses', authenticateToken, requireRole(['admin']), asy
   }
 });
 
-app.get('/api/training/courses/:course_id', authenticateToken, async (req, res) => {
+app.get('/api/training/courses/:course_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const courseResult = await client.query('SELECT * FROM training_courses WHERE course_id = $1', [req.params.course_id]);
@@ -1195,7 +1229,7 @@ app.get('/api/training/courses/:course_id', authenticateToken, async (req, res) 
   }
 });
 
-app.put('/api/training/courses/:course_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/training/courses/:course_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const updates = [];
@@ -1222,7 +1256,7 @@ app.put('/api/training/courses/:course_id', authenticateToken, requireRole(['adm
   }
 });
 
-app.get('/api/training/courses/:course_id/progress', authenticateToken, requireRole(['staff']), async (req, res) => {
+app.get('/api/training/courses/:course_id/progress', authenticateToken, requireRole(['staff']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM staff_course_progress WHERE user_id = $1 AND course_id = $2', [req.user.user_id, req.params.course_id]);
@@ -1241,7 +1275,7 @@ app.get('/api/training/courses/:course_id/progress', authenticateToken, requireR
   }
 });
 
-app.post('/api/training/lessons/:lesson_id/complete', authenticateToken, requireRole(['staff']), async (req, res) => {
+app.post('/api/training/lessons/:lesson_id/complete', authenticateToken, requireRole(['staff']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -1285,7 +1319,7 @@ app.post('/api/training/lessons/:lesson_id/complete', authenticateToken, require
   }
 });
 
-app.get('/api/training/progress', authenticateToken, requireRole(['staff']), async (req, res) => {
+app.get('/api/training/progress', authenticateToken, requireRole(['staff']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT scp.*, tc.course_title FROM staff_course_progress scp INNER JOIN training_courses tc ON scp.course_id = tc.course_id WHERE scp.user_id = $1 ORDER BY scp.last_accessed_at DESC', [req.user.user_id]);
@@ -1337,7 +1371,7 @@ app.post('/api/promo-codes/validate', async (req, res) => {
   }
 });
 
-app.get('/api/promo-codes', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.get('/api/promo-codes', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { query, discount_type, is_active } = req.query;
@@ -1348,7 +1382,7 @@ app.get('/api/promo-codes', authenticateToken, requireRole(['admin']), async (re
     let idx = 1;
     if (query) { sqlQuery += ` AND code ILIKE $${idx++}`; values.push(`%${query}%`); }
     if (discount_type) { sqlQuery += ` AND discount_type = $${idx++}`; values.push(discount_type); }
-    if (is_active !== undefined) { sqlQuery += ` AND is_active = $${idx++}`; values.push(is_active === 'true' || is_active === true); }
+    if (is_active !== undefined) { sqlQuery += ` AND is_active = $${idx++}`; values.push(String(is_active) === 'true'); }
     sqlQuery += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
     values.push(limit, offset);
     const result = await client.query(sqlQuery, values);
@@ -1361,7 +1395,7 @@ app.get('/api/promo-codes', authenticateToken, requireRole(['admin']), async (re
   }
 });
 
-app.post('/api/promo-codes', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/promo-codes', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { code, discount_type, discount_value, minimum_order_value, valid_from, valid_until, usage_limit, is_single_use = false, applicable_locations, applicable_products, is_active = true } = req.body;
@@ -1390,7 +1424,7 @@ app.get('/api/drop-of-the-month', async (req, res) => {
   }
 });
 
-app.post('/api/drop-of-the-month', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/drop-of-the-month', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { product_name, description, price, product_image_url, available_from, available_until, is_active = false } = req.body;
@@ -1407,7 +1441,7 @@ app.post('/api/drop-of-the-month', authenticateToken, requireRole(['admin']), as
   }
 });
 
-app.put('/api/drop-of-the-month/:drop_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/drop-of-the-month/:drop_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const updates = [];
@@ -1442,7 +1476,7 @@ app.get('/api/stall-events', async (req, res) => {
     const values = [];
     if (is_visible !== undefined) {
       query += ' WHERE is_visible = $1';
-      values.push(is_visible === 'true' || is_visible === true);
+      values.push(String(is_visible) === 'true');
     }
     query += ' ORDER BY event_date DESC';
     const result = await client.query(query, values);
@@ -1454,7 +1488,7 @@ app.get('/api/stall-events', async (req, res) => {
   }
 });
 
-app.post('/api/stall-events', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/stall-events', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible = false } = req.body;
@@ -1470,7 +1504,7 @@ app.post('/api/stall-events', authenticateToken, requireRole(['admin']), async (
   }
 });
 
-app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const updates = [];
@@ -1496,7 +1530,7 @@ app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin'])
   }
 });
 
-app.get('/api/favorites', authenticateToken, async (req, res) => {
+app.get('/api/favorites', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT f.*, p.product_name, p.price, p.primary_image_url FROM favorites f INNER JOIN products p ON f.product_id = p.product_id WHERE f.user_id = $1 ORDER BY f.created_at DESC', [req.user.user_id]);
@@ -1508,7 +1542,7 @@ app.get('/api/favorites', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/favorites', authenticateToken, async (req, res) => {
+app.post('/api/favorites', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { product_id } = req.body;
@@ -1529,7 +1563,7 @@ app.post('/api/favorites', authenticateToken, async (req, res) => {
   }
 });
 
-app.delete('/api/favorites/:favorite_id', authenticateToken, async (req, res) => {
+app.delete('/api/favorites/:favorite_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('DELETE FROM favorites WHERE favorite_id = $1 AND user_id = $2', [req.params.favorite_id, req.user.user_id]);
@@ -1541,19 +1575,19 @@ app.delete('/api/favorites/:favorite_id', authenticateToken, async (req, res) =>
   }
 });
 
-app.get('/api/notifications', authenticateToken, async (req, res) => {
+app.get('/api/notifications', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { is_read, notification_type } = req.query;
     const limit = parseInt(String(req.query.limit || 20));
     const offset = parseInt(String(req.query.offset || 0));
     let query = 'SELECT * FROM notifications WHERE user_id = $1';
-    const values = [req.user.user_id];
+    const values: any[] = [req.user?.user_id];
     let idx = 2;
-    if (is_read !== undefined) { query += ` AND is_read = $${idx++}`; values.push(is_read === 'true' || is_read === true); }
-    if (notification_type) { query += ` AND notification_type = $${idx++}`; values.push(notification_type); }
+    if (is_read !== undefined) { query += ` AND is_read = $${idx++}`; values.push(String(is_read) === 'true'); }
+    if (notification_type) { query += ` AND notification_type = $${idx++}`; values.push(String(notification_type)); }
     query += ` ORDER BY created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
-    values.push(limit, offset);
+    values.push(String(limit), String(offset));
     const result = await client.query(query, values);
     const countResult = await client.query(query.replace('SELECT *', 'SELECT COUNT(*)').split('ORDER BY')[0], values.slice(0, -2));
     client.release();
@@ -1564,7 +1598,7 @@ app.get('/api/notifications', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/notifications/:notification_id/read', authenticateToken, async (req, res) => {
+app.post('/api/notifications/:notification_id/read', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const now = new Date().toISOString();
@@ -1577,7 +1611,7 @@ app.post('/api/notifications/:notification_id/read', authenticateToken, async (r
   }
 });
 
-app.post('/api/notifications/read-all', authenticateToken, async (req, res) => {
+app.post('/api/notifications/read-all', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const now = new Date().toISOString();
@@ -1590,7 +1624,7 @@ app.post('/api/notifications/read-all', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/analytics/dashboard', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.get('/api/analytics/dashboard', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { date_range = 'today', start_date, end_date, location } = req.query;
@@ -1635,7 +1669,7 @@ app.get('/api/analytics/dashboard', authenticateToken, requireRole(['admin']), a
   }
 });
 
-app.get('/api/analytics/reports', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.get('/api/analytics/reports', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { report_type, date_from, date_to, location, format = 'json' } = req.query;
@@ -1662,7 +1696,7 @@ app.get('/api/analytics/reports', authenticateToken, requireRole(['admin']), asy
   }
 });
 
-app.get('/api/settings', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.get('/api/settings', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { setting_group } = req.query;
@@ -1681,7 +1715,7 @@ app.get('/api/settings', authenticateToken, requireRole(['admin']), async (req, 
   }
 });
 
-app.put('/api/settings/:setting_id', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.put('/api/settings/:setting_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { setting_value } = req.body;
@@ -1696,7 +1730,7 @@ app.put('/api/settings/:setting_id', authenticateToken, requireRole(['admin']), 
   }
 });
 
-app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.get('/api/users', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { query, user_type, account_status, sort_by = 'created_at', sort_order = 'desc' } = req.query;
@@ -1721,7 +1755,7 @@ app.get('/api/users', authenticateToken, requireRole(['admin']), async (req, res
   }
 });
 
-app.post('/api/users', authenticateToken, requireRole(['admin']), async (req, res) => {
+app.post('/api/users', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { email, password, first_name, last_name, phone_number, user_type = 'customer', marketing_opt_in = false } = req.body;
@@ -1759,7 +1793,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-io.use(async (socket, next) => {
+io.use(async (socket: AuthSocket, next) => {
   const token = socket.handshake.auth.token;
   if (!token) return next(new Error('Authentication required'));
   try {
@@ -1778,22 +1812,24 @@ io.use(async (socket, next) => {
   }
 });
 
-io.on('connection', async (socket) => {
-  console.log('User connected:', socket.user.email);
-  socket.join(`user_${socket.user.user_id}`);
-  if (socket.user.user_type === 'admin') {
-    socket.join('admin_dashboard');
-  }
-  if (socket.user.user_type === 'staff' || socket.user.user_type === 'admin') {
-    const client = await pool.connect();
-    const assignmentsResult = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [socket.user.user_id]);
-    client.release();
-    assignmentsResult.rows.forEach(assignment => {
-      socket.join(`location_${assignment.location_name}_staff`);
-    });
+io.on('connection', async (socket: AuthSocket) => {
+  console.log('User connected:', socket.user?.email);
+  if (socket.user) {
+    socket.join(`user_${socket.user.user_id}`);
     if (socket.user.user_type === 'admin') {
-      const locations = ['Blanchardstown', 'Tallaght', 'Glasnevin'];
-      locations.forEach(loc => socket.join(`location_${loc}_staff`));
+      socket.join('admin_dashboard');
+    }
+    if (socket.user.user_type === 'staff' || socket.user.user_type === 'admin') {
+      const client = await pool.connect();
+      const assignmentsResult = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [socket.user.user_id]);
+      client.release();
+      assignmentsResult.rows.forEach(assignment => {
+        socket.join(`location_${assignment.location_name}_staff`);
+      });
+      if (socket.user.user_type === 'admin') {
+        const locations = ['Blanchardstown', 'Tallaght', 'Glasnevin'];
+        locations.forEach(loc => socket.join(`location_${loc}_staff`));
+      }
     }
   }
   socket.on('join_order_room', (data) => {
@@ -1803,7 +1839,7 @@ io.on('connection', async (socket) => {
     if (data.order_id) socket.leave(`order_${data.order_id}`);
   });
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.user.email);
+    console.log('User disconnected:', socket.user?.email);
   });
 });
 
@@ -1831,6 +1867,6 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 export { app, pool };
 
-httpServer.listen(PORT, '0.0.0.0', () => {
+httpServer.listen(Number(PORT), '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} and listening on 0.0.0.0`);
 });
