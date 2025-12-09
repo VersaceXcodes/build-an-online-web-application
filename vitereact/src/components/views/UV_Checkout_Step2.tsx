@@ -108,6 +108,8 @@ const UV_Checkout_Step2: React.FC = () => {
   const showToast = useAppStore(state => state.show_toast);
   const clearCart = useAppStore(state => state.clear_cart);
   const registerUser = useAppStore(state => state.register_user);
+  const applyPromoCode = useAppStore(state => state.apply_promo_code);
+  const removePromoCode = useAppStore(state => state.remove_promo_code);
 
   // ====================================================================
   // LOCAL STATE
@@ -132,6 +134,11 @@ const UV_Checkout_Step2: React.FC = () => {
   const [, setOrderIdPending] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<boolean>(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+
+  // Promo code state
+  const [promoCodeInput, setPromoCodeInput] = useState<string>('');
+  const [applyingPromo, setApplyingPromo] = useState<boolean>(false);
+  const [promoCodeError, setPromoCodeError] = useState<string | null>(null);
 
   // ====================================================================
   // API AXIOS INSTANCE
@@ -195,6 +202,13 @@ const UV_Checkout_Step2: React.FC = () => {
     }
   }, [cartItems, navigate, showToast]);
 
+  // Sync promo code input with store state
+  useEffect(() => {
+    if (appliedDiscounts.promo_code) {
+      setPromoCodeInput(appliedDiscounts.promo_code);
+    }
+  }, [appliedDiscounts.promo_code]);
+
   // ====================================================================
   // API MUTATIONS
   // ====================================================================
@@ -231,6 +245,50 @@ const UV_Checkout_Step2: React.FC = () => {
   //     await registerUser(userData);
   //   },
   // });
+
+  // ====================================================================
+  // PROMO CODE HANDLERS
+  // ====================================================================
+
+  const handleApplyPromoCode = async () => {
+    if (!promoCodeInput.trim()) {
+      setPromoCodeError('Please enter a promo code');
+      return;
+    }
+
+    setApplyingPromo(true);
+    setPromoCodeError(null);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/promo-codes/validate`,
+        {
+          code: promoCodeInput.trim(),
+          order_total: cartTotals.subtotal,
+          location_name: selectedLocation,
+        }
+      );
+
+      if (response.data.is_valid) {
+        applyPromoCode(promoCodeInput.trim().toUpperCase());
+        showToast('success', response.data.message || 'Promo code applied!');
+        setPromoCodeError(null);
+      } else {
+        setPromoCodeError(response.data.message || 'Invalid promo code');
+      }
+    } catch (error: any) {
+      setPromoCodeError(error.response?.data?.message || 'Failed to validate promo code');
+    } finally {
+      setApplyingPromo(false);
+    }
+  };
+
+  const handleRemovePromoCode = () => {
+    removePromoCode();
+    setPromoCodeInput('');
+    setPromoCodeError(null);
+    showToast('info', 'Promo code removed');
+  };
 
   // ====================================================================
   // FORM VALIDATION
@@ -722,6 +780,67 @@ const UV_Checkout_Step2: React.FC = () => {
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Promo Code Section */}
+                <div className="mb-6 pb-6 border-b border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">
+                    Have a promo code?
+                  </h4>
+                  
+                  {!appliedDiscounts.promo_code ? (
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={promoCodeInput}
+                          onChange={(e) => {
+                            setPromoCodeInput(e.target.value.toUpperCase());
+                            setPromoCodeError(null);
+                          }}
+                          placeholder="Enter code"
+                          className="flex-1 px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all duration-200 text-sm uppercase"
+                          disabled={applyingPromo}
+                        />
+                        <button
+                          onClick={handleApplyPromoCode}
+                          disabled={applyingPromo || !promoCodeInput.trim()}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {applyingPromo ? (
+                            <span className="flex items-center">
+                              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            </span>
+                          ) : (
+                            'Apply'
+                          )}
+                        </button>
+                      </div>
+                      {promoCodeError && (
+                        <p className="text-xs text-red-600 mt-1">{promoCodeError}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-sm font-medium text-green-800">
+                          {appliedDiscounts.promo_code}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleRemovePromoCode}
+                        className="text-sm text-red-600 hover:text-red-800 font-medium"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Price Breakdown */}
