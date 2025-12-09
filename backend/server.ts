@@ -424,6 +424,31 @@ app.get('/api/products/:product_id', async (req, res) => {
   }
 });
 
+// Get product locations (which products are available at which locations)
+app.get('/api/product-locations', async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location_name, limit = 1000 } = req.query;
+    
+    let query = 'SELECT * FROM product_locations';
+    const params: any[] = [];
+    
+    if (location_name) {
+      query += ' WHERE location_name = $1';
+      params.push(location_name);
+    }
+    
+    query += ` LIMIT ${parseInt(limit as string) || 1000}`;
+    
+    const result = await client.query(query, params);
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch product locations', error, 'PRODUCT_LOCATIONS_FETCH_ERROR'));
+  }
+});
+
 app.post('/api/products', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
