@@ -124,7 +124,12 @@ const UV_LocationExternal: React.FC = () => {
   // Parse dietary tags helper
   const parseDietaryTags = (tags: string | null): string[] => {
     if (!tags) return [];
-    return tags.split(',').map(tag => tag.trim());
+    try {
+      return JSON.parse(tags);
+    } catch (e) {
+      // Fallback to comma-separated parsing
+      return tags.split(',').map(tag => tag.trim());
+    }
   };
 
   // Open external URL in new tab

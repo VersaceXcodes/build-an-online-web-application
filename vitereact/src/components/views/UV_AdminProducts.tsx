@@ -193,8 +193,8 @@ const UV_AdminProducts: React.FC = () => {
       availability_status: data.availability_status,
       stock_quantity: data.stock_quantity,
       low_stock_threshold: data.low_stock_threshold,
-      dietary_tags: data.dietary_tags.length > 0 ? data.dietary_tags.join(',') : null,
-      custom_tags: data.custom_tags.length > 0 ? data.custom_tags.join(',') : null,
+      dietary_tags: data.dietary_tags.length > 0 ? JSON.stringify(data.dietary_tags) : null,
+      custom_tags: data.custom_tags.length > 0 ? JSON.stringify(data.custom_tags) : null,
       is_featured: data.is_featured,
       available_for_corporate: data.available_for_corporate,
       available_from_date: data.available_from_date,
@@ -229,8 +229,8 @@ const UV_AdminProducts: React.FC = () => {
       availability_status: data.availability_status,
       stock_quantity: data.stock_quantity,
       low_stock_threshold: data.low_stock_threshold,
-      dietary_tags: data.dietary_tags.length > 0 ? data.dietary_tags.join(',') : null,
-      custom_tags: data.custom_tags.length > 0 ? data.custom_tags.join(',') : null,
+      dietary_tags: data.dietary_tags.length > 0 ? JSON.stringify(data.dietary_tags) : null,
+      custom_tags: data.custom_tags.length > 0 ? JSON.stringify(data.custom_tags) : null,
       is_featured: data.is_featured,
       available_for_corporate: data.available_for_corporate,
       available_from_date: data.available_from_date,
@@ -374,8 +374,20 @@ const UV_AdminProducts: React.FC = () => {
       availability_status: product.availability_status,
       stock_quantity: product.stock_quantity,
       low_stock_threshold: product.low_stock_threshold,
-      dietary_tags: product.dietary_tags ? product.dietary_tags.split(',') : [],
-      custom_tags: product.custom_tags ? product.custom_tags.split(',') : [],
+      dietary_tags: product.dietary_tags ? (() => {
+        try {
+          return JSON.parse(product.dietary_tags);
+        } catch (e) {
+          return product.dietary_tags.split(',');
+        }
+      })() : [],
+      custom_tags: product.custom_tags ? (() => {
+        try {
+          return JSON.parse(product.custom_tags);
+        } catch (e) {
+          return product.custom_tags.split(',');
+        }
+      })() : [],
       is_featured: product.is_featured,
       available_for_corporate: product.available_for_corporate,
       available_from_date: product.available_from_date,
@@ -889,7 +901,13 @@ const UV_AdminProducts: React.FC = () => {
                       {/* Dietary Tags */}
                       {product.dietary_tags && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {product.dietary_tags.split(',').map((tag, index) => (
+                          {(() => {
+                            try {
+                              return JSON.parse(product.dietary_tags);
+                            } catch (e) {
+                              return product.dietary_tags.split(',');
+                            }
+                          })().map((tag: string, index: number) => (
                             <span
                               key={index}
                               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"

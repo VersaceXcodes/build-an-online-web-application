@@ -212,8 +212,22 @@ const UV_Menu: React.FC = () => {
       if (active_filters.dietary_tags.length > 0) {
         filtered = filtered.filter(product => {
           if (!product.dietary_tags) return false;
-          const productTags = product.dietary_tags.split(',').map(t => t.trim());
-          return active_filters.dietary_tags.every(tag => productTags.includes(tag));
+          
+          // Parse JSON array of dietary tags
+          let productTags: string[] = [];
+          try {
+            productTags = JSON.parse(product.dietary_tags);
+          } catch (e) {
+            // Fallback to comma-separated parsing if not JSON
+            productTags = product.dietary_tags.split(',').map(t => t.trim());
+          }
+          
+          // Normalize tags for comparison (convert underscores to hyphens and lowercase)
+          const normalizedProductTags = productTags.map(t => t.toLowerCase().replace(/_/g, '-'));
+          const normalizedFilterTags = active_filters.dietary_tags.map(t => t.toLowerCase().replace(/_/g, '-'));
+          
+          // Check if all filter tags are present in product tags
+          return normalizedFilterTags.every(filterTag => normalizedProductTags.includes(filterTag));
         });
       }
 
@@ -692,11 +706,19 @@ const UV_Menu: React.FC = () => {
                         : 'space-y-4'
                     }
                   >
-                    {products.map((product) => {
+                     {products.map((product) => {
                       const is_out_of_stock = product.availability_status !== 'in_stock';
-                      const dietary_tags_array = product.dietary_tags
-                        ? product.dietary_tags.split(',').map(t => t.trim())
-                        : [];
+                      
+                      // Parse dietary tags from JSON array
+                      let dietary_tags_array: string[] = [];
+                      if (product.dietary_tags) {
+                        try {
+                          dietary_tags_array = JSON.parse(product.dietary_tags);
+                        } catch (e) {
+                          // Fallback to comma-separated parsing
+                          dietary_tags_array = product.dietary_tags.split(',').map(t => t.trim());
+                        }
+                      }
 
                       return (
                         <div

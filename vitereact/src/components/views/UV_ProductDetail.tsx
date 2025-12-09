@@ -133,9 +133,16 @@ const UV_ProductDetail: React.FC = () => {
     }
   }, [product]);
 
-  // Parse dietary tags
+  // Parse dietary tags from JSON array
   const dietaryTagsArray = product?.dietary_tags 
-    ? product.dietary_tags.split(',').map(tag => tag.trim()).filter(Boolean)
+    ? (() => {
+        try {
+          return JSON.parse(product.dietary_tags);
+        } catch (e) {
+          // Fallback to comma-separated parsing
+          return product.dietary_tags.split(',').map(tag => tag.trim()).filter(Boolean);
+        }
+      })()
     : [];
 
   // All images for gallery (primary + additional)
