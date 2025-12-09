@@ -221,9 +221,12 @@ const UV_Checkout_Step1: React.FC = () => {
   };
 
   const validatePhone = (phone: string): boolean => {
-    // Irish phone format: +353 or 0 followed by digits
-    const phoneRegex = /^(\+353|0)[0-9]{8,9}$/;
-    return phoneRegex.test(phone.replace(/\s/g, ''));
+    // International phone format: + followed by country code and digits (10-15 digits total)
+    // or local format starting with 0
+    const phoneWithoutSpaces = phone.replace(/\s/g, '');
+    const internationalRegex = /^\+[1-9][0-9]{9,14}$/;
+    const localRegex = /^0[0-9]{8,9}$/;
+    return internationalRegex.test(phoneWithoutSpaces) || localRegex.test(phoneWithoutSpaces);
   };
 
   const validatePostalCode = (code: string): boolean => {
