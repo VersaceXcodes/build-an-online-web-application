@@ -1,0 +1,398 @@
+{
+  "generated_at": "2024-12-09T00:00:00Z",
+  "source": "database_seed_data",
+  "user_structure": {
+    "table_name": "users",
+    "role_field": "user_type",
+    "registration_endpoint": "/api/auth/register",
+    "login_endpoint": "/api/auth/login",
+    "password_hash_algorithm": "bcrypt",
+    "seed_password": "Password123!"
+  },
+  "total_users": 15,
+  "verified_users": 15,
+  "users": [
+    {
+      "user_id": "user_001",
+      "email": "john.smith@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "John Smith",
+      "first_name": "John",
+      "last_name": "Smith",
+      "phone_number": "+447700900123",
+      "account_status": "active",
+      "loyalty_points_balance": 450,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_002",
+      "email": "sarah.jones@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Sarah Jones",
+      "first_name": "Sarah",
+      "last_name": "Jones",
+      "phone_number": "+447700900124",
+      "account_status": "active",
+      "loyalty_points_balance": 820,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_003",
+      "email": "mike.williams@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Mike Williams",
+      "first_name": "Mike",
+      "last_name": "Williams",
+      "phone_number": "+447700900125",
+      "account_status": "active",
+      "loyalty_points_balance": 150,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_004",
+      "email": "emma.brown@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Emma Brown",
+      "first_name": "Emma",
+      "last_name": "Brown",
+      "phone_number": "+447700900126",
+      "account_status": "active",
+      "loyalty_points_balance": 1250,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_005",
+      "email": "david.taylor@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "David Taylor",
+      "first_name": "David",
+      "last_name": "Taylor",
+      "phone_number": "+447700900127",
+      "account_status": "active",
+      "loyalty_points_balance": 95,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_006",
+      "email": "admin@bakery.com",
+      "password": "AdminPassword123!",
+      "role": "admin",
+      "name": "Admin User",
+      "first_name": "Admin",
+      "last_name": "User",
+      "phone_number": "+447700900128",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "note": "Primary admin account with full system access"
+    },
+    {
+      "user_id": "user_007",
+      "email": "manager.london@bakery.com",
+      "password": "ManagerPassword123!",
+      "role": "manager",
+      "name": "Laura Martinez",
+      "first_name": "Laura",
+      "last_name": "Martinez",
+      "phone_number": "+447700900129",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "location_assignment": "London Flagship"
+    },
+    {
+      "user_id": "user_008",
+      "email": "staff.london@bakery.com",
+      "password": "StaffPassword123!",
+      "role": "staff",
+      "name": "James Anderson",
+      "first_name": "James",
+      "last_name": "Anderson",
+      "phone_number": "+447700900130",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "location_assignment": "London Flagship"
+    },
+    {
+      "user_id": "user_009",
+      "email": "staff.manchester@bakery.com",
+      "password": "StaffPassword123!",
+      "role": "staff",
+      "name": "Sophie Wilson",
+      "first_name": "Sophie",
+      "last_name": "Wilson",
+      "phone_number": "+447700900131",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "location_assignment": "Manchester Store"
+    },
+    {
+      "user_id": "user_010",
+      "email": "olivia.davis@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Olivia Davis",
+      "first_name": "Olivia",
+      "last_name": "Davis",
+      "phone_number": "+447700900132",
+      "account_status": "active",
+      "loyalty_points_balance": 680,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_011",
+      "email": "daniel.moore@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Daniel Moore",
+      "first_name": "Daniel",
+      "last_name": "Moore",
+      "phone_number": "+447700900133",
+      "account_status": "active",
+      "loyalty_points_balance": 340,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_012",
+      "email": "jessica.white@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Jessica White",
+      "first_name": "Jessica",
+      "last_name": "White",
+      "phone_number": "+447700900134",
+      "account_status": "active",
+      "loyalty_points_balance": 920,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    },
+    {
+      "user_id": "user_013",
+      "email": "manager.birmingham@bakery.com",
+      "password": "ManagerPassword123!",
+      "role": "manager",
+      "name": "Robert Clark",
+      "first_name": "Robert",
+      "last_name": "Clark",
+      "phone_number": "+447700900135",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "location_assignment": "Birmingham Store"
+    },
+    {
+      "user_id": "user_014",
+      "email": "staff.birmingham@bakery.com",
+      "password": "StaffPassword123!",
+      "role": "staff",
+      "name": "Emily Harris",
+      "first_name": "Emily",
+      "last_name": "Harris",
+      "phone_number": "+447700900136",
+      "account_status": "active",
+      "loyalty_points_balance": 0,
+      "marketing_opt_in": false,
+      "verified": true,
+      "source": "seed_data",
+      "location_assignment": "Birmingham Store"
+    },
+    {
+      "user_id": "user_015",
+      "email": "charlotte.thomas@example.com",
+      "password": "Password123!",
+      "role": "customer",
+      "name": "Charlotte Thomas",
+      "first_name": "Charlotte",
+      "last_name": "Thomas",
+      "phone_number": "+447700900137",
+      "account_status": "active",
+      "loyalty_points_balance": 1560,
+      "marketing_opt_in": true,
+      "verified": true,
+      "source": "seed_data"
+    }
+  ],
+  "by_role": {
+    "admin": [
+      {
+        "email": "admin@bakery.com",
+        "password": "AdminPassword123!",
+        "role": "admin",
+        "name": "Admin User",
+        "verified": true,
+        "capabilities": [
+          "full_system_access",
+          "user_management",
+          "product_management",
+          "order_management",
+          "analytics_access",
+          "settings_management",
+          "feedback_review",
+          "training_management"
+        ]
+      }
+    ],
+    "manager": [
+      {
+        "email": "manager.london@bakery.com",
+        "password": "ManagerPassword123!",
+        "role": "manager",
+        "name": "Laura Martinez",
+        "location": "London Flagship",
+        "verified": true
+      },
+      {
+        "email": "manager.birmingham@bakery.com",
+        "password": "ManagerPassword123!",
+        "role": "manager",
+        "name": "Robert Clark",
+        "location": "Birmingham Store",
+        "verified": true
+      }
+    ],
+    "staff": [
+      {
+        "email": "staff.london@bakery.com",
+        "password": "StaffPassword123!",
+        "role": "staff",
+        "name": "James Anderson",
+        "location": "London Flagship",
+        "verified": true
+      },
+      {
+        "email": "staff.manchester@bakery.com",
+        "password": "StaffPassword123!",
+        "role": "staff",
+        "name": "Sophie Wilson",
+        "location": "Manchester Store",
+        "verified": true
+      },
+      {
+        "email": "staff.birmingham@bakery.com",
+        "password": "StaffPassword123!",
+        "role": "staff",
+        "name": "Emily Harris",
+        "location": "Birmingham Store",
+        "verified": true
+      }
+    ],
+    "customer": [
+      {
+        "email": "john.smith@example.com",
+        "password": "Password123!",
+        "role": "customer",
+        "name": "John Smith",
+        "loyalty_points": 450,
+        "verified": true
+      },
+      {
+        "email": "sarah.jones@example.com",
+        "password": "Password123!",
+        "role": "customer",
+        "name": "Sarah Jones",
+        "loyalty_points": 820,
+        "verified": true
+      },
+      {
+        "email": "emma.brown@example.com",
+        "password": "Password123!",
+        "role": "customer",
+        "name": "Emma Brown",
+        "loyalty_points": 1250,
+        "verified": true,
+        "note": "High-value customer with corporate ordering history"
+      },
+      {
+        "email": "charlotte.thomas@example.com",
+        "password": "Password123!",
+        "role": "customer",
+        "name": "Charlotte Thomas",
+        "loyalty_points": 1560,
+        "verified": true,
+        "note": "VIP customer with highest loyalty points"
+      }
+    ]
+  },
+  "locations": [
+    {
+      "location_id": "loc_001",
+      "location_name": "London Flagship",
+      "address": "123 Baker Street, Marylebone, London, W1U 6RS",
+      "phone": "+442071234567",
+      "email": "london@bakery.com",
+      "staff_count": 2,
+      "delivery_enabled": true,
+      "collection_enabled": true
+    },
+    {
+      "location_id": "loc_002",
+      "location_name": "Manchester Store",
+      "address": "45 Deansgate, Manchester, M3 2AY",
+      "phone": "+441612345678",
+      "email": "manchester@bakery.com",
+      "staff_count": 1,
+      "delivery_enabled": true,
+      "collection_enabled": true
+    },
+    {
+      "location_id": "loc_003",
+      "location_name": "Birmingham Store",
+      "address": "78 Bull Street, City Centre, Birmingham, B4 6AF",
+      "phone": "+441213456789",
+      "email": "birmingham@bakery.com",
+      "staff_count": 2,
+      "delivery_enabled": true,
+      "collection_enabled": true
+    }
+  ],
+  "authentication_notes": {
+    "password_hashing": "All seed user passwords are hashed with bcrypt (salt rounds: 10)",
+    "session_management": "JWT tokens stored in sessions table with expiration tracking",
+    "password_reset_flow": "Available via /api/auth/forgot-password and /api/auth/reset-password",
+    "account_lockout": "After 5 failed login attempts, accounts lock for 30 minutes",
+    "remember_me": "Extended session duration (30 days vs 24 hours)"
+  },
+  "test_scenarios": {
+    "successful_login": "Use any user credentials listed above with their assigned password",
+    "role_based_access": {
+      "customer": "Access /account, /checkout, /orders routes",
+      "staff": "Access /staff/* routes including dashboard, inventory, training",
+      "manager": "Access /staff/* routes with additional permissions",
+      "admin": "Access /admin/* routes with full system control"
+    },
+    "loyalty_points": "Test users have varying loyalty point balances for redemption testing",
+    "location_assignments": "Staff and managers are assigned to specific store locations"
+  }
+}

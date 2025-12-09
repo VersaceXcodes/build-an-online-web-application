@@ -1,0 +1,683 @@
+{
+  "project_name": "Kake Bakery E-Commerce Platform",
+  "project_type": "Full-Stack Web Application",
+  "description": "A comprehensive e-commerce platform for a multi-location bakery business featuring online ordering, staff management, training system, inventory tracking, and analytics",
+  "tech_stack": {
+    "frontend": {
+      "framework": "React 18.3.1",
+      "build_tool": "Vite 5.4.0",
+      "language": "TypeScript 5.5.3",
+      "state_management": ["Zustand", "Redux Toolkit 2.2.7", "React Query 5.0.0"],
+      "routing": "React Router DOM 6.26.0",
+      "ui_library": "Radix UI Components",
+      "styling": ["Tailwind CSS 3.4.8", "Framer Motion 11.5.4"],
+      "form_handling": "React Hook Form 7.53.0",
+      "validation": "Zod 3.23.8",
+      "charts": "Recharts 2.12.7",
+      "http_client": "Axios 1.7.7",
+      "realtime": "Socket.io Client 4.7.5"
+    },
+    "backend": {
+      "runtime": "Node.js",
+      "framework": "Express.js",
+      "language": "TypeScript",
+      "database": "PostgreSQL",
+      "orm": "pg (PostgreSQL driver)",
+      "authentication": "JWT (jsonwebtoken)",
+      "password_hashing": "bcryptjs",
+      "realtime": "Socket.io Server",
+      "logging": "Morgan",
+      "validation": "Zod 3.23.8",
+      "utilities": ["uuid", "dotenv"]
+    },
+    "database": {
+      "primary": "PostgreSQL",
+      "tables": 36,
+      "features": [
+        "Foreign key constraints",
+        "Indexes for performance optimization",
+        "Comprehensive seed data",
+        "Audit logging",
+        "Session management"
+      ]
+    },
+    "deployment": {
+      "containerization": "Docker (Dockerfile generation)",
+      "concurrency": "Concurrently (dev script)"
+    },
+    "testing": {
+      "test_framework": "Vitest 3.2.4",
+      "testing_library": "@testing-library/react 16.3.0",
+      "dom_testing": "jsdom 26.1.0",
+      "e2e_tests": "Custom test suite"
+    }
+  },
+  "database_tables": [
+    "users",
+    "staff_assignments",
+    "locations",
+    "products",
+    "product_locations",
+    "orders",
+    "order_items",
+    "order_status_history",
+    "addresses",
+    "loyalty_points_transactions",
+    "customer_feedback",
+    "feedback_internal_notes",
+    "staff_feedback",
+    "staff_feedback_responses",
+    "inventory_alerts",
+    "training_courses",
+    "training_lessons",
+    "staff_course_progress",
+    "staff_lesson_completion",
+    "staff_lesson_notes",
+    "promo_codes",
+    "promo_code_usage",
+    "drop_of_the_month",
+    "stall_events",
+    "favorites",
+    "password_reset_tokens",
+    "system_settings",
+    "audit_logs",
+    "sessions",
+    "notifications",
+    "email_logs",
+    "refunds",
+    "analytics_snapshots"
+  ],
+  "api_endpoints": {
+    "authentication": [
+      "GET /api/auth/check-email",
+      "POST /api/auth/register",
+      "POST /api/auth/login",
+      "POST /api/auth/logout",
+      "POST /api/auth/forgot-password",
+      "POST /api/auth/reset-password"
+    ],
+    "users": [
+      "GET /api/users/me",
+      "PUT /api/users/me",
+      "POST /api/users/me/change-password",
+      "GET /api/users",
+      "POST /api/users",
+      "GET /api/users/:user_id"
+    ],
+    "locations": [
+      "GET /api/locations",
+      "GET /api/locations/:location_id"
+    ],
+    "products": [
+      "GET /api/products",
+      "GET /api/products/:product_id",
+      "POST /api/products",
+      "PUT /api/products/:product_id",
+      "DELETE /api/products/:product_id"
+    ],
+    "orders": [
+      "POST /api/orders",
+      "GET /api/orders",
+      "GET /api/orders/:order_id",
+      "PUT /api/orders/:order_id/status",
+      "POST /api/orders/:order_id/cancel"
+    ],
+    "addresses": [
+      "GET /api/addresses",
+      "POST /api/addresses",
+      "PUT /api/addresses/:address_id",
+      "DELETE /api/addresses/:address_id"
+    ],
+    "loyalty_points": [
+      "GET /api/loyalty-points/transactions",
+      "GET /api/loyalty-points/balance"
+    ],
+    "feedback_customer": [
+      "GET /api/feedback/customer",
+      "POST /api/feedback/customer",
+      "GET /api/feedback/customer/:feedback_id",
+      "PUT /api/feedback/customer/:feedback_id",
+      "POST /api/feedback/customer/:feedback_id/review"
+    ],
+    "feedback_staff": [
+      "GET /api/feedback/staff",
+      "POST /api/feedback/staff",
+      "GET /api/feedback/staff/:feedback_id",
+      "PUT /api/feedback/staff/:feedback_id"
+    ],
+    "inventory": [
+      "GET /api/inventory/alerts",
+      "POST /api/inventory/alerts",
+      "GET /api/inventory/alerts/:alert_id",
+      "PUT /api/inventory/alerts/:alert_id"
+    ],
+    "training": [
+      "GET /api/training/courses",
+      "POST /api/training/courses",
+      "GET /api/training/courses/:course_id",
+      "PUT /api/training/courses/:course_id",
+      "GET /api/training/courses/:course_id/progress",
+      "POST /api/training/lessons/:lesson_id/complete",
+      "GET /api/training/progress"
+    ],
+    "promo_codes": [
+      "POST /api/promo-codes/validate",
+      "GET /api/promo-codes",
+      "POST /api/promo-codes"
+    ],
+    "marketing": [
+      "GET /api/drop-of-the-month",
+      "POST /api/drop-of-the-month",
+      "PUT /api/drop-of-the-month/:drop_id",
+      "GET /api/stall-events",
+      "POST /api/stall-events",
+      "PUT /api/stall-events/:event_id"
+    ],
+    "favorites": [
+      "GET /api/favorites",
+      "POST /api/favorites",
+      "DELETE /api/favorites/:favorite_id"
+    ],
+    "notifications": [
+      "GET /api/notifications",
+      "POST /api/notifications/:notification_id/read",
+      "POST /api/notifications/read-all"
+    ],
+    "analytics": [
+      "GET /api/analytics/dashboard",
+      "GET /api/analytics/reports"
+    ],
+    "settings": [
+      "GET /api/settings",
+      "PUT /api/settings/:setting_id"
+    ],
+    "health": [
+      "GET /api/health"
+    ]
+  },
+  "features": [
+    {
+      "name": "User Authentication & Authorization",
+      "description": "Complete auth system with role-based access control (customer, staff, manager, admin)",
+      "files": [
+        "backend/server.ts:authenticateToken",
+        "backend/server.ts:requireRole",
+        "vitereact/src/components/views/UV_Login.tsx",
+        "vitereact/src/components/views/UV_Register.tsx",
+        "vitereact/src/components/views/UV_ForgotPassword.tsx",
+        "vitereact/src/components/views/UV_ResetPassword.tsx"
+      ],
+      "capabilities": [
+        "User registration with validation",
+        "Secure login with bcrypt password hashing",
+        "JWT-based session management",
+        "Password reset flow with token expiration",
+        "Account lockout after failed attempts",
+        "Remember me functionality"
+      ]
+    },
+    {
+      "name": "E-Commerce Product Catalog",
+      "description": "Multi-location product management with categories, dietary tags, and availability",
+      "files": [
+        "vitereact/src/components/views/UV_Menu.tsx",
+        "vitereact/src/components/views/UV_ProductDetail.tsx",
+        "vitereact/src/components/views/UV_AdminProducts.tsx"
+      ],
+      "capabilities": [
+        "Product browsing with filters (category, price, dietary)",
+        "Location-specific product availability",
+        "Featured products showcase",
+        "Product search functionality",
+        "Product favorites system",
+        "Corporate catering products",
+        "Seasonal/limited-time offerings"
+      ]
+    },
+    {
+      "name": "Multi-Step Checkout Process",
+      "description": "Complete checkout flow with delivery/collection options and payment",
+      "files": [
+        "vitereact/src/components/views/UV_Checkout_Step1.tsx",
+        "vitereact/src/components/views/UV_Checkout_Step2.tsx",
+        "vitereact/src/components/views/UV_Checkout_Step3.tsx",
+        "vitereact/src/components/views/GV_CartSlidePanel.tsx"
+      ],
+      "capabilities": [
+        "Shopping cart management",
+        "Delivery/collection selection",
+        "Address management",
+        "Scheduled orders",
+        "Promo code application",
+        "Loyalty points redemption",
+        "Order confirmation with tracking code"
+      ]
+    },
+    {
+      "name": "Order Management System",
+      "description": "Full order lifecycle tracking from placement to completion",
+      "files": [
+        "vitereact/src/components/views/UV_OrderTracking.tsx",
+        "vitereact/src/components/views/UV_AdminOrders.tsx",
+        "vitereact/src/components/views/UV_StaffDashboard.tsx"
+      ],
+      "capabilities": [
+        "Real-time order status updates",
+        "Order history viewing",
+        "Order cancellation",
+        "Staff order fulfillment interface",
+        "Order status transitions tracking",
+        "Collection code generation",
+        "Delivery tracking"
+      ]
+    },
+    {
+      "name": "Customer Dashboard",
+      "description": "Personalized customer account management",
+      "files": [
+        "vitereact/src/components/views/UV_CustomerDashboard.tsx"
+      ],
+      "capabilities": [
+        "Order history",
+        "Loyalty points balance",
+        "Saved addresses",
+        "Account settings",
+        "Favorite products",
+        "Feedback submission"
+      ]
+    },
+    {
+      "name": "Loyalty Points System",
+      "description": "Earn and redeem points for purchases",
+      "files": [
+        "backend/server.ts:loyalty_points",
+        "backend/db.sql:loyalty_points_transactions"
+      ],
+      "capabilities": [
+        "Automatic points earning on orders",
+        "Points redemption for discounts",
+        "Transaction history",
+        "Manual adjustments (admin)",
+        "Feedback bonus points"
+      ]
+    },
+    {
+      "name": "Customer Feedback System",
+      "description": "Collect and manage customer feedback on orders",
+      "files": [
+        "vitereact/src/components/views/UV_FeedbackForm.tsx",
+        "vitereact/src/components/views/UV_AdminFeedbackCustomer.tsx"
+      ],
+      "capabilities": [
+        "Multi-dimension ratings (overall, product, fulfillment)",
+        "Written comments",
+        "Quick tags",
+        "Contact permission",
+        "Admin review workflow",
+        "Internal notes",
+        "Low rating alerts"
+      ]
+    },
+    {
+      "name": "Staff Dashboard & Tools",
+      "description": "Staff interface for daily operations",
+      "files": [
+        "vitereact/src/components/views/UV_StaffDashboard.tsx",
+        "vitereact/src/components/views/UV_StaffInventoryAlerts.tsx",
+        "vitereact/src/components/views/UV_StaffFeedbackSubmission.tsx"
+      ],
+      "capabilities": [
+        "Active orders view",
+        "Order status management",
+        "Inventory alert creation",
+        "Staff feedback submission",
+        "Training course access",
+        "Location-specific filtering"
+      ]
+    },
+    {
+      "name": "Inventory Alert System",
+      "description": "Track and manage inventory issues",
+      "files": [
+        "vitereact/src/components/views/UV_StaffInventoryAlerts.tsx",
+        "vitereact/src/components/views/UV_AdminInventoryAlerts.tsx"
+      ],
+      "capabilities": [
+        "Low stock alerts",
+        "Out of stock notifications",
+        "Quality issue reporting",
+        "Expiring items tracking",
+        "Priority levels",
+        "Resolution workflow",
+        "Real-time alerts to admin"
+      ]
+    },
+    {
+      "name": "Staff Training Platform",
+      "description": "Comprehensive training management system",
+      "files": [
+        "vitereact/src/components/views/UV_StaffTraining.tsx",
+        "vitereact/src/components/views/UV_AdminTraining.tsx"
+      ],
+      "capabilities": [
+        "Course creation and management",
+        "Multiple lesson types (video, document, quiz)",
+        "Progress tracking",
+        "Required vs optional courses",
+        "Prerequisites",
+        "Personal notes",
+        "Completion certificates",
+        "Admin analytics"
+      ]
+    },
+    {
+      "name": "Staff Feedback System",
+      "description": "Internal feedback and improvement tracking",
+      "files": [
+        "vitereact/src/components/views/UV_StaffFeedbackSubmission.tsx",
+        "vitereact/src/components/views/UV_AdminFeedbackStaff.tsx"
+      ],
+      "capabilities": [
+        "Suggestions",
+        "Complaints",
+        "Safety concerns",
+        "Equipment issues",
+        "Process improvements",
+        "Anonymous submissions",
+        "Admin assignment and resolution"
+      ]
+    },
+    {
+      "name": "Admin Analytics Dashboard",
+      "description": "Business intelligence and reporting",
+      "files": [
+        "vitereact/src/components/views/UV_AdminDashboard.tsx",
+        "vitereact/src/components/views/UV_AdminReports.tsx"
+      ],
+      "capabilities": [
+        "Today's orders and revenue",
+        "Active orders tracking",
+        "Orders by status",
+        "Orders by location",
+        "Top products",
+        "Custom date ranges",
+        "Exportable reports",
+        "Real-time updates"
+      ]
+    },
+    {
+      "name": "User Management",
+      "description": "Admin user management interface",
+      "files": [
+        "vitereact/src/components/views/UV_AdminUsers.tsx"
+      ],
+      "capabilities": [
+        "User creation",
+        "Role assignment",
+        "Account status management",
+        "User search and filtering",
+        "Staff location assignments",
+        "Loyalty points adjustments"
+      ]
+    },
+    {
+      "name": "Promo Codes & Discounts",
+      "description": "Marketing and promotional tools",
+      "files": [
+        "backend/server.ts:promo-codes"
+      ],
+      "capabilities": [
+        "Percentage discounts",
+        "Fixed amount discounts",
+        "Free delivery codes",
+        "Minimum order requirements",
+        "Usage limits",
+        "Date-based validity",
+        "Location/product restrictions"
+      ]
+    },
+    {
+      "name": "Marketing Features",
+      "description": "Promotional content management",
+      "files": [
+        "backend/db.sql:drop_of_the_month",
+        "backend/db.sql:stall_events"
+      ],
+      "capabilities": [
+        "Drop of the month showcase",
+        "Event announcements",
+        "Visibility controls",
+        "Call-to-action buttons"
+      ]
+    },
+    {
+      "name": "Multi-Location Management",
+      "description": "Support for multiple bakery locations",
+      "files": [
+        "vitereact/src/components/views/UV_LocationInternal.tsx",
+        "backend/db.sql:locations"
+      ],
+      "capabilities": [
+        "Location-specific products",
+        "Location-specific staff",
+        "Delivery settings per location",
+        "Opening hours",
+        "Contact information",
+        "External platform integration (Just Eat, Deliveroo)"
+      ]
+    },
+    {
+      "name": "Corporate Ordering",
+      "description": "B2B order management",
+      "files": [
+        "vitereact/src/components/views/UV_CorporateOrderForm.tsx"
+      ],
+      "capabilities": [
+        "Event-based orders",
+        "Guest count tracking",
+        "Company information",
+        "Special requirements",
+        "Advanced scheduling",
+        "Dedicated products"
+      ]
+    },
+    {
+      "name": "Real-Time Notifications",
+      "description": "WebSocket-based real-time updates",
+      "files": [
+        "backend/server.ts:Socket.io",
+        "vitereact/src/components/views/GV_NotificationToast.tsx"
+      ],
+      "capabilities": [
+        "New order alerts",
+        "Order status updates",
+        "Low rating feedback alerts",
+        "Inventory alerts",
+        "Analytics updates",
+        "User-specific notifications"
+      ]
+    },
+    {
+      "name": "System Settings",
+      "description": "Configurable system parameters",
+      "files": [
+        "vitereact/src/components/views/UV_AdminSettings.tsx",
+        "backend/db.sql:system_settings"
+      ],
+      "capabilities": [
+        "Loyalty points configuration",
+        "Delivery settings",
+        "Tax rates",
+        "Security settings",
+        "Email configuration",
+        "Feature toggles"
+      ]
+    },
+    {
+      "name": "Session Management",
+      "description": "User session and security",
+      "files": [
+        "vitereact/src/components/views/GV_SessionExpiryWarning.tsx",
+        "backend/db.sql:sessions"
+      ],
+      "capabilities": [
+        "Session expiration tracking",
+        "Expiry warnings",
+        "Multiple device support",
+        "Remember me functionality",
+        "Automatic logout"
+      ]
+    },
+    {
+      "name": "Audit Logging",
+      "description": "System activity tracking",
+      "files": [
+        "backend/db.sql:audit_logs"
+      ],
+      "capabilities": [
+        "User action tracking",
+        "Entity change tracking",
+        "IP address logging",
+        "User agent tracking",
+        "Timestamp recording"
+      ]
+    },
+    {
+      "name": "Email Notification System",
+      "description": "Automated email communications",
+      "files": [
+        "backend/db.sql:email_logs"
+      ],
+      "capabilities": [
+        "Order confirmations",
+        "Status updates",
+        "Password reset emails",
+        "Feedback requests",
+        "Template system",
+        "Delivery tracking"
+      ]
+    },
+    {
+      "name": "Refund Management",
+      "description": "Order refund processing",
+      "files": [
+        "backend/db.sql:refunds"
+      ],
+      "capabilities": [
+        "Full/partial refunds",
+        "Refund reasons tracking",
+        "Transaction linking",
+        "Status workflow",
+        "Admin approval"
+      ]
+    },
+    {
+      "name": "About & Location Pages",
+      "description": "Public informational pages",
+      "files": [
+        "vitereact/src/components/views/UV_About.tsx",
+        "vitereact/src/components/views/UV_Landing.tsx"
+      ],
+      "capabilities": [
+        "Company information",
+        "Store locations",
+        "Contact details",
+        "Hero sections",
+        "Feature showcases"
+      ]
+    },
+    {
+      "name": "Cookie Consent Management",
+      "description": "GDPR compliance",
+      "files": [
+        "vitereact/src/components/views/GV_CookieBanner.tsx"
+      ],
+      "capabilities": [
+        "Cookie consent tracking",
+        "Banner display control",
+        "Persistence"
+      ]
+    }
+  ],
+  "user_roles": [
+    {
+      "role": "customer",
+      "description": "Standard customers who can browse and purchase",
+      "permissions": [
+        "Browse products",
+        "Place orders",
+        "Track orders",
+        "Manage account",
+        "Earn/redeem loyalty points",
+        "Submit feedback",
+        "Save favorites"
+      ]
+    },
+    {
+      "role": "staff",
+      "description": "Store employees",
+      "permissions": [
+        "View assigned location orders",
+        "Update order status",
+        "Create inventory alerts",
+        "Submit staff feedback",
+        "Access training courses",
+        "View staff dashboard"
+      ]
+    },
+    {
+      "role": "manager",
+      "description": "Store managers with additional oversight",
+      "permissions": [
+        "All staff permissions",
+        "Manage location operations",
+        "Review staff performance",
+        "Advanced reporting"
+      ]
+    },
+    {
+      "role": "admin",
+      "description": "Full system administrators",
+      "permissions": [
+        "All system access",
+        "User management",
+        "Product management",
+        "Order management",
+        "Analytics access",
+        "Settings configuration",
+        "Feedback review",
+        "Training management",
+        "Financial reports"
+      ]
+    }
+  ],
+  "key_integrations": {
+    "payment_processing": "Card payments with transaction tracking",
+    "third_party_delivery": {
+      "just_eat": "Integration URLs per location",
+      "deliveroo": "Integration URLs per location"
+    },
+    "websockets": "Real-time bidirectional communication"
+  },
+  "security_features": [
+    "Bcrypt password hashing",
+    "JWT authentication",
+    "Session expiration tracking",
+    "Account lockout mechanism",
+    "SQL injection protection (parameterized queries)",
+    "CORS configuration",
+    "Input validation with Zod",
+    "Role-based access control",
+    "Audit logging"
+  ],
+  "data_flow": {
+    "authentication": "Frontend -> JWT Token -> Session Table -> Backend Routes",
+    "ordering": "Cart -> Checkout -> Payment -> Order Creation -> Status Updates -> Notifications",
+    "real_time": "Backend Events -> Socket.io -> Frontend Listeners -> UI Updates"
+  },
+  "environment_configuration": {
+    "backend_port": "3000 (configurable via PORT env)",
+    "database": "PostgreSQL (configurable via DATABASE_URL or individual PGHOST/PGDATABASE/PGUSER/PGPASSWORD/PGPORT)",
+    "jwt_secret": "Configurable via JWT_SECRET env variable"
+  }
+}
