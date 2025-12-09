@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -12,16 +12,11 @@ import {
   MessageSquare,
   Calendar,
   MapPin,
-  User,
   CheckCircle,
   AlertCircle,
   Clock,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  TrendingUp,
-  TrendingDown,
-  Minus,
 } from 'lucide-react';
 
 // ============================================================================
@@ -141,13 +136,13 @@ const toggleFeedbackVisibility = async (
 // ============================================================================
 
 const UV_AdminFeedbackCustomer: React.FC = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
 
   // Global state access (individual selectors)
   const authToken = useAppStore((state) => state.authentication_state.auth_token);
-  const currentUser = useAppStore((state) => state.authentication_state.current_user);
+  // const currentUser = useAppStore((state) => state.authentication_state.current_user);
   const showToast = useAppStore((state) => state.show_toast);
 
   // URL param filters

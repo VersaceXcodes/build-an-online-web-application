@@ -48,14 +48,14 @@ interface ReportType {
   estimated_duration: string;
 }
 
-interface ScheduledReport {
-  id: string;
-  report_type: string;
-  frequency: string;
-  next_run: string;
-  last_run: string;
-  email_recipients: string[];
-}
+// interface ScheduledReport {
+//   id: string;
+//   report_type: string;
+//   frequency: string;
+//   next_run: string;
+//   last_run: string;
+//   email_recipients: string[];
+// }
 
 interface ReportData {
   [key: string]: any;

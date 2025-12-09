@@ -156,6 +156,7 @@ const fetchOrderDetails = async (
   // Transform response (convert string numbers to actual numbers)
   const order_details: OrderDetails = {
     ...response.data,
+    fulfillment_method: response.data.fulfillment_method as 'collection' | 'delivery',
     subtotal: Number(response.data.subtotal || 0),
     delivery_fee: Number(response.data.delivery_fee || 0),
     discount_amount: Number(response.data.discount_amount || 0),
@@ -198,6 +199,7 @@ const cancelOrder = async (
 
   return {
     ...response.data,
+    fulfillment_method: response.data.fulfillment_method as 'collection' | 'delivery',
     subtotal: Number(response.data.subtotal || 0),
     delivery_fee: Number(response.data.delivery_fee || 0),
     discount_amount: Number(response.data.discount_amount || 0),

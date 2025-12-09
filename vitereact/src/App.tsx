@@ -17,7 +17,7 @@ import GV_SessionExpiryWarning from '@/components/views/GV_SessionExpiryWarning'
 import UV_Landing from '@/components/views/UV_Landing';
 import UV_About from '@/components/views/UV_About';
 import UV_LocationInternal from '@/components/views/UV_LocationInternal';
-import UV_LocationExternal from '@/components/views/UV_LocationExternal';
+// import UV_LocationExternal from '@/components/views/UV_LocationExternal';
 import UV_Menu from '@/components/views/UV_Menu';
 import UV_ProductDetail from '@/components/views/UV_ProductDetail';
 import UV_CorporateOrderForm from '@/components/views/UV_CorporateOrderForm';

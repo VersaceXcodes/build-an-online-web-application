@@ -59,10 +59,10 @@ interface OrderItem {
   product_specific_notes: string | null;
 }
 
-interface OrderResponse {
-  order: Order;
-  items: OrderItem[];
-}
+// interface OrderResponse {
+//   order: Order;
+//   items: OrderItem[];
+// }
 
 // ============================================================================
 // API FUNCTIONS

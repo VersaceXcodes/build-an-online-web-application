@@ -56,6 +56,13 @@ interface Location {
   phone_number: string;
   email: string;
   opening_hours: string;
+  delivery_radius_km: number | null;
+  delivery_fee: number | null;
+  free_delivery_threshold: number | null;
+  estimated_delivery_time_minutes: number | null;
+  estimated_preparation_time_minutes: number;
+  is_collection_enabled: boolean;
+  is_delivery_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -196,7 +203,7 @@ const UV_About: React.FC = () => {
 
   // Global state - CRITICAL: Individual selectors only
   const available_locations = useAppStore(state => state.location_state.available_locations);
-  const fetch_locations_action = useAppStore(state => state.fetch_locations);
+  // const fetch_locations_action = useAppStore(state => state.fetch_locations);
 
   // Fetch locations using React Query
   const {
@@ -430,7 +437,7 @@ const UV_About: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {locations_for_visit.map((location) => {
                 const opening_hours = parseOpeningHours(location.opening_hours);
-                const today = new Date().toLocaleLowerCase().slice(0, 3) + new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase().slice(3);
+                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                 const today_hours = opening_hours[today] || { open: 'Closed', close: '' };
 
                 return (

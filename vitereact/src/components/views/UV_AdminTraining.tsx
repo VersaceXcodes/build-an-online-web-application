@@ -64,6 +64,7 @@ interface CourseFormData {
   is_required: boolean;
   estimated_duration_minutes: number | null;
   prerequisite_course_ids: string | null;
+  created_by_user_id: string;
 }
 
 // ============================================================================
@@ -197,6 +198,7 @@ const UV_AdminTraining: React.FC = () => {
     is_required: false,
     estimated_duration_minutes: null,
     prerequisite_course_ids: null,
+    created_by_user_id: '',
   });
 
   // Form validation errors
@@ -326,6 +328,7 @@ const UV_AdminTraining: React.FC = () => {
       is_required: course.is_required,
       estimated_duration_minutes: course.estimated_duration_minutes,
       prerequisite_course_ids: course.prerequisite_course_ids,
+      created_by_user_id: course.created_by_user_id,
     });
     setCourseFormModalOpen(true);
   };
@@ -404,6 +407,7 @@ const UV_AdminTraining: React.FC = () => {
       is_required: false,
       estimated_duration_minutes: null,
       prerequisite_course_ids: null,
+      created_by_user_id: '',
     });
     setFormErrors({});
     setSelectedCourse(null);

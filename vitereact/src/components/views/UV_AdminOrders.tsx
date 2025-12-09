@@ -99,19 +99,19 @@ interface OrderStatusHistory {
   changed_at: string;
 }
 
-interface Refund {
-  refund_id: string;
-  order_id: string;
-  refund_amount: string;
-  refund_type: 'full' | 'partial';
-  refund_reason: string;
-  refund_items: string | null;
-  payment_transaction_id: string | null;
-  processed_by_user_id: string;
-  status: string;
-  processed_at: string | null;
-  created_at: string;
-}
+// interface Refund {
+//   refund_id: string;
+//   order_id: string;
+//   refund_amount: string;
+//   refund_type: 'full' | 'partial';
+//   refund_reason: string;
+//   refund_items: string | null;
+//   payment_transaction_id: string | null;
+//   processed_by_user_id: string;
+//   status: string;
+//   processed_at: string | null;
+//   created_at: string;
+// }
 
 interface OrdersResponse {
   data: Order[];
@@ -153,6 +153,7 @@ interface OrderDetailResponse {
   payment_status: string;
   payment_transaction_id: string | null;
   card_last_four: string | null;
+  collection_code: string | null;
   items: OrderItem[];
   status_history: OrderStatusHistory[];
   created_at: string;
@@ -405,6 +406,7 @@ const UV_AdminOrders: React.FC = () => {
     staleTime: 10000,
     select: (data) => ({
       ...data,
+      collection_code: data.collection_code,
       subtotal: Number(data.subtotal || 0),
       delivery_fee: Number(data.delivery_fee || 0),
       discount_amount: Number(data.discount_amount || 0),

@@ -3,16 +3,60 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import {
-  User,
-  CreateUserInput,
-  UpdateUserInput,
-  SearchUsersInput,
-} from '@/types/zodSchemas';
+// import {
+//   User,
+//   CreateUserInput,
+//   UpdateUserInput,
+//   SearchUsersInput,
+// } from '@/types/zodSchemas';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
+
+interface User {
+  user_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  user_type: 'customer' | 'staff' | 'manager' | 'admin';
+  account_status: 'active' | 'suspended' | 'deleted';
+  marketing_opt_in: boolean;
+  loyalty_points_balance: number;
+  last_login_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CreateUserInput {
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  user_type: 'customer' | 'staff' | 'manager' | 'admin';
+  marketing_opt_in: boolean;
+}
+
+interface UpdateUserInput {
+  user_id: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  user_type?: 'customer' | 'staff' | 'manager' | 'admin';
+  account_status?: 'active' | 'suspended' | 'deleted';
+  marketing_opt_in?: boolean;
+}
+
+// interface SearchUsersInput {
+//   query?: string;
+//   user_type?: 'customer' | 'staff' | 'manager' | 'admin';
+//   account_status?: 'active' | 'suspended' | 'deleted';
+//   limit?: number;
+//   offset?: number;
+// }
 
 interface UserFormData {
   user_id: string | null;

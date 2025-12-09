@@ -148,6 +148,7 @@ interface SystemConfigState {
   loyalty_points_per_euro: number;
   points_redemption_rate: number;
   minimum_order_for_delivery: number;
+  free_delivery_threshold: number;
   default_preparation_time_minutes: number;
   tax_rate_percentage: number;
   max_failed_login_attempts: number;
@@ -337,6 +338,7 @@ export const useAppStore = create<AppStore>()(
           loyalty_points_per_euro: 10,
           points_redemption_rate: 100,
           minimum_order_for_delivery: 15,
+          free_delivery_threshold: 30,
           default_preparation_time_minutes: 20,
           tax_rate_percentage: 20,
           max_failed_login_attempts: 5,

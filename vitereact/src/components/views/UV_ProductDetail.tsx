@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { Heart, Plus, Minus, ChevronLeft, ChevronRight, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Heart, Plus, Minus, ChevronLeft, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -98,6 +98,8 @@ const UV_ProductDetail: React.FC = () => {
     // CRITICAL: Convert string numbers to numbers
     return {
       ...response.data,
+      category: response.data.category as 'pastries' | 'breads' | 'cakes' | 'corporate',
+      availability_status: response.data.availability_status as 'in_stock' | 'out_of_stock' | 'discontinued',
       price: Number(response.data.price || 0),
       compare_at_price: response.data.compare_at_price ? Number(response.data.compare_at_price) : null,
       stock_quantity: response.data.stock_quantity ? Number(response.data.stock_quantity) : null,
@@ -164,6 +166,8 @@ const UV_ProductDetail: React.FC = () => {
     // CRITICAL: Convert string numbers to numbers
     const products = response.data.data.map(p => ({
       ...p,
+      category: p.category as 'pastries' | 'breads' | 'cakes' | 'corporate',
+      availability_status: p.availability_status as 'in_stock' | 'out_of_stock' | 'discontinued',
       price: Number(p.price || 0),
       compare_at_price: p.compare_at_price ? Number(p.compare_at_price) : null,
       stock_quantity: p.stock_quantity ? Number(p.stock_quantity) : null,

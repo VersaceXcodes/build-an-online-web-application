@@ -22,25 +22,25 @@ import {
 // TYPE DEFINITIONS (from Zod schemas)
 // ============================================================================
 
-interface InventoryAlert {
-  alert_id: string;
-  reference_number: string;
-  submitted_by_user_id: string;
-  location_name: string;
-  item_name: string;
-  alert_type: 'low_stock' | 'out_of_stock' | 'quality_issue' | 'expiring_soon';
-  current_quantity: number | null;
-  notes: string | null;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  status: 'pending' | 'acknowledged' | 'in_progress' | 'resolved';
-  acknowledged_by_user_id: string | null;
-  acknowledged_at: string | null;
-  resolution_notes: string | null;
-  resolved_by_user_id: string | null;
-  resolved_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
+// interface InventoryAlert {
+//   alert_id: string;
+//   reference_number: string;
+//   submitted_by_user_id: string;
+//   location_name: string;
+//   item_name: string;
+//   alert_type: 'low_stock' | 'out_of_stock' | 'quality_issue' | 'expiring_soon';
+//   current_quantity: number | null;
+//   notes: string | null;
+//   priority: 'low' | 'medium' | 'high' | 'urgent';
+//   status: 'pending' | 'acknowledged' | 'in_progress' | 'resolved';
+//   acknowledged_by_user_id: string | null;
+//   acknowledged_at: string | null;
+//   resolution_notes: string | null;
+//   resolved_by_user_id: string | null;
+//   resolved_at: string | null;
+//   created_at: string;
+//   updated_at: string;
+// }
 
 interface AlertFilters {
   location_name: string | null;

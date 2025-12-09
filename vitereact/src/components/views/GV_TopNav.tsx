@@ -78,18 +78,18 @@ const GV_TopNav: React.FC = () => {
     }
   };
   
-  const handleNavigateToAccount = () => {
-    setAccountDropdownOpen(false);
-    setMobileMenuOpen(false);
-    
-    if (currentUser?.user_type === 'admin') {
-      navigate('/admin/dashboard');
-    } else if (currentUser?.user_type === 'staff' || currentUser?.user_type === 'manager') {
-      navigate('/staff/dashboard');
-    } else {
-      navigate('/account');
-    }
-  };
+  // const handleNavigateToAccount = () => {
+  //   setAccountDropdownOpen(false);
+  //   setMobileMenuOpen(false);
+  //   
+  //   if (currentUser?.user_type === 'admin') {
+  //     navigate('/admin/dashboard');
+  //   } else if (currentUser?.user_type === 'staff' || currentUser?.user_type === 'manager') {
+  //     navigate('/staff/dashboard');
+  //   } else {
+  //     navigate('/account');
+  //   }
+  // };
   
   // ============================================================================
   // RENDER FUNCTIONS

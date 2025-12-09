@@ -1,11 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 import { 
-  TrendingUp, 
-  TrendingDown,
   DollarSign,
   ShoppingCart,
   Clock,
