@@ -511,10 +511,10 @@ const UV_LocationInternal: React.FC = () => {
               </span>
               <span>
                 {location_details.is_collection_enabled && location_details.is_delivery_enabled
-                  ? 'We'll prepare your order for collection or delivery'
+                  ? "We'll prepare your order for collection or delivery"
                   : location_details.is_collection_enabled
-                  ? 'We'll prepare your order for collection'
-                  : 'We'll deliver your order to your door'}
+                  ? "We'll prepare your order for collection"
+                  : "We'll deliver your order to your door"}
               </span>
             </li>
           </ul>
