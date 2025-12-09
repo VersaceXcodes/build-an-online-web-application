@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3 } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart } from 'lucide-react';
 
 const GV_TopNav: React.FC = () => {
   // ============================================================================
@@ -151,6 +151,15 @@ const GV_TopNav: React.FC = () => {
                 >
                   <User className="w-4 h-4 mr-3" />
                   My Account
+                </Link>
+                
+                <Link
+                  to="/favorites"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Heart className="w-4 h-4 mr-3" />
+                  Favorites
                 </Link>
                 
                 <Link
@@ -390,6 +399,15 @@ const GV_TopNav: React.FC = () => {
             >
               <User className="w-4 h-4 mr-3" />
               My Account
+            </Link>
+            
+            <Link
+              to="/favorites"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Heart className="w-4 h-4 mr-3" />
+              Favorites
             </Link>
             
             <Link

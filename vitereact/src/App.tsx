@@ -33,6 +33,7 @@ import UV_Checkout_Step3 from '@/components/views/UV_Checkout_Step3';
 import UV_CustomerDashboard from '@/components/views/UV_CustomerDashboard';
 import UV_OrderTracking from '@/components/views/UV_OrderTracking';
 import UV_FeedbackForm from '@/components/views/UV_FeedbackForm';
+import UV_Favorites from '@/components/views/UV_Favorites';
 
 // Unique Views - Staff Protected
 import UV_StaffDashboard from '@/components/views/UV_StaffDashboard';
@@ -311,6 +312,15 @@ export const AppRoutes: React.FC = () => {
                   <RoleProtectedRoute allowedRoles={['customer']}>
                     <UV_CustomerDashboard />
                   </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/favorites" 
+                element={
+                  <ProtectedRoute>
+                    <UV_Favorites />
+                  </ProtectedRoute>
                 } 
               />
               

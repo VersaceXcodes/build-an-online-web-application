@@ -9,7 +9,7 @@ import {
   Package, 
   Star, 
   MessageSquare, 
-  
+  Heart,
   ChevronRight,
   Edit2,
   Trash2,
@@ -797,7 +797,18 @@ const UV_CustomerDashboard: React.FC = () => {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Link
+                      to="/favorites"
+                      className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all text-left"
+                    >
+                      <Heart className="h-8 w-8 text-purple-600 mb-3" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">My Favorites</h3>
+                      <p className="text-sm text-gray-600">
+                        View saved products
+                      </p>
+                    </Link>
+
                     <button
                       onClick={() => handleTabChange('addresses')}
                       className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all text-left"
