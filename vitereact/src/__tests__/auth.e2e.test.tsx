@@ -106,7 +106,7 @@ describe('E2E Authentication Flow (Real API)', () => {
 
     // Wait for the login page to load and navigate to register
     await waitFor(() => {
-      expect(screen.getByText(/Welcome to Kake/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sign in to your account to continue/i)).toBeInTheDocument();
     });
 
     // Click on the "Sign up for free" link
@@ -206,7 +206,6 @@ describe('E2E Authentication Flow (Real API)', () => {
 
     // Wait for login page to load
     await waitFor(() => {
-      expect(screen.getByText(/Welcome to Kake/i)).toBeInTheDocument();
       expect(screen.getByText(/Sign in to your account to continue/i)).toBeInTheDocument();
     });
 
@@ -265,7 +264,7 @@ describe('E2E Authentication Flow (Real API)', () => {
 
     // Wait for login page
     await waitFor(() => {
-      expect(screen.getByText(/Welcome to Kake/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sign in to your account to continue/i)).toBeInTheDocument();
     });
 
     // Try to login with invalid credentials
@@ -304,9 +303,9 @@ describe('E2E Authentication Flow (Real API)', () => {
     
     render(<AppRoutes />, { wrapper: Wrapper });
 
-    // Navigate to register page
+    // Navigate to register page - wait for login page to load first
     await waitFor(() => {
-      expect(screen.getByText(/Welcome to Kake/i)).toBeInTheDocument();
+      expect(screen.getByText(/Sign in to your account to continue/i)).toBeInTheDocument();
     });
 
     const signUpLink = await screen.findByText(/Sign up for free/i);

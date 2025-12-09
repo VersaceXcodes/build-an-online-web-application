@@ -51,12 +51,15 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT = 5432, JWT_SECRET = 'your-secret-key', PORT = 3000 } = process.env;
+const { DATABASE_URL, PGHOST, PGDATABASE, PGUSER, PGPASSWORD, PGPORT, JWT_SECRET, PORT } = process.env;
+const actualPort = PORT || '3000';
+const actualPgPort = PGPORT || '5432';
+const actualJwtSecret = JWT_SECRET || 'your-secret-key';
 
 const pool = new Pool(
   DATABASE_URL
     ? { connectionString: DATABASE_URL, ssl: { rejectUnauthorized: false } }
-    : { host: PGHOST, database: PGDATABASE, user: PGUSER, password: PGPASSWORD, port: Number(PGPORT), ssl: { rejectUnauthorized: false } }
+    : { host: PGHOST, database: PGDATABASE, user: PGUSER, password: PGPASSWORD, port: Number(actualPgPort), ssl: { rejectUnauthorized: false } }
 );
 
 const app = express();
@@ -157,7 +160,7 @@ app.post('/api/auth/register', async (req, res) => {
     const now = new Date().toISOString();
     const password_hash = await bcrypt.hash(password, 10);
     await client.query('INSERT INTO users (user_id, email, password_hash, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, failed_login_attempts, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [user_id, email, password_hash, first_name, last_name, phone_number, 'customer', 'active', marketing_opt_in, 0, 0, now, now]);
-    const token = jwt.sign({ user_id, email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ user_id, email }, actualJwtSecret, { expiresIn: '7d' });
     const session_id = generateId('sess');
     const expires_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
     await client.query('INSERT INTO sessions (session_id, user_id, token, remember_me, expires_at, last_activity_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [session_id, user_id, token, false, expires_at, now, now]);
@@ -186,7 +189,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
     const now = new Date().toISOString();
     await client.query('UPDATE users SET failed_login_attempts = 0, locked_until = NULL, last_login_at = $1, updated_at = $2 WHERE user_id = $3', [now, now, user.user_id]);
-    const token = jwt.sign({ user_id: user.user_id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ user_id: user.user_id, email: user.email }, actualJwtSecret, { expiresIn: '7d' });
     const session_id = generateId('sess');
     const expires_at = new Date(Date.now() + (remember_me ? 30 * 24 : 24) * 60 * 60 * 1000).toISOString();
     await client.query('INSERT INTO sessions (session_id, user_id, token, remember_me, expires_at, last_activity_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [session_id, user.user_id, token, remember_me, expires_at, now, now]);
@@ -1888,6 +1891,6 @@ app.get(/^(?!\/api).*/, (req, res) => {
 
 export { app, pool };
 
-httpServer.listen(Number(PORT), '0.0.0.0', () => {
-  console.log(`Server running on port ${PORT} and listening on 0.0.0.0`);
+httpServer.listen(Number(actualPort), '0.0.0.0', () => {
+  console.log(`Server running on port ${actualPort} and listening on 0.0.0.0`);
 });
