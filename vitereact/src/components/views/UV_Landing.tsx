@@ -165,7 +165,7 @@ const UV_Landing: React.FC = () => {
     <>
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 py-20 lg:py-32 overflow-hidden" role="region" aria-label="Hero section">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80')] opacity-10 bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80')] opacity-10 bg-cover bg-center" role="img" aria-label="Decorative background showing artisan desserts"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in">
@@ -251,7 +251,7 @@ const UV_Landing: React.FC = () => {
                     <div className="relative h-56 overflow-hidden">
                       <img
                         src={card.image}
-                        alt={`${card.name} location`}
+                        alt={`${card.name} storefront - ${card.description}`}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         loading="lazy"
                       />
