@@ -1525,6 +1525,107 @@ app.get('/api/training/progress', authenticateToken, requireRole(['staff']), asy
   }
 });
 
+// ============================================================================
+// TRAINING LESSON MANAGEMENT ENDPOINTS
+// ============================================================================
+
+app.post('/api/training/courses/:course_id/lessons', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order } = req.body;
+    const lesson_id = generateId('lesson');
+    const now = new Date().toISOString();
+    
+    // Verify course exists
+    const courseCheck = await client.query('SELECT course_id FROM training_courses WHERE course_id = $1', [req.params.course_id]);
+    if (courseCheck.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
+    }
+    
+    await client.query(
+      'INSERT INTO training_lessons (lesson_id, course_id, lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+      [lesson_id, req.params.course_id, lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order, now, now]
+    );
+    
+    const result = await client.query('SELECT * FROM training_lessons WHERE lesson_id = $1', [lesson_id]);
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create lesson', error, 'LESSON_CREATE_ERROR'));
+  }
+});
+
+app.get('/api/training/courses/:course_id/lessons', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM training_lessons WHERE course_id = $1 ORDER BY lesson_order ASC', [req.params.course_id]);
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch lessons', error, 'LESSONS_FETCH_ERROR'));
+  }
+});
+
+app.put('/api/training/lessons/:lesson_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    ['lesson_title', 'lesson_type', 'content_url', 'content_text', 'duration_minutes', 'additional_notes', 'lesson_order'].forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = $${idx++}`);
+        values.push(req.body[field]);
+      }
+    });
+    
+    if (updates.length === 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
+    }
+    
+    const now = new Date().toISOString();
+    updates.push(`updated_at = $${idx++}`);
+    values.push(now);
+    values.push(req.params.lesson_id);
+    
+    await client.query(`UPDATE training_lessons SET ${updates.join(', ')} WHERE lesson_id = $${idx}`, values);
+    const result = await client.query('SELECT * FROM training_lessons WHERE lesson_id = $1', [req.params.lesson_id]);
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Lesson not found', null, 'LESSON_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update lesson', error, 'LESSON_UPDATE_ERROR'));
+  }
+});
+
+app.delete('/api/training/lessons/:lesson_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('DELETE FROM training_lessons WHERE lesson_id = $1 RETURNING *', [req.params.lesson_id]);
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Lesson not found', null, 'LESSON_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json({ success: true, message: 'Lesson deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete lesson', error, 'LESSON_DELETE_ERROR'));
+  }
+});
+
 app.post('/api/promo-codes/validate', async (req, res) => {
   const client = await pool.connect();
   try {

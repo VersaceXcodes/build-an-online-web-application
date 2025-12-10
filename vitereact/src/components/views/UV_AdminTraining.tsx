@@ -67,6 +67,16 @@ interface CourseFormData {
   created_by_user_id: string;
 }
 
+interface LessonFormData {
+  lesson_title: string;
+  lesson_type: 'video' | 'document' | 'quiz' | 'interactive';
+  content_url: string | null;
+  content_text: string | null;
+  duration_minutes: number | null;
+  additional_notes: string | null;
+  lesson_order: number;
+}
+
 // ============================================================================
 // API FUNCTIONS
 // ============================================================================
@@ -157,6 +167,52 @@ async function archiveTrainingCourse(data: { course_id: string; token: string })
   return response.data;
 }
 
+async function createLesson(data: {
+  course_id: string;
+  lessonData: LessonFormData;
+  token: string;
+}) {
+  const response = await axios.post(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/courses/${data.course_id}/lessons`,
+    data.lessonData,
+    {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+  );
+  return response.data;
+}
+
+async function updateLesson(data: {
+  lesson_id: string;
+  lessonData: Partial<LessonFormData>;
+  token: string;
+}) {
+  const response = await axios.put(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/lessons/${data.lesson_id}`,
+    data.lessonData,
+    {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+  );
+  return response.data;
+}
+
+async function deleteLesson(data: { lesson_id: string; token: string }) {
+  const response = await axios.delete(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/lessons/${data.lesson_id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${data.token}`,
+      },
+    }
+  );
+  return response.data;
+}
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -177,6 +233,10 @@ const UV_AdminTraining: React.FC = () => {
   const [courseFormModalOpen, setCourseFormModalOpen] = useState(false);
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create');
   const [selectedCourse, setSelectedCourse] = useState<TrainingCourse | null>(null);
+  const [activeModalTab, setActiveModalTab] = useState<'details' | 'lessons'>('details');
+  const [lessonFormOpen, setLessonFormOpen] = useState(false);
+  const [lessonFormMode, setLessonFormMode] = useState<'create' | 'edit'>('create');
+  const [selectedLesson, setSelectedLesson] = useState<TrainingLesson | null>(null);
   
   // Course filters from URL params
   const [courseFilters, setCourseFilters] = useState({
@@ -201,8 +261,20 @@ const UV_AdminTraining: React.FC = () => {
     created_by_user_id: '',
   });
 
+  // Lesson form data
+  const [lessonFormData, setLessonFormData] = useState<LessonFormData>({
+    lesson_title: '',
+    lesson_type: 'video',
+    content_url: null,
+    content_text: null,
+    duration_minutes: null,
+    additional_notes: null,
+    lesson_order: 1,
+  });
+
   // Form validation errors
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [lessonFormErrors, setLessonFormErrors] = useState<Record<string, string>>({});
 
   // Sync URL params with local state
   useEffect(() => {
@@ -290,6 +362,47 @@ const UV_AdminTraining: React.FC = () => {
     },
   });
 
+  // Create lesson mutation
+  const createLessonMutation = useMutation({
+    mutationFn: createLesson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-courses'] });
+      showToast('success', 'Lesson created successfully');
+      setLessonFormOpen(false);
+      resetLessonForm();
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to create lesson');
+    },
+  });
+
+  // Update lesson mutation
+  const updateLessonMutation = useMutation({
+    mutationFn: updateLesson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-courses'] });
+      showToast('success', 'Lesson updated successfully');
+      setLessonFormOpen(false);
+      setSelectedLesson(null);
+      resetLessonForm();
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to update lesson');
+    },
+  });
+
+  // Delete lesson mutation
+  const deleteLessonMutation = useMutation({
+    mutationFn: deleteLesson,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['training-courses'] });
+      showToast('success', 'Lesson deleted successfully');
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to delete lesson');
+    },
+  });
+
   // ============================================================================
   // HANDLERS
   // ============================================================================
@@ -317,6 +430,7 @@ const UV_AdminTraining: React.FC = () => {
   const handleEditCourse = (course: TrainingCourse) => {
     setFormMode('edit');
     setSelectedCourse(course);
+    setActiveModalTab('details');
     setCourseFormData({
       course_title: course.course_title,
       short_description: course.short_description,
@@ -415,7 +529,118 @@ const UV_AdminTraining: React.FC = () => {
 
   const closeModal = () => {
     setCourseFormModalOpen(false);
+    setActiveModalTab('details');
     resetForm();
+  };
+
+  const handleCreateLesson = () => {
+    if (!selectedCourse) return;
+    
+    setLessonFormMode('create');
+    const nextOrder = (selectedCourse.lessons?.length || 0) + 1;
+    setLessonFormData({
+      lesson_title: '',
+      lesson_type: 'video',
+      content_url: null,
+      content_text: null,
+      duration_minutes: null,
+      additional_notes: null,
+      lesson_order: nextOrder,
+    });
+    setLessonFormOpen(true);
+  };
+
+  const handleEditLesson = (lesson: TrainingLesson) => {
+    setLessonFormMode('edit');
+    setSelectedLesson(lesson);
+    setLessonFormData({
+      lesson_title: lesson.lesson_title,
+      lesson_type: lesson.lesson_type,
+      content_url: lesson.content_url,
+      content_text: lesson.content_text,
+      duration_minutes: lesson.duration_minutes,
+      additional_notes: lesson.additional_notes,
+      lesson_order: lesson.lesson_order,
+    });
+    setLessonFormOpen(true);
+  };
+
+  const handleDeleteLesson = (lesson: TrainingLesson) => {
+    showConfirmation({
+      title: 'Delete Lesson',
+      message: `Are you sure you want to delete "${lesson.lesson_title}"? This action cannot be undone.`,
+      confirm_text: 'Delete',
+      cancel_text: 'Cancel',
+      danger_action: true,
+      on_confirm: () => {
+        deleteLessonMutation.mutate({
+          lesson_id: lesson.lesson_id,
+          token: authToken!,
+        });
+        hideConfirmation();
+      },
+      on_cancel: () => {
+        hideConfirmation();
+      },
+    });
+  };
+
+  const validateLessonForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!lessonFormData.lesson_title.trim()) {
+      errors.lesson_title = 'Lesson title is required';
+    }
+
+    setLessonFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmitLessonForm = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateLessonForm()) {
+      showToast('error', 'Please fix form errors');
+      return;
+    }
+
+    if (!selectedCourse) {
+      showToast('error', 'No course selected');
+      return;
+    }
+
+    if (lessonFormMode === 'create') {
+      createLessonMutation.mutate({
+        course_id: selectedCourse.course_id,
+        lessonData: lessonFormData,
+        token: authToken!,
+      });
+    } else if (lessonFormMode === 'edit' && selectedLesson) {
+      updateLessonMutation.mutate({
+        lesson_id: selectedLesson.lesson_id,
+        lessonData: lessonFormData,
+        token: authToken!,
+      });
+    }
+  };
+
+  const resetLessonForm = () => {
+    setLessonFormData({
+      lesson_title: '',
+      lesson_type: 'video',
+      content_url: null,
+      content_text: null,
+      duration_minutes: null,
+      additional_notes: null,
+      lesson_order: 1,
+    });
+    setLessonFormErrors({});
+    setSelectedLesson(null);
+  };
+
+  const closeLessonModal = () => {
+    setLessonFormOpen(false);
+    resetLessonForm();
   };
 
   // ============================================================================
@@ -789,19 +1014,49 @@ const UV_AdminTraining: React.FC = () => {
       {/* Course Form Modal */}
       {courseFormModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {formMode === 'create' ? 'Create Course' : 'Edit Course'}
-              </h2>
-              <button
-                onClick={closeModal}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <XCircle className="w-6 h-6 text-gray-500" />
-              </button>
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {formMode === 'create' ? 'Create Course' : 'Edit Course'}
+                </h2>
+                <button
+                  onClick={closeModal}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <XCircle className="w-6 h-6 text-gray-500" />
+                </button>
+              </div>
+              
+              {/* Tabs - only show in edit mode */}
+              {formMode === 'edit' && (
+                <div className="flex space-x-4">
+                  <button
+                    onClick={() => setActiveModalTab('details')}
+                    className={`pb-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeModalTab === 'details'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Course Details
+                  </button>
+                  <button
+                    onClick={() => setActiveModalTab('lessons')}
+                    className={`pb-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeModalTab === 'lessons'
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    Lessons ({selectedCourse?.lessons?.length || 0})
+                  </button>
+                </div>
+              )}
             </div>
 
+            {/* Course Details Tab */}
+            {activeModalTab === 'details' && (
             <form onSubmit={handleSubmitForm} className="p-6 space-y-6">
               {/* Course Title */}
               <div>
@@ -1038,6 +1293,302 @@ const UV_AdminTraining: React.FC = () => {
                     'Create Course'
                   ) : (
                     'Update Course'
+                  )}
+                </button>
+              </div>
+            </form>
+            )}
+
+            {/* Lessons Tab */}
+            {activeModalTab === 'lessons' && formMode === 'edit' && selectedCourse && (
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Course Lessons</h3>
+                  <button
+                    onClick={handleCreateLesson}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Lesson
+                  </button>
+                </div>
+
+                {selectedCourse.lessons && selectedCourse.lessons.length > 0 ? (
+                  <div className="space-y-3">
+                    {selectedCourse.lessons
+                      .sort((a, b) => Number(a.lesson_order) - Number(b.lesson_order))
+                      .map((lesson) => (
+                        <div
+                          key={lesson.lesson_id}
+                          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3">
+                              <span className="flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold">
+                                {lesson.lesson_order}
+                              </span>
+                              <div>
+                                <h4 className="text-sm font-semibold text-gray-900">
+                                  {lesson.lesson_title}
+                                </h4>
+                                <div className="flex items-center gap-3 mt-1">
+                                  <span className="text-xs text-gray-600 capitalize">
+                                    {lesson.lesson_type}
+                                  </span>
+                                  {lesson.duration_minutes && (
+                                    <span className="text-xs text-gray-600 flex items-center">
+                                      <Clock className="w-3 h-3 mr-1" />
+                                      {lesson.duration_minutes} min
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={() => handleEditLesson(lesson)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit lesson"
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLesson(lesson)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete lesson"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                    <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">No lessons yet</h4>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Add lessons to build your training course
+                    </p>
+                    <button
+                      onClick={handleCreateLesson}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add First Lesson
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Lesson Form Modal */}
+      {lessonFormOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {lessonFormMode === 'create' ? 'Add Lesson' : 'Edit Lesson'}
+              </h2>
+              <button
+                onClick={closeLessonModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <XCircle className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmitLessonForm} className="p-6 space-y-6">
+              {/* Lesson Title */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Lesson Title *
+                </label>
+                <input
+                  type="text"
+                  value={lessonFormData.lesson_title}
+                  onChange={(e) => {
+                    setLessonFormData({ ...lessonFormData, lesson_title: e.target.value });
+                    if (lessonFormErrors.lesson_title) {
+                      setLessonFormErrors({ ...lessonFormErrors, lesson_title: '' });
+                    }
+                  }}
+                  className={`w-full px-4 py-3 border-2 rounded-lg outline-none transition-all ${
+                    lessonFormErrors.lesson_title
+                      ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+                      : 'border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100'
+                  }`}
+                  placeholder="e.g., Introduction to Food Safety"
+                />
+                {lessonFormErrors.lesson_title && (
+                  <p className="mt-1 text-sm text-red-600">{lessonFormErrors.lesson_title}</p>
+                )}
+              </div>
+
+              {/* Lesson Type and Order Row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Lesson Type *
+                  </label>
+                  <select
+                    value={lessonFormData.lesson_type}
+                    onChange={(e) =>
+                      setLessonFormData({
+                        ...lessonFormData,
+                        lesson_type: e.target.value as LessonFormData['lesson_type'],
+                      })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  >
+                    <option value="video">Video</option>
+                    <option value="document">Document</option>
+                    <option value="quiz">Quiz</option>
+                    <option value="interactive">Interactive</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Lesson Order
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={lessonFormData.lesson_order}
+                    onChange={(e) =>
+                      setLessonFormData({
+                        ...lessonFormData,
+                        lesson_order: parseInt(e.target.value) || 1,
+                      })
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Content URL */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Content URL
+                </label>
+                <input
+                  type="url"
+                  value={lessonFormData.content_url || ''}
+                  onChange={(e) =>
+                    setLessonFormData({
+                      ...lessonFormData,
+                      content_url: e.target.value || null,
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  placeholder="https://example.com/video.mp4"
+                />
+              </div>
+
+              {/* Content Text */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Content Text
+                </label>
+                <textarea
+                  value={lessonFormData.content_text || ''}
+                  onChange={(e) =>
+                    setLessonFormData({
+                      ...lessonFormData,
+                      content_text: e.target.value || null,
+                    })
+                  }
+                  rows={4}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  placeholder="Lesson description and learning objectives"
+                />
+              </div>
+
+              {/* Duration */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Duration (minutes)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={lessonFormData.duration_minutes || ''}
+                  onChange={(e) =>
+                    setLessonFormData({
+                      ...lessonFormData,
+                      duration_minutes: e.target.value ? parseInt(e.target.value) : null,
+                    })
+                  }
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  placeholder="30"
+                />
+              </div>
+
+              {/* Additional Notes */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Additional Notes
+                </label>
+                <textarea
+                  value={lessonFormData.additional_notes || ''}
+                  onChange={(e) =>
+                    setLessonFormData({
+                      ...lessonFormData,
+                      additional_notes: e.target.value || null,
+                    })
+                  }
+                  rows={3}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
+                  placeholder="Any additional instructions or requirements"
+                />
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex items-center justify-end space-x-4 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={closeLessonModal}
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createLessonMutation.isPending || updateLessonMutation.isPending}
+                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
+                >
+                  {createLessonMutation.isPending || updateLessonMutation.isPending ? (
+                    <span className="flex items-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      {lessonFormMode === 'create' ? 'Creating...' : 'Updating...'}
+                    </span>
+                  ) : lessonFormMode === 'create' ? (
+                    'Create Lesson'
+                  ) : (
+                    'Update Lesson'
                   )}
                 </button>
               </div>
