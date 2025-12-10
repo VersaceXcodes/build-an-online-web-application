@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 import { motion } from 'framer-motion';
+import kakeWatermarkLogo from '@/assets/images/kake-watermark-logo.png';
 
 // ============================================================================
 // TYPE DEFINITIONS (from Zod schemas)
@@ -169,10 +170,16 @@ const UV_Landing: React.FC = () => {
     <>
       {/* Hero Section */}
       <section className="relative gradient-cream-soft py-20 lg:py-32 overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80"
-          alt="Decorative background showing artisan desserts"
-          className="absolute inset-0 w-full h-full object-cover opacity-10"
+        {/* Watermark overlay with fade-in animation */}
+        <div 
+          className="absolute inset-0 opacity-0 animate-watermark-fade-in"
+          style={{
+            backgroundImage: `url(${kakeWatermarkLogo})`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center center',
+            backgroundSize: '80%',
+            pointerEvents: 'none',
+          }}
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -123,6 +123,10 @@ export default {
 					"0%": { backgroundPosition: "-200% 0" },
 					"100%": { backgroundPosition: "200% 0" },
 				},
+				"watermark-fade-in": {
+					"0%": { opacity: "0" },
+					"100%": { opacity: "0.1" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
@@ -134,6 +138,7 @@ export default {
 				"soft-bounce": "soft-bounce 0.6s ease-in-out infinite",
 				"frosting-blur": "frosting-blur 0.3s ease-out",
 				"shimmer": "shimmer 2s linear infinite",
+				"watermark-fade-in": "watermark-fade-in 3s ease-out forwards",
 			},
 		},
 	},
