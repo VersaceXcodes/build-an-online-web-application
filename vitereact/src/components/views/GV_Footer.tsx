@@ -39,22 +39,22 @@ const GV_Footer: React.FC = () => {
                 <h4 className="text-white text-sm font-semibold mb-3">Our Locations</h4>
                 <div className="space-y-2">
                   <Link 
-                    to="/location/blanchardstown"
+                    to="/location/london-flagship"
                     className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
                   >
-                    Blanchardstown
+                    London Flagship
                   </Link>
                   <Link 
-                    to="/location/tallaght"
+                    to="/location/manchester-store"
                     className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
                   >
-                    Tallaght
+                    Manchester Store
                   </Link>
                   <Link 
-                    to="/location/glasnevin"
+                    to="/location/birmingham-store"
                     className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
                   >
-                    Glasnevin
+                    Birmingham Store
                   </Link>
                 </div>
               </div>
