@@ -120,13 +120,23 @@ const UV_AdminSettings: React.FC = () => {
   const [editingSettingValue, setEditingSettingValue] = useState<string>('');
 
   // React Query - Fetch system settings
+  // Map section names to setting_group values in the database
+  const sectionToGroupMap: Record<string, string> = {
+    'general': 'general',
+    'loyalty_points': 'loyalty',
+    'orders': 'orders',
+    'notifications': 'notifications'
+  };
+
+  const settingGroup = sectionToGroupMap[activeSection] || activeSection;
+
   const {
     data: systemSettings,
     isLoading: loadingSettings,
     error: settingsError
   } = useQuery({
     queryKey: ['system-settings', activeSection],
-    queryFn: () => fetchSystemSettings(authToken!, activeSection),
+    queryFn: () => fetchSystemSettings(authToken!, settingGroup),
     enabled: !!authToken,
     staleTime: 60000,
     refetchOnWindowFocus: false
