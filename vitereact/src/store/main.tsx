@@ -855,10 +855,10 @@ export const useAppStore = create<AppStore>()(
         },
 
         clear_cart: () => {
-          set(() => ({
+          set((state) => ({
             cart_state: {
               items: [],
-              selected_location: null,
+              selected_location: state.cart_state.selected_location, // Preserve selected location
               fulfillment_method: null,
               totals: {
                 subtotal: 0,

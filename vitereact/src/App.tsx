@@ -340,11 +340,7 @@ export const AppRoutes: React.FC = () => {
               
               <Route 
                 path="/order-confirmation/:order_id" 
-                element={
-                  <ProtectedRoute>
-                    <UV_Checkout_Step3 />
-                  </ProtectedRoute>
-                } 
+                element={<UV_Checkout_Step3 />} 
               />
               
               <Route 
