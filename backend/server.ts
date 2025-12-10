@@ -580,9 +580,12 @@ app.post('/api/orders', async (req, res) => {
     }
     if (user_id && loyalty_points_used > 0) {
       const userResult = await client.query('SELECT loyalty_points_balance FROM users WHERE user_id = $1', [user_id]);
-      if (userResult.rows.length > 0 && parseFloat(userResult.rows[0].loyalty_points_balance) >= loyalty_points_used) {
-        discount_amount += loyalty_points_used / 100;
+      if (userResult.rows.length === 0 || parseFloat(userResult.rows[0].loyalty_points_balance) < loyalty_points_used) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(400).json(createErrorResponse(`Insufficient loyalty points. Available: ${userResult.rows[0] ? Math.floor(parseFloat(userResult.rows[0].loyalty_points_balance)) : 0}, Requested: ${loyalty_points_used}`, null, 'INSUFFICIENT_LOYALTY_POINTS'));
       }
+      discount_amount += loyalty_points_used / 100;
     }
     let delivery_fee = 0;
     if (fulfillment_method === 'delivery') {
@@ -619,6 +622,14 @@ app.post('/api/orders', async (req, res) => {
     if (user_id && loyalty_points_used > 0) {
       const userResult = await client.query('SELECT loyalty_points_balance FROM users WHERE user_id = $1', [user_id]);
       const current_balance = parseFloat(userResult.rows[0].loyalty_points_balance);
+      
+      // Double-check that user has enough points (transaction-level safety check)
+      if (current_balance < loyalty_points_used) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(400).json(createErrorResponse(`Insufficient loyalty points at redemption. Available: ${Math.floor(current_balance)}, Requested: ${loyalty_points_used}`, null, 'INSUFFICIENT_LOYALTY_POINTS'));
+      }
+      
       const new_balance = current_balance - loyalty_points_used;
       await client.query('INSERT INTO loyalty_points_transactions (transaction_id, user_id, transaction_type, points_change, balance_after, order_id, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [generateId('lpt'), user_id, 'redeemed', -loyalty_points_used, new_balance, order_id, `Points redeemed for order ${order_number}`, now]);
       await client.query('UPDATE users SET loyalty_points_balance = $1, updated_at = $2 WHERE user_id = $3', [new_balance, now, user_id]);
