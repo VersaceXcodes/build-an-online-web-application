@@ -100,6 +100,17 @@ const updateSystemSetting = async (token: string, setting_id: string, setting_va
   return data as SystemSetting;
 };
 
+const updateLocation = async (token: string, location_id: string, locationData: Partial<Location>) => {
+  const { data } = await axios.put(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations/${location_id}`,
+    locationData,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return data as Location;
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -118,6 +129,8 @@ const UV_AdminSettings: React.FC = () => {
   // Local state for forms
   const [editingSettingId, setEditingSettingId] = useState<string | null>(null);
   const [editingSettingValue, setEditingSettingValue] = useState<string>('');
+  const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
+  const [editingLocationData, setEditingLocationData] = useState<Partial<Location>>({});
 
   // React Query - Fetch system settings
   // Map section names to setting_group values in the database
@@ -170,6 +183,21 @@ const UV_AdminSettings: React.FC = () => {
     }
   });
 
+  // Mutation - Update location
+  const updateLocationMutation = useMutation({
+    mutationFn: ({ location_id, locationData }: { location_id: string; locationData: Partial<Location> }) =>
+      updateLocation(authToken!, location_id, locationData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['locations-settings'] });
+      showToast('success', 'Location updated successfully');
+      setEditingLocationId(null);
+      setEditingLocationData({});
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to update location');
+    }
+  });
+
   // Handle section change
   const changeSection = (section: SectionType) => {
     setSearchParams({ section });
@@ -192,6 +220,32 @@ const UV_AdminSettings: React.FC = () => {
       setting_id: editingSettingId,
       setting_value: editingSettingValue
     });
+  };
+
+  // Handle location edit
+  const startEditLocation = (location: Location) => {
+    setEditingLocationId(location.location_id);
+    setEditingLocationData(location);
+  };
+
+  const cancelEditLocation = () => {
+    setEditingLocationId(null);
+    setEditingLocationData({});
+  };
+
+  const saveLocation = () => {
+    if (!editingLocationId) return;
+    updateLocationMutation.mutate({
+      location_id: editingLocationId,
+      locationData: editingLocationData
+    });
+  };
+
+  const handleLocationFieldChange = (field: keyof Location, value: any) => {
+    setEditingLocationData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   // Section navigation items
@@ -485,138 +539,388 @@ const UV_AdminSettings: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {/* Missing Endpoint Warning */}
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                      <div>
-                        <h3 className="text-sm font-medium text-yellow-800">Backend Endpoint Required</h3>
-                        <p className="text-sm text-yellow-700 mt-1">
-                          The PUT /api/locations/:location_id endpoint is not implemented yet. Location editing is temporarily disabled.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
                   {/* Locations List */}
-                  {locations?.map((location) => (
-                    <div
-                      key={location.location_id}
-                      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-                    >
-                      <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                            <MapPin className="w-5 h-5 text-blue-600" />
-                            {location.location_name}
-                          </h2>
-                          <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                            Active
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="p-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                          {/* Contact Information */}
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
-                            <div className="space-y-2">
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Address:</span> {location.address_line1}
-                                {location.address_line2 && `, ${location.address_line2}`}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">City:</span> {location.city}, {location.postal_code}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Phone:</span> {location.phone_number}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Email:</span> {location.email}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Operational Settings */}
-                          <div>
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2">
-                                {location.is_collection_enabled ? (
-                                  <Check className="w-4 h-4 text-green-600" />
-                                ) : (
-                                  <X className="w-4 h-4 text-red-600" />
-                                )}
-                                <span className="text-sm text-gray-600">Collection</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {location.is_delivery_enabled ? (
-                                  <Check className="w-4 h-4 text-green-600" />
-                                ) : (
-                                  <X className="w-4 h-4 text-red-600" />
-                                )}
-                                <span className="text-sm text-gray-600">Delivery</span>
-                              </div>
-                              <p className="text-sm text-gray-600">
-                                <span className="font-medium">Prep Time:</span> {location.estimated_preparation_time_minutes} min
-                              </p>
-                              {location.estimated_delivery_time_minutes && (
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-medium">Delivery Time:</span> {location.estimated_delivery_time_minutes} min
-                                </p>
-                              )}
-                              {location.delivery_fee !== null && (
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-medium">Delivery Fee:</span> €{Number(location.delivery_fee).toFixed(2)}
-                                </p>
-                              )}
-                              {location.free_delivery_threshold !== null && (
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-medium">Free Delivery Over:</span> €{Number(location.free_delivery_threshold).toFixed(2)}
-                                </p>
+                  {locations?.map((location) => {
+                    const isEditing = editingLocationId === location.location_id;
+                    const currentData = isEditing ? editingLocationData : location;
+                    
+                    // Generate Google Maps URL
+                    const mapsAddress = `${location.address_line1}, ${location.city}, ${location.postal_code}`;
+                    const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapsAddress)}`;
+                    
+                    return (
+                      <div
+                        key={location.location_id}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                      >
+                        <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+                          <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                              <MapPin className="w-5 h-5 text-blue-600" />
+                              {currentData.location_name}
+                            </h2>
+                            <div className="flex items-center gap-3">
+                              <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                                Active
+                              </span>
+                              {!isEditing ? (
+                                <button
+                                  onClick={() => startEditLocation(location)}
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                  aria-label="Edit location"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Edit
+                                </button>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={saveLocation}
+                                    disabled={updateLocationMutation.isPending}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                                  >
+                                    {updateLocationMutation.isPending ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Saving...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Check className="w-4 h-4" />
+                                        Save
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={cancelEditLocation}
+                                    disabled={updateLocationMutation.isPending}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        {/* External URLs (if applicable) */}
-                        {(location.just_eat_url || location.deliveroo_url) && (
-                          <div className="mt-6 pt-6 border-t border-gray-200">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering</h3>
-                            <div className="space-y-2">
-                              {location.just_eat_url && (
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-medium">Just Eat:</span>{' '}
-                                  <a 
-                                    href={location.just_eat_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {location.just_eat_url}
-                                  </a>
-                                </p>
-                              )}
-                              {location.deliveroo_url && (
-                                <p className="text-sm text-gray-600">
-                                  <span className="font-medium">Deliveroo:</span>{' '}
-                                  <a 
-                                    href={location.deliveroo_url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {location.deliveroo_url}
-                                  </a>
-                                </p>
-                              )}
+                        <div className="p-6">
+                          {isEditing ? (
+                            /* Edit Form */
+                            <div className="space-y-6">
+                              <div className="grid md:grid-cols-2 gap-6">
+                                {/* Contact Information */}
+                                <div>
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Location Name</label>
+                                      <input
+                                        type="text"
+                                        value={currentData.location_name || ''}
+                                        onChange={(e) => handleLocationFieldChange('location_name', e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 1</label>
+                                      <input
+                                        type="text"
+                                        value={currentData.address_line1 || ''}
+                                        onChange={(e) => handleLocationFieldChange('address_line1', e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2 (Optional)</label>
+                                      <input
+                                        type="text"
+                                        value={currentData.address_line2 || ''}
+                                        onChange={(e) => handleLocationFieldChange('address_line2', e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                        <input
+                                          type="text"
+                                          value={currentData.city || ''}
+                                          onChange={(e) => handleLocationFieldChange('city', e.target.value)}
+                                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+                                        <input
+                                          type="text"
+                                          value={currentData.postal_code || ''}
+                                          onChange={(e) => handleLocationFieldChange('postal_code', e.target.value)}
+                                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                        />
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                      <input
+                                        type="text"
+                                        value={currentData.phone_number || ''}
+                                        onChange={(e) => handleLocationFieldChange('phone_number', e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                      <input
+                                        type="email"
+                                        value={currentData.email || ''}
+                                        onChange={(e) => handleLocationFieldChange('email', e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Operational Settings */}
+                                <div>
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <label className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={currentData.is_collection_enabled || false}
+                                          onChange={(e) => handleLocationFieldChange('is_collection_enabled', e.target.checked)}
+                                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Collection Enabled</span>
+                                      </label>
+                                    </div>
+                                    <div>
+                                      <label className="flex items-center gap-2">
+                                        <input
+                                          type="checkbox"
+                                          checked={currentData.is_delivery_enabled || false}
+                                          onChange={(e) => handleLocationFieldChange('is_delivery_enabled', e.target.checked)}
+                                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                        />
+                                        <span className="text-sm font-medium text-gray-700">Delivery Enabled</span>
+                                      </label>
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
+                                      <input
+                                        type="number"
+                                        value={currentData.estimated_preparation_time_minutes || ''}
+                                        onChange={(e) => handleLocationFieldChange('estimated_preparation_time_minutes', parseInt(e.target.value))}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Time (minutes)</label>
+                                      <input
+                                        type="number"
+                                        value={currentData.estimated_delivery_time_minutes || ''}
+                                        onChange={(e) => handleLocationFieldChange('estimated_delivery_time_minutes', parseInt(e.target.value) || null)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Delivery Fee (€)</label>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={currentData.delivery_fee || ''}
+                                        onChange={(e) => handleLocationFieldChange('delivery_fee', parseFloat(e.target.value) || null)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-700 mb-1">Free Delivery Threshold (€)</label>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={currentData.free_delivery_threshold || ''}
+                                        onChange={(e) => handleLocationFieldChange('free_delivery_threshold', parseFloat(e.target.value) || null)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* External URLs */}
+                              <div className="pt-6 border-t border-gray-200">
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering (Optional)</h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Just Eat URL</label>
+                                    <input
+                                      type="url"
+                                      value={currentData.just_eat_url || ''}
+                                      onChange={(e) => handleLocationFieldChange('just_eat_url', e.target.value || null)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Deliveroo URL</label>
+                                    <input
+                                      type="url"
+                                      value={currentData.deliveroo_url || ''}
+                                      onChange={(e) => handleLocationFieldChange('deliveroo_url', e.target.value || null)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          ) : (
+                            /* View Mode */
+                            <>
+                              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                                {/* Contact Information */}
+                                <div>
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                                  <div className="space-y-2">
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">Address:</span> {location.address_line1}
+                                      {location.address_line2 && `, ${location.address_line2}`}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">City:</span> {location.city}, {location.postal_code}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">Phone:</span> {location.phone_number}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">Email:</span> {location.email}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Operational Settings */}
+                                <div>
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
+                                  <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                      {location.is_collection_enabled ? (
+                                        <Check className="w-4 h-4 text-green-600" />
+                                      ) : (
+                                        <X className="w-4 h-4 text-red-600" />
+                                      )}
+                                      <span className="text-sm text-gray-600">Collection</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      {location.is_delivery_enabled ? (
+                                        <Check className="w-4 h-4 text-green-600" />
+                                      ) : (
+                                        <X className="w-4 h-4 text-red-600" />
+                                      )}
+                                      <span className="text-sm text-gray-600">Delivery</span>
+                                    </div>
+                                    <p className="text-sm text-gray-600">
+                                      <span className="font-medium">Prep Time:</span> {location.estimated_preparation_time_minutes} min
+                                    </p>
+                                    {location.estimated_delivery_time_minutes && (
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">Delivery Time:</span> {location.estimated_delivery_time_minutes} min
+                                      </p>
+                                    )}
+                                    {location.delivery_fee !== null && (
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">Delivery Fee:</span> €{Number(location.delivery_fee).toFixed(2)}
+                                      </p>
+                                    )}
+                                    {location.free_delivery_threshold !== null && (
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">Free Delivery Over:</span> €{Number(location.free_delivery_threshold).toFixed(2)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Google Maps */}
+                              <div className="mb-6">
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                  <MapPin className="w-4 h-4 text-blue-600" />
+                                  Location Map
+                                </h3>
+                                <div className="relative w-full h-64 rounded-lg overflow-hidden border-2 border-gray-200 shadow-md">
+                                  <iframe
+                                    title={`Map of ${location.location_name}`}
+                                    width="100%"
+                                    height="100%"
+                                    style={{ border: 0 }}
+                                    loading="lazy"
+                                    allowFullScreen
+                                    src={mapsUrl}
+                                    onError={(e) => {
+                                      // Fallback to placeholder image if map fails to load
+                                      const target = e.target as HTMLIFrameElement;
+                                      target.style.display = 'none';
+                                      const fallback = document.createElement('img');
+                                      fallback.src = '/assets/images/location-map-placeholder.jpeg';
+                                      fallback.alt = 'Location map placeholder';
+                                      fallback.className = 'w-full h-full object-cover';
+                                      target.parentElement?.appendChild(fallback);
+                                    }}
+                                  ></iframe>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                  <a 
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsAddress)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    View in Google Maps →
+                                  </a>
+                                </p>
+                              </div>
+
+                              {/* External URLs (if applicable) */}
+                              {(location.just_eat_url || location.deliveroo_url) && (
+                                <div className="pt-6 border-t border-gray-200">
+                                  <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering</h3>
+                                  <div className="space-y-2">
+                                    {location.just_eat_url && (
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">Just Eat:</span>{' '}
+                                        <a 
+                                          href={location.just_eat_url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          {location.just_eat_url}
+                                        </a>
+                                      </p>
+                                    )}
+                                    {location.deliveroo_url && (
+                                      <p className="text-sm text-gray-600">
+                                        <span className="font-medium">Deliveroo:</span>{' '}
+                                        <a 
+                                          href={location.deliveroo_url} 
+                                          target="_blank" 
+                                          rel="noopener noreferrer"
+                                          className="text-blue-600 hover:underline"
+                                        >
+                                          {location.deliveroo_url}
+                                        </a>
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>

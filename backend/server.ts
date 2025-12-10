@@ -391,6 +391,81 @@ app.get('/api/locations/:location_id', async (req, res) => {
   }
 });
 
+app.put('/api/locations/:location_id', requireAuth, requireRole(['admin']), async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { location_id } = req.params;
+    const { 
+      location_name, 
+      address_line1, 
+      address_line2, 
+      city, 
+      postal_code, 
+      phone_number, 
+      email, 
+      is_collection_enabled, 
+      is_delivery_enabled, 
+      delivery_radius_km, 
+      delivery_fee, 
+      free_delivery_threshold, 
+      estimated_delivery_time_minutes, 
+      estimated_preparation_time_minutes, 
+      allow_scheduled_pickups, 
+      just_eat_url, 
+      deliveroo_url, 
+      opening_hours 
+    } = req.body;
+
+    // Check if location exists
+    const checkResult = await client.query('SELECT location_id FROM locations WHERE location_id = $1', [location_id]);
+    if (checkResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    }
+
+    const now = new Date().toISOString();
+    
+    // Update location
+    const result = await client.query(
+      `UPDATE locations SET 
+        location_name = COALESCE($1, location_name),
+        address_line1 = COALESCE($2, address_line1),
+        address_line2 = $3,
+        city = COALESCE($4, city),
+        postal_code = COALESCE($5, postal_code),
+        phone_number = COALESCE($6, phone_number),
+        email = COALESCE($7, email),
+        is_collection_enabled = COALESCE($8, is_collection_enabled),
+        is_delivery_enabled = COALESCE($9, is_delivery_enabled),
+        delivery_radius_km = $10,
+        delivery_fee = $11,
+        free_delivery_threshold = $12,
+        estimated_delivery_time_minutes = $13,
+        estimated_preparation_time_minutes = COALESCE($14, estimated_preparation_time_minutes),
+        allow_scheduled_pickups = COALESCE($15, allow_scheduled_pickups),
+        just_eat_url = $16,
+        deliveroo_url = $17,
+        opening_hours = COALESCE($18, opening_hours),
+        updated_at = $19
+      WHERE location_id = $20
+      RETURNING *`,
+      [
+        location_name, address_line1, address_line2, city, postal_code, phone_number, email,
+        is_collection_enabled, is_delivery_enabled, delivery_radius_km, delivery_fee,
+        free_delivery_threshold, estimated_delivery_time_minutes, estimated_preparation_time_minutes,
+        allow_scheduled_pickups, just_eat_url, deliveroo_url, opening_hours, now, location_id
+      ]
+    );
+
+    const loc = result.rows[0];
+    client.release();
+    res.json({ ...loc, delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes) });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update location', error, 'LOCATION_UPDATE_ERROR'));
+  }
+});
+
 app.get('/api/products', async (req, res) => {
   const client = await pool.connect();
   try {
