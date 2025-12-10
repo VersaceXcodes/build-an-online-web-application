@@ -11,7 +11,9 @@
     "dev": "tsx server.ts",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "db:init": "node initdb.js",
+    "db:reset": "node reset-db.js"
   },
   "nodemonConfig": {
     "ignore": [
