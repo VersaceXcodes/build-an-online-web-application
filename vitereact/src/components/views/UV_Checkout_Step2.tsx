@@ -71,7 +71,7 @@ interface CreateOrderResponse {
 }
 
 interface UpdateOrderStatusPayload {
-  order_status: string;
+  order_status?: string;
   payment_transaction_id?: string;
   card_last_four?: string;
 }
@@ -230,10 +230,10 @@ const UV_Checkout_Step2: React.FC = () => {
     },
   });
 
-  // Update Order Status Mutation
-  const updateOrderStatusMutation = useMutation({
+  // Confirm Payment Mutation (updated to use new customer-friendly endpoint)
+  const confirmPaymentMutation = useMutation({
     mutationFn: async (data: { order_id: string; payload: UpdateOrderStatusPayload }) => {
-      const response = await api.put(`/orders/${data.order_id}/status`, data.payload);
+      const response = await api.put(`/orders/${data.order_id}/confirm-payment`, data.payload);
       return response.data;
     },
   });
@@ -400,11 +400,10 @@ const UV_Checkout_Step2: React.FC = () => {
       const paymentTransactionId = `txn_${Date.now()}`;
       const cardLastFour = cardNumber.slice(-4);
 
-      // Step 3: Update order status to payment_confirmed
-      await updateOrderStatusMutation.mutateAsync({
+      // Step 3: Confirm payment (using customer-friendly endpoint)
+      await confirmPaymentMutation.mutateAsync({
         order_id: orderId,
         payload: {
-          order_status: 'payment_confirmed',
           payment_transaction_id: paymentTransactionId,
           card_last_four: cardLastFour,
         },

@@ -742,6 +742,77 @@ app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff',
   }
 });
 
+// Payment confirmation endpoint - allows customers to confirm payment on their own orders
+app.put('/api/orders/:order_id/confirm-payment', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { payment_transaction_id, card_last_four } = req.body;
+    
+    const orderResult = await client.query('SELECT * FROM orders WHERE order_id = $1', [req.params.order_id]);
+    if (orderResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(404).json(createErrorResponse('Order not found', null, 'ORDER_NOT_FOUND'));
+    }
+    
+    const order = orderResult.rows[0];
+    
+    // Customers can only confirm payment on their own orders (or if user_id is null for guest orders)
+    if (req.user.user_type === 'customer' && order.user_id && order.user_id !== req.user.user_id) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(403).json(createErrorResponse('Cannot confirm payment for this order', null, 'FORBIDDEN'));
+    }
+    
+    // Only allow payment confirmation if order is in 'paid_awaiting_confirmation' status
+    if (order.order_status !== 'paid_awaiting_confirmation') {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(400).json(createErrorResponse('Order status does not allow payment confirmation', null, 'INVALID_STATUS'));
+    }
+    
+    const now = new Date().toISOString();
+    const new_status = 'payment_confirmed';
+    
+    // Update order with payment confirmation
+    await client.query(
+      'UPDATE orders SET order_status = $1, payment_transaction_id = $2, card_last_four = $3, updated_at = $4 WHERE order_id = $5',
+      [new_status, payment_transaction_id, card_last_four, now, req.params.order_id]
+    );
+    
+    // Add status history entry
+    await client.query(
+      'INSERT INTO order_status_history (history_id, order_id, previous_status, new_status, changed_by_user_id, notes, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [generateId('hist'), req.params.order_id, order.order_status, new_status, req.user.user_id, 'Payment confirmed by customer', now]
+    );
+    
+    await client.query('COMMIT');
+    
+    const updatedOrder = await client.query('SELECT * FROM orders WHERE order_id = $1', [req.params.order_id]);
+    client.release();
+    
+    // Emit socket event to notify staff
+    io.to(`location_${order.location_name}_staff`).emit('order_status_changed', {
+      event_type: 'order_status_changed',
+      timestamp: now,
+      order_id: req.params.order_id,
+      order_number: order.order_number,
+      previous_status: order.order_status,
+      new_status: new_status,
+      location_name: order.location_name,
+      fulfillment_method: order.fulfillment_method,
+      estimated_ready_time: order.estimated_ready_time
+    });
+    
+    res.json(updatedOrder.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to confirm payment', error, 'PAYMENT_CONFIRM_ERROR'));
+  }
+});
+
 app.post('/api/orders/:order_id/cancel', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
