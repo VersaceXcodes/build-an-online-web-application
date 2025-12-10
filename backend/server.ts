@@ -830,7 +830,7 @@ app.post('/api/orders/:order_id/cancel', authenticateToken, async (req: AuthRequ
       client.release();
       return res.status(403).json(createErrorResponse('Cannot cancel this order', null, 'FORBIDDEN'));
     }
-    if (!['paid_awaiting_confirmation', 'accepted_in_preparation'].includes(order.order_status)) {
+    if (!['paid_awaiting_confirmation', 'payment_confirmed', 'accepted_in_preparation'].includes(order.order_status)) {
       await client.query('ROLLBACK');
       client.release();
       return res.status(400).json(createErrorResponse('Order cannot be cancelled at this stage', null, 'INVALID_STATUS'));
