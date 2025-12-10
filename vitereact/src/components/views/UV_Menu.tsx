@@ -272,6 +272,17 @@ const UV_Menu: React.FC = () => {
   const updateFilter = (key: string, value: any) => {
     const newParams = new URLSearchParams(searchParams);
     
+    // Validate price range: min_price should not exceed max_price
+    if (key === 'price_min' || key === 'price_max') {
+      const currentMinPrice = key === 'price_min' ? value : active_filters.price_min;
+      const currentMaxPrice = key === 'price_max' ? value : active_filters.price_max;
+      
+      if (currentMinPrice !== null && currentMaxPrice !== null && currentMinPrice > currentMaxPrice) {
+        showToast('error', 'Minimum price cannot be greater than maximum price');
+        return; // Don't update the filter
+      }
+    }
+    
     if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) {
       newParams.delete(key);
     } else if (Array.isArray(value)) {

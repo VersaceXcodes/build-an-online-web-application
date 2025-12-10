@@ -192,15 +192,61 @@ const GV_NotificationToast: React.FC = () => {
   // AUTO-DISMISS TIMER MANAGEMENT
   // ====================================================================
   
+  // Track when each toast was created and paused
+  const toastMetadataRef = React.useRef<{ 
+    [key: string]: { 
+      createdAt: number; 
+      pausedAt: number | null; 
+      totalPausedTime: number;
+    } 
+  }>({});
+
   useEffect(() => {
     const timers: { [key: string]: NodeJS.Timeout } = {};
 
     visible_toasts.forEach((toast) => {
-      // Only set timer if toast is not being hovered
-      if (hoveredToastId !== toast.id) {
-        timers[toast.id] = setTimeout(() => {
-          dismiss_toast(toast.id);
-        }, toast.duration);
+      // Initialize metadata for new toasts
+      if (!toastMetadataRef.current[toast.id]) {
+        toastMetadataRef.current[toast.id] = {
+          createdAt: Date.now(),
+          pausedAt: null,
+          totalPausedTime: 0,
+        };
+      }
+
+      const metadata = toastMetadataRef.current[toast.id];
+      
+      // If hovering, mark as paused
+      if (hoveredToastId === toast.id) {
+        if (metadata.pausedAt === null) {
+          metadata.pausedAt = Date.now();
+        }
+        // Don't set a timer while hovering
+        return;
+      }
+      
+      // If not hovering but was paused, accumulate paused time
+      if (metadata.pausedAt !== null) {
+        metadata.totalPausedTime += Date.now() - metadata.pausedAt;
+        metadata.pausedAt = null;
+      }
+
+      // Calculate remaining time based on elapsed time minus paused time
+      const elapsed = Date.now() - metadata.createdAt - metadata.totalPausedTime;
+      const remainingTime = Math.max(100, toast.duration - elapsed);
+      
+      // Set timer for remaining duration
+      timers[toast.id] = setTimeout(() => {
+        dismiss_toast(toast.id);
+        // Clean up metadata
+        delete toastMetadataRef.current[toast.id];
+      }, remainingTime);
+    });
+
+    // Clean up metadata for dismissed toasts
+    Object.keys(toastMetadataRef.current).forEach(id => {
+      if (!visible_toasts.find(t => t.id === id)) {
+        delete toastMetadataRef.current[id];
       }
     });
 

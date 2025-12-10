@@ -941,7 +941,7 @@ export const useAppStore = create<AppStore>()(
         show_toast: (
           type: Toast['type'],
           message: string,
-          duration: number = 3000,
+          duration: number = 5000,
           action: Toast['action'] = null
         ) => {
           const id = `toast_${Date.now()}_${Math.random()}`;
@@ -961,10 +961,8 @@ export const useAppStore = create<AppStore>()(
             },
           }));
 
-          // Auto-dismiss
-          setTimeout(() => {
-            get().dismiss_toast(id);
-          }, duration);
+          // Note: Auto-dismiss is now handled in GV_NotificationToast component
+          // to properly respect hover state and provide better user control
         },
 
         dismiss_toast: (id: string) => {
