@@ -172,7 +172,6 @@ const UV_Landing: React.FC = () => {
           src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80"
           alt="Decorative background showing artisan desserts"
           className="absolute inset-0 w-full h-full object-cover opacity-10"
-          aria-hidden="false"
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
