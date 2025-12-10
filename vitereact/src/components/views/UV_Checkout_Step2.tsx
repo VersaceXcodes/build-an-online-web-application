@@ -271,10 +271,14 @@ const UV_Checkout_Step2: React.FC = () => {
 
       if (response.data.is_valid) {
         const discountAmount = response.data.discount_amount || 0;
+        console.log('[PROMO] API returned valid promo with discount:', discountAmount);
+        console.log('[PROMO] Current cart subtotal:', cartTotals.subtotal);
+        console.log('[PROMO] Full API response:', response.data);
         applyPromoCode(promoCodeInput.trim().toUpperCase(), discountAmount);
         showToast('success', response.data.message || 'Promo code applied!');
         setPromoCodeError(null);
       } else {
+        console.log('[PROMO] API returned invalid promo:', response.data.message);
         setPromoCodeError(response.data.message || 'Invalid promo code');
       }
     } catch (error: any) {

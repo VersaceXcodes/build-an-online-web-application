@@ -714,6 +714,7 @@ export const useAppStore = create<AppStore>()(
         },
 
         apply_promo_code: (code: string, discount_amount: number) => {
+          console.log('[STORE] Applying promo code:', code, 'with discount:', discount_amount);
           set((state) => ({
             cart_state: {
               ...state.cart_state,
@@ -724,7 +725,9 @@ export const useAppStore = create<AppStore>()(
               },
             },
           }));
+          console.log('[STORE] After setting promo code, calling calculate_cart_totals');
           get().calculate_cart_totals();
+          console.log('[STORE] Cart totals after promo:', get().cart_state.totals);
         },
 
         remove_promo_code: () => {
@@ -819,6 +822,11 @@ export const useAppStore = create<AppStore>()(
           // Calculate promo code discount
           const promo_discount = applied_discounts.promo_code_discount || 0;
 
+          console.log('[CALCULATE_TOTALS] Subtotal:', subtotal);
+          console.log('[CALCULATE_TOTALS] Loyalty discount:', loyalty_discount);
+          console.log('[CALCULATE_TOTALS] Promo discount:', promo_discount);
+          console.log('[CALCULATE_TOTALS] Applied discounts:', applied_discounts);
+
           // Total discount (loyalty + promo code)
           const total_discount = loyalty_discount + promo_discount;
 
@@ -828,6 +836,10 @@ export const useAppStore = create<AppStore>()(
             0,
             subtotal + current_delivery_fee - total_discount
           );
+
+          console.log('[CALCULATE_TOTALS] Total discount:', total_discount);
+          console.log('[CALCULATE_TOTALS] Delivery fee:', current_delivery_fee);
+          console.log('[CALCULATE_TOTALS] Final total:', total);
 
           set((state) => ({
             cart_state: {

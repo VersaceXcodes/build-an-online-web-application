@@ -1400,37 +1400,51 @@ app.post('/api/promo-codes/validate', async (req, res) => {
   const client = await pool.connect();
   try {
     const { code, order_total, location_name, product_ids = [] } = req.body;
+    console.log('[PROMO API] Validating promo code:', code, 'for order total:', order_total);
+    
     const promoResult = await client.query('SELECT * FROM promo_codes WHERE code = $1 AND is_active = true', [code]);
     if (promoResult.rows.length === 0) {
+      console.log('[PROMO API] Promo code not found or inactive');
       client.release();
       return res.json({ is_valid: false, discount_amount: 0, message: 'Invalid promo code' });
     }
     const promo = promoResult.rows[0];
+    console.log('[PROMO API] Found promo:', { discount_type: promo.discount_type, discount_value: promo.discount_value, minimum_order_value: promo.minimum_order_value });
+    
     const now = new Date();
     if (new Date(promo.valid_from) > now || new Date(promo.valid_until) < now) {
+      console.log('[PROMO API] Promo code expired');
       client.release();
       return res.json({ is_valid: false, discount_amount: 0, message: 'Promo code expired' });
     }
-    if (promo.minimum_order_value && order_total < parseFloat(promo.minimum_order_value)) {
+    if (promo.minimum_order_value && parseFloat(promo.minimum_order_value) > 0 && order_total < parseFloat(promo.minimum_order_value)) {
+      console.log('[PROMO API] Order total below minimum:', order_total, '<', promo.minimum_order_value);
       client.release();
       return res.json({ is_valid: false, discount_amount: 0, message: `Minimum order €${promo.minimum_order_value} required` });
     }
     if (promo.usage_limit && parseInt(promo.times_used) >= parseInt(promo.usage_limit)) {
+      console.log('[PROMO API] Usage limit reached');
       client.release();
       return res.json({ is_valid: false, discount_amount: 0, message: 'Promo code usage limit reached' });
     }
     let discount_amount = 0;
     if (promo.discount_type === 'percentage') {
       discount_amount = (order_total * parseFloat(promo.discount_value)) / 100;
+      console.log('[PROMO API] Percentage discount calculated:', discount_amount);
     } else if (promo.discount_type === 'fixed') {
       discount_amount = parseFloat(promo.discount_value);
+      console.log('[PROMO API] Fixed discount:', discount_amount);
     } else if (promo.discount_type === 'delivery') {
       discount_amount = parseFloat(promo.discount_value);
+      console.log('[PROMO API] Delivery discount:', discount_amount);
     }
     discount_amount = Math.min(discount_amount, order_total);
+    console.log('[PROMO API] Final discount amount:', discount_amount);
+    
     client.release();
     res.json({ is_valid: true, discount_amount, message: 'Promo code applied successfully' });
   } catch (error) {
+    console.error('[PROMO API] Error:', error);
     client.release();
     res.status(500).json(createErrorResponse('Failed to validate promo code', error, 'PROMO_VALIDATE_ERROR'));
   }
