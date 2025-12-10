@@ -138,6 +138,17 @@ const UV_CustomerDashboard: React.FC = () => {
     location_name: null,
   });
 
+  // Loyalty points filters
+  const [loyaltyFilters, setLoyaltyFilters] = useState<{
+    transaction_type: string | null;
+    date_from: string | null;
+    date_to: string | null;
+  }>({
+    transaction_type: null,
+    date_from: null,
+    date_to: null,
+  });
+
   // Profile edit state
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileFormData, setProfileFormData] = useState({
@@ -255,10 +266,13 @@ const UV_CustomerDashboard: React.FC = () => {
 
   // Fetch loyalty transactions
   const { data: loyaltyData, isLoading: loyaltyLoading } = useQuery({
-    queryKey: ['loyalty-transactions', currentUser?.user_id],
+    queryKey: ['loyalty-transactions', currentUser?.user_id, loyaltyFilters],
     queryFn: async () => {
       const response = await apiClient.get('/loyalty-points/transactions', {
         params: {
+          transaction_type: loyaltyFilters.transaction_type || undefined,
+          date_from: loyaltyFilters.date_from || undefined,
+          date_to: loyaltyFilters.date_to || undefined,
           limit: 50,
           sort_by: 'created_at',
           sort_order: 'desc',
@@ -1139,6 +1153,68 @@ const UV_CustomerDashboard: React.FC = () => {
                       <h2 className="text-xl font-semibold text-gray-900">Points History</h2>
                     </div>
 
+                    {/* Filters */}
+                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label htmlFor="transaction_type" className="block text-sm font-medium text-gray-700 mb-2">
+                            Transaction Type
+                          </label>
+                          <select
+                            id="transaction_type"
+                            value={loyaltyFilters.transaction_type || ''}
+                            onChange={(e) => setLoyaltyFilters({ ...loyaltyFilters, transaction_type: e.target.value || null })}
+                            className="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                          >
+                            <option value="">All Types</option>
+                            <option value="earned">Earned</option>
+                            <option value="redeemed">Redeemed</option>
+                            <option value="manual_adjustment">Manual Adjustment</option>
+                            <option value="expired">Expired</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label htmlFor="loyalty_date_from" className="block text-sm font-medium text-gray-700 mb-2">
+                            From Date
+                          </label>
+                          <input
+                            type="date"
+                            id="loyalty_date_from"
+                            value={loyaltyFilters.date_from || ''}
+                            onChange={(e) => setLoyaltyFilters({ ...loyaltyFilters, date_from: e.target.value || null })}
+                            className="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                          />
+                        </div>
+
+                        <div>
+                          <label htmlFor="loyalty_date_to" className="block text-sm font-medium text-gray-700 mb-2">
+                            To Date
+                          </label>
+                          <input
+                            type="date"
+                            id="loyalty_date_to"
+                            value={loyaltyFilters.date_to || ''}
+                            onChange={(e) => setLoyaltyFilters({ ...loyaltyFilters, date_to: e.target.value || null })}
+                            className="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Clear Filters Button */}
+                      {(loyaltyFilters.transaction_type || loyaltyFilters.date_from || loyaltyFilters.date_to) && (
+                        <div className="mt-4">
+                          <button
+                            onClick={() => setLoyaltyFilters({ transaction_type: null, date_from: null, date_to: null })}
+                            className="inline-flex items-center px-3 py-2 text-sm font-medium text-purple-700 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                          >
+                            <X className="h-4 w-4 mr-1" />
+                            Clear Filters
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
                     {loyaltyLoading ? (
                       <div className="p-6 space-y-4">
                         {[1, 2, 3].map((i) => (
@@ -1150,26 +1226,51 @@ const UV_CustomerDashboard: React.FC = () => {
                     ) : loyaltyTransactions.length === 0 ? (
                       <div className="p-12 text-center">
                         <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">No transactions yet</p>
-                        <p className="text-sm text-gray-500 mt-2">Start ordering to earn points!</p>
+                        <p className="text-gray-600">No transactions found</p>
+                        <p className="text-sm text-gray-500 mt-2">
+                          {loyaltyFilters.transaction_type || loyaltyFilters.date_from || loyaltyFilters.date_to
+                            ? 'Try adjusting your filters'
+                            : 'Start ordering to earn points!'}
+                        </p>
                       </div>
                     ) : (
-                      <div className="divide-y divide-gray-200">
-                        {loyaltyTransactions.map((txn: LoyaltyPointsTransaction) => (
-                          <div key={txn.transaction_id} className="p-6 flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">{txn.description}</p>
-                              <p className="text-xs text-gray-600 mt-1">{formatDate(txn.created_at)}</p>
+                      <>
+                        <div className="divide-y divide-gray-200">
+                          {loyaltyTransactions.map((txn: LoyaltyPointsTransaction) => (
+                            <div key={txn.transaction_id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <p className="text-sm font-medium text-gray-900">{txn.description}</p>
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                                    txn.transaction_type === 'earned' ? 'bg-green-100 text-green-800' :
+                                    txn.transaction_type === 'redeemed' ? 'bg-blue-100 text-blue-800' :
+                                    txn.transaction_type === 'expired' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {txn.transaction_type.replace('_', ' ')}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-gray-600">{formatDate(txn.created_at)}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-lg font-bold ${txn.points_change > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {txn.points_change > 0 ? '+' : ''}{txn.points_change}
+                                </p>
+                                <p className="text-xs text-gray-600">Balance: {txn.balance_after}</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className={`text-lg font-bold ${txn.points_change > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                {txn.points_change > 0 ? '+' : ''}{txn.points_change}
-                              </p>
-                              <p className="text-xs text-gray-600">Balance: {txn.balance_after}</p>
-                            </div>
+                          ))}
+                        </div>
+
+                        {/* Results Count */}
+                        {loyaltyData?.total !== undefined && (
+                          <div className="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                            <p className="text-sm text-gray-600 text-center">
+                              Showing {loyaltyTransactions.length} of {loyaltyData.total} transaction{loyaltyData.total !== 1 ? 's' : ''}
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
