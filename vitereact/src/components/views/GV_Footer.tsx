@@ -13,7 +13,7 @@ const GV_Footer: React.FC = () => {
   const social_media_urls = {
     instagram: 'https://instagram.com/kake',
     facebook: 'https://facebook.com/kake',
-    tiktok: 'https://tiktok.com/@kake'
+    tiktok: 'https://www.tiktok.com/@kakedesserts?lang=en'
   };
 
   const currentYear = new Date().getFullYear();
