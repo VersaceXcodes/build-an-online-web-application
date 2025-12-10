@@ -592,8 +592,8 @@ const GV_TopNav: React.FC = () => {
   
   return (
     <>
-      {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 bg-white shadow-caramel border-b-2 border-kake-cream-300 z-40">
+      {/* Fixed Navigation Bar with Glass-morphism */}
+      <nav className="fixed top-0 left-0 right-0 bg-kake-cream-100/80 backdrop-blur-md shadow-[0_4px_20px_rgba(139,69,19,0.1)] border-b-2 border-kake-cream-300/50 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Logo */}
@@ -662,7 +662,7 @@ const GV_TopNav: React.FC = () => {
         
         {/* Mobile Navigation Panel */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t-2 border-kake-cream-300 shadow-caramel-lg animate-cream-fade-in">
+          <div className="md:hidden bg-kake-cream-100/95 backdrop-blur-md border-t-2 border-kake-cream-300/50 shadow-caramel-lg animate-cream-fade-in">
             <div className="px-4 py-3 space-y-1">
               <Link
                 to="/"

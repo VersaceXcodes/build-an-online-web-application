@@ -174,29 +174,50 @@ const UV_Landing: React.FC = () => {
           className="absolute inset-0 w-full h-full object-cover opacity-10"
         />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-6 leading-tight">
-              Indulge in Dublin's Finest
-              <span className="block text-kake-chocolate-600 mt-2">
-                Artisan Desserts
-              </span>
-            </h1>
-            
-            <p className="text-lg md:text-xl text-kake-chocolate-400 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Handcrafted treats made fresh daily across three Dublin locations. 
-              From classic pastries to celebration cakes, we bring joy to every bite.
-            </p>
-            
-            <a
-              href="#locations"
-              className="inline-block bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-            >
-              Choose Your Location
-            </a>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Card Container with subtle background */}
+            <div className="bg-kake-cream-200/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 lg:p-16 shadow-lg animate-fade-in">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-6 leading-tight text-center">
+                Indulge in Dublin's Finest
+                <span className="block text-kake-chocolate-600 mt-2">
+                  Artisan Desserts
+                </span>
+              </h1>
+              
+              <p className="text-lg md:text-xl text-kake-chocolate-400 mb-8 max-w-2xl mx-auto leading-relaxed text-center">
+                Handcrafted treats made fresh daily across three Dublin locations. 
+                From classic pastries to celebration cakes, we bring joy to every bite.
+              </p>
+              
+              <div className="text-center">
+                <a
+                  href="#locations"
+                  className="inline-block bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  Choose Your Location
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Wave Divider - Mimics dripping icing */}
+      <div className="relative -mt-1">
+        <svg 
+          className="w-full h-12 md:h-16 lg:h-20 fill-kake-cream-200" 
+          viewBox="0 0 1200 120" 
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M0,0 C150,60 350,60 600,30 C850,0 1050,0 1200,30 L1200,120 L0,120 Z" 
+                opacity="0.5"/>
+          <path d="M0,20 C200,80 400,80 600,50 C800,20 1000,20 1200,50 L1200,120 L0,120 Z" 
+                opacity="0.3"/>
+          <path d="M0,40 C250,100 450,100 600,70 C750,40 950,40 1200,70 L1200,120 L0,120 Z"/>
+        </svg>
+      </div>
 
       {/* Location Selection Section */}
       <section id="locations" className="py-16 lg:py-24 bg-white">
@@ -252,7 +273,7 @@ const UV_Landing: React.FC = () => {
                         setLocationDetails(location);
                       }
                     }}
-                    className="group bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl hover:scale-105 transition-all duration-200"
+                    className="group bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-kake-cream-300 overflow-hidden hover:shadow-[0_8px_30px_rgba(139,69,19,0.15)] hover:scale-[1.02] transition-all duration-300"
                   >
                     {/* Card Image */}
                     <div className="relative h-56 overflow-hidden">
