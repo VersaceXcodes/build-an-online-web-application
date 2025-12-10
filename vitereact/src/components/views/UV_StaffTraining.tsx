@@ -73,6 +73,7 @@ const UV_StaffTraining: React.FC = () => {
 
   // Global state access - CRITICAL: Individual selectors only
   const currentUser = useAppStore(state => state.authentication_state.current_user);
+  const authToken = useAppStore(state => state.authentication_state.auth_token);
   const showToast = useAppStore(state => state.show_toast);
 
   // URL Parameters
@@ -100,7 +101,7 @@ const UV_StaffTraining: React.FC = () => {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/courses`, {
       params,
       headers: {
-        Authorization: `Bearer ${currentUser?.user_id}`, // Using simple auth pattern from backend
+        Authorization: `Bearer ${authToken}`,
       },
     });
     return response.data.data || [];
@@ -109,7 +110,7 @@ const UV_StaffTraining: React.FC = () => {
   const fetchCourseDetails = async (courseId: string) => {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/courses/${courseId}`, {
       headers: {
-        Authorization: `Bearer ${currentUser?.user_id}`,
+        Authorization: `Bearer ${authToken}`,
       },
     });
     return response.data;
@@ -118,7 +119,7 @@ const UV_StaffTraining: React.FC = () => {
   const fetchCourseProgress = async (courseId: string) => {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/courses/${courseId}/progress`, {
       headers: {
-        Authorization: `Bearer ${currentUser?.user_id}`,
+        Authorization: `Bearer ${authToken}`,
       },
     });
     return response.data;
@@ -127,7 +128,7 @@ const UV_StaffTraining: React.FC = () => {
   const fetchAllProgress = async () => {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/progress`, {
       headers: {
-        Authorization: `Bearer ${currentUser?.user_id}`,
+        Authorization: `Bearer ${authToken}`,
       },
     });
     return response.data;
@@ -139,7 +140,7 @@ const UV_StaffTraining: React.FC = () => {
       { personal_notes: data.personal_notes },
       {
         headers: {
-          Authorization: `Bearer ${currentUser?.user_id}`,
+          Authorization: `Bearer ${authToken}`,
         },
       }
     );
