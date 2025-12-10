@@ -1536,3 +1536,89 @@ export const searchAnalyticsSnapshotsInputSchema = z.object({
 export type AnalyticsSnapshot = z.infer<typeof analyticsSnapshotSchema>;
 export type CreateAnalyticsSnapshotInput = z.infer<typeof createAnalyticsSnapshotInputSchema>;
 export type SearchAnalyticsSnapshotsInput = z.infer<typeof searchAnalyticsSnapshotsInputSchema>;
+
+// ============================================
+// UNIFIED FEEDBACK SCHEMAS
+// ============================================
+
+export const unifiedFeedbackSchema = z.object({
+  feedback_id: z.string(),
+  created_by_user_id: z.string(),
+  created_by_role: z.enum(['customer', 'staff', 'manager']),
+  location: z.enum(['Blanchardstown', 'Tallaght', 'Glasnevin', 'All']),
+  order_id: z.string().nullable(),
+  category: z.enum(['Complaint', 'Suggestion', 'Compliment', 'Operations', 'Product', 'Delivery', 'Other']),
+  subject: z.string(),
+  message: z.string(),
+  priority: z.enum(['Low', 'Medium', 'High']),
+  status: z.enum(['Open', 'In Review', 'Resolved', 'Closed']),
+  assigned_to_user_id: z.string().nullable(),
+  internal_notes: z.string().nullable(),
+  public_response: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+  resolved_at: z.string().nullable()
+});
+
+export const createUnifiedFeedbackInputSchema = z.object({
+  created_by_user_id: z.string(),
+  created_by_role: z.enum(['customer', 'staff', 'manager']),
+  location: z.enum(['Blanchardstown', 'Tallaght', 'Glasnevin', 'All']),
+  order_id: z.string().nullable(),
+  category: z.enum(['Complaint', 'Suggestion', 'Compliment', 'Operations', 'Product', 'Delivery', 'Other']),
+  subject: z.string().min(1).max(255),
+  message: z.string().min(1).max(5000),
+  priority: z.enum(['Low', 'Medium', 'High']).default('Low')
+});
+
+export const updateUnifiedFeedbackInputSchema = z.object({
+  feedback_id: z.string(),
+  priority: z.enum(['Low', 'Medium', 'High']).optional(),
+  status: z.enum(['Open', 'In Review', 'Resolved', 'Closed']).optional(),
+  assigned_to_user_id: z.string().nullable().optional(),
+  internal_notes: z.string().max(5000).nullable().optional(),
+  public_response: z.string().max(2000).nullable().optional()
+});
+
+export const searchUnifiedFeedbackInputSchema = z.object({
+  created_by_user_id: z.string().optional(),
+  created_by_role: z.enum(['customer', 'staff', 'manager']).optional(),
+  location: z.enum(['Blanchardstown', 'Tallaght', 'Glasnevin', 'All']).optional(),
+  category: z.enum(['Complaint', 'Suggestion', 'Compliment', 'Operations', 'Product', 'Delivery', 'Other']).optional(),
+  priority: z.enum(['Low', 'Medium', 'High']).optional(),
+  status: z.enum(['Open', 'In Review', 'Resolved', 'Closed']).optional(),
+  assigned_to_user_id: z.string().optional(),
+  date_from: z.string().optional(),
+  date_to: z.string().optional(),
+  limit: z.number().int().positive().default(20),
+  offset: z.number().int().nonnegative().default(0),
+  sort_by: z.enum(['created_at', 'updated_at', 'priority']).default('created_at'),
+  sort_order: z.enum(['asc', 'desc']).default('desc')
+});
+
+export const feedbackTimelineSchema = z.object({
+  timeline_id: z.string(),
+  feedback_id: z.string(),
+  changed_by_user_id: z.string().nullable(),
+  change_type: z.enum(['status_change', 'priority_change', 'assignment', 'note_added', 'response_added']),
+  old_value: z.string().nullable(),
+  new_value: z.string().nullable(),
+  notes: z.string().nullable(),
+  changed_at: z.string()
+});
+
+export const createFeedbackTimelineInputSchema = z.object({
+  feedback_id: z.string(),
+  changed_by_user_id: z.string().nullable(),
+  change_type: z.enum(['status_change', 'priority_change', 'assignment', 'note_added', 'response_added']),
+  old_value: z.string().max(1000).nullable(),
+  new_value: z.string().max(1000).nullable(),
+  notes: z.string().max(2000).nullable()
+});
+
+export type UnifiedFeedback = z.infer<typeof unifiedFeedbackSchema>;
+export type CreateUnifiedFeedbackInput = z.infer<typeof createUnifiedFeedbackInputSchema>;
+export type UpdateUnifiedFeedbackInput = z.infer<typeof updateUnifiedFeedbackInputSchema>;
+export type SearchUnifiedFeedbackInput = z.infer<typeof searchUnifiedFeedbackInputSchema>;
+export type FeedbackTimeline = z.infer<typeof feedbackTimelineSchema>;
+export type CreateFeedbackTimelineInput = z.infer<typeof createFeedbackTimelineInputSchema>;

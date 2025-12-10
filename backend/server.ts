@@ -2273,6 +2273,348 @@ app.post('/api/auth/unlock-account', async (req, res) => {
   }
 });
 
+// ============================================================================
+// UNIFIED FEEDBACK SYSTEM ENDPOINTS
+// ============================================================================
+
+// Submit feedback (customers, staff, managers)
+app.post('/api/unified-feedback', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location, order_id, category, subject, message, priority = 'Low' } = req.body;
+    
+    if (!location || !category || !subject || !message) {
+      client.release();
+      return res.status(400).json(createErrorResponse('Location, category, subject, and message are required', null, 'MISSING_FIELDS'));
+    }
+    
+    const feedback_id = generateId('feedback');
+    const now = new Date().toISOString();
+    
+    await client.query(
+      'INSERT INTO unified_feedback (feedback_id, created_by_user_id, created_by_role, location, order_id, category, subject, message, priority, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+      [feedback_id, req.user.user_id, req.user.user_type, location, order_id, category, subject, message, priority, 'Open', now, now]
+    );
+    
+    // Create timeline entry
+    const timeline_id = generateId('timeline');
+    await client.query(
+      'INSERT INTO feedback_timeline (timeline_id, feedback_id, changed_by_user_id, change_type, new_value, notes, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [timeline_id, feedback_id, req.user.user_id, 'status_change', 'Open', 'Feedback created', now]
+    );
+    
+    const result = await client.query('SELECT * FROM unified_feedback WHERE feedback_id = $1', [feedback_id]);
+    client.release();
+    
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to submit feedback', error, 'FEEDBACK_SUBMIT_ERROR'));
+  }
+});
+
+// Get feedback list (filtered by user role and permissions)
+app.get('/api/unified-feedback', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location, category, priority, status, assigned_to, date_from, date_to, role } = req.query;
+    const limit = parseInt(String(req.query.limit || 20));
+    const offset = parseInt(String(req.query.offset || 0));
+    
+    let query = 'SELECT uf.*, u1.first_name as created_by_first_name, u1.last_name as created_by_last_name, u1.email as created_by_email, u1.account_status as created_by_status, u2.first_name as assigned_to_first_name, u2.last_name as assigned_to_last_name FROM unified_feedback uf LEFT JOIN users u1 ON uf.created_by_user_id = u1.user_id LEFT JOIN users u2 ON uf.assigned_to_user_id = u2.user_id WHERE 1=1';
+    const values = [];
+    let idx = 1;
+    
+    // Role-based filtering
+    if (req.user.user_type === 'customer') {
+      // Customers can only see their own feedback
+      query += ` AND uf.created_by_user_id = $${idx++}`;
+      values.push(req.user.user_id);
+    } else if (req.user.user_type === 'staff' || req.user.user_type === 'manager') {
+      // Staff/managers can see feedback they created OR feedback assigned to them
+      query += ` AND (uf.created_by_user_id = $${idx++} OR uf.assigned_to_user_id = $${idx++})`;
+      values.push(req.user.user_id, req.user.user_id);
+    }
+    // Admin can see all feedback (no additional filter)
+    
+    // Additional filters
+    if (location) { query += ` AND uf.location = $${idx++}`; values.push(location); }
+    if (category) { query += ` AND uf.category = $${idx++}`; values.push(category); }
+    if (priority) { query += ` AND uf.priority = $${idx++}`; values.push(priority); }
+    if (status) { query += ` AND uf.status = $${idx++}`; values.push(status); }
+    if (assigned_to) { query += ` AND uf.assigned_to_user_id = $${idx++}`; values.push(assigned_to); }
+    if (role && req.user.user_type === 'admin') { query += ` AND uf.created_by_role = $${idx++}`; values.push(role); }
+    if (date_from) { query += ` AND uf.created_at >= $${idx++}`; values.push(date_from); }
+    if (date_to) { query += ` AND uf.created_at <= $${idx++}`; values.push(date_to); }
+    
+    query += ` ORDER BY uf.created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
+    
+    const result = await client.query(query, values);
+    
+    // Get count for pagination
+    const countQuery = query.replace('SELECT uf.*, u1.first_name as created_by_first_name, u1.last_name as created_by_last_name, u1.email as created_by_email, u1.account_status as created_by_status, u2.first_name as assigned_to_first_name, u2.last_name as assigned_to_last_name FROM unified_feedback uf LEFT JOIN users u1 ON uf.created_by_user_id = u1.user_id LEFT JOIN users u2 ON uf.assigned_to_user_id = u2.user_id', 'SELECT COUNT(*)').split('ORDER BY')[0];
+    const countResult = await client.query(countQuery, values.slice(0, -2));
+    
+    // Filter out internal_notes for customers
+    const filteredRows = result.rows.map(row => {
+      if (req.user.user_type === 'customer') {
+        const { internal_notes, assigned_to_user_id, assigned_to_first_name, assigned_to_last_name, ...publicData } = row;
+        return publicData;
+      }
+      return row;
+    });
+    
+    client.release();
+    res.json({ 
+      data: filteredRows, 
+      total: parseInt(countResult.rows[0].count), 
+      limit, 
+      offset, 
+      has_more: (offset + limit) < parseInt(countResult.rows[0].count) 
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch feedback', error, 'FEEDBACK_FETCH_ERROR'));
+  }
+});
+
+// Get single feedback item with timeline
+app.get('/api/unified-feedback/:feedback_id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const feedbackResult = await client.query(
+      'SELECT uf.*, u1.first_name as created_by_first_name, u1.last_name as created_by_last_name, u1.email as created_by_email, u1.account_status as created_by_status, u2.first_name as assigned_to_first_name, u2.last_name as assigned_to_last_name FROM unified_feedback uf LEFT JOIN users u1 ON uf.created_by_user_id = u1.user_id LEFT JOIN users u2 ON uf.assigned_to_user_id = u2.user_id WHERE uf.feedback_id = $1',
+      [req.params.feedback_id]
+    );
+    
+    if (feedbackResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Feedback not found', null, 'FEEDBACK_NOT_FOUND'));
+    }
+    
+    const feedback = feedbackResult.rows[0];
+    
+    // Permission check
+    if (req.user.user_type === 'customer' && feedback.created_by_user_id !== req.user.user_id) {
+      client.release();
+      return res.status(403).json(createErrorResponse('Cannot access this feedback', null, 'FORBIDDEN'));
+    } else if ((req.user.user_type === 'staff' || req.user.user_type === 'manager') && 
+               feedback.created_by_user_id !== req.user.user_id && 
+               feedback.assigned_to_user_id !== req.user.user_id) {
+      client.release();
+      return res.status(403).json(createErrorResponse('Cannot access this feedback', null, 'FORBIDDEN'));
+    }
+    
+    // Get timeline
+    const timelineResult = await client.query(
+      'SELECT ft.*, u.first_name, u.last_name FROM feedback_timeline ft LEFT JOIN users u ON ft.changed_by_user_id = u.user_id WHERE ft.feedback_id = $1 ORDER BY ft.changed_at ASC',
+      [req.params.feedback_id]
+    );
+    
+    // Get order details if present
+    let orderDetails = null;
+    if (feedback.order_id) {
+      const orderResult = await client.query(
+        'SELECT order_id, order_number, customer_name, location_name, total_amount, created_at FROM orders WHERE order_id = $1',
+        [feedback.order_id]
+      );
+      if (orderResult.rows.length > 0) {
+        orderDetails = orderResult.rows[0];
+      }
+    }
+    
+    // Filter sensitive data for customers
+    if (req.user.user_type === 'customer') {
+      const { internal_notes, assigned_to_user_id, assigned_to_first_name, assigned_to_last_name, ...publicData } = feedback;
+      client.release();
+      return res.json({ 
+        ...publicData, 
+        timeline: timelineResult.rows.filter(t => t.change_type !== 'note_added'),
+        order: orderDetails
+      });
+    }
+    
+    client.release();
+    res.json({ ...feedback, timeline: timelineResult.rows, order: orderDetails });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch feedback', error, 'FEEDBACK_FETCH_ERROR'));
+  }
+});
+
+// Update feedback (admin and assigned staff/managers)
+app.put('/api/unified-feedback/:feedback_id', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const { priority, status, assigned_to_user_id, internal_notes, public_response } = req.body;
+    
+    // Get current feedback
+    const currentResult = await client.query('SELECT * FROM unified_feedback WHERE feedback_id = $1', [req.params.feedback_id]);
+    if (currentResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(404).json(createErrorResponse('Feedback not found', null, 'FEEDBACK_NOT_FOUND'));
+    }
+    
+    const current = currentResult.rows[0];
+    
+    // Permission check - only admin can update any feedback, managers can update feedback assigned to them if changing to Resolved/Closed
+    if (req.user.user_type !== 'admin') {
+      if (req.user.user_type === 'manager' && current.assigned_to_user_id === req.user.user_id) {
+        // Managers can only update status to Resolved or Closed and add notes
+        if ((status && !['Resolved', 'Closed'].includes(status)) || priority || assigned_to_user_id !== undefined) {
+          await client.query('ROLLBACK');
+          client.release();
+          return res.status(403).json(createErrorResponse('Managers can only mark feedback as Resolved/Closed', null, 'FORBIDDEN'));
+        }
+      } else if (req.user.user_type === 'staff' && current.assigned_to_user_id === req.user.user_id) {
+        // Staff can only add notes
+        if (status || priority || assigned_to_user_id !== undefined || public_response) {
+          await client.query('ROLLBACK');
+          client.release();
+          return res.status(403).json(createErrorResponse('Staff can only add internal notes', null, 'FORBIDDEN'));
+        }
+      } else {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(403).json(createErrorResponse('Insufficient permissions', null, 'FORBIDDEN'));
+      }
+    }
+    
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    const now = new Date().toISOString();
+    
+    // Track changes for timeline
+    const timelineEntries = [];
+    
+    if (priority && priority !== current.priority) {
+      updates.push(`priority = $${idx++}`);
+      values.push(priority);
+      timelineEntries.push({
+        type: 'priority_change',
+        old: current.priority,
+        new: priority
+      });
+    }
+    
+    if (status && status !== current.status) {
+      updates.push(`status = $${idx++}`);
+      values.push(status);
+      if (status === 'Resolved' || status === 'Closed') {
+        updates.push(`resolved_at = $${idx++}`);
+        values.push(now);
+      }
+      timelineEntries.push({
+        type: 'status_change',
+        old: current.status,
+        new: status
+      });
+    }
+    
+    if (assigned_to_user_id !== undefined && assigned_to_user_id !== current.assigned_to_user_id) {
+      updates.push(`assigned_to_user_id = $${idx++}`);
+      values.push(assigned_to_user_id);
+      timelineEntries.push({
+        type: 'assignment',
+        old: current.assigned_to_user_id,
+        new: assigned_to_user_id
+      });
+    }
+    
+    if (internal_notes !== undefined) {
+      updates.push(`internal_notes = $${idx++}`);
+      values.push(internal_notes);
+      timelineEntries.push({
+        type: 'note_added',
+        new: 'Internal note added'
+      });
+    }
+    
+    if (public_response !== undefined) {
+      updates.push(`public_response = $${idx++}`);
+      values.push(public_response);
+      timelineEntries.push({
+        type: 'response_added',
+        new: 'Public response added'
+      });
+    }
+    
+    if (updates.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
+    }
+    
+    updates.push(`updated_at = $${idx++}`);
+    values.push(now);
+    values.push(req.params.feedback_id);
+    
+    await client.query(`UPDATE unified_feedback SET ${updates.join(', ')} WHERE feedback_id = $${idx}`, values);
+    
+    // Add timeline entries
+    for (const entry of timelineEntries) {
+      const timeline_id = generateId('timeline');
+      await client.query(
+        'INSERT INTO feedback_timeline (timeline_id, feedback_id, changed_by_user_id, change_type, old_value, new_value, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [timeline_id, req.params.feedback_id, req.user.user_id, entry.type, entry.old || null, entry.new || null, now]
+      );
+    }
+    
+    await client.query('COMMIT');
+    
+    const result = await client.query('SELECT * FROM unified_feedback WHERE feedback_id = $1', [req.params.feedback_id]);
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update feedback', error, 'FEEDBACK_UPDATE_ERROR'));
+  }
+});
+
+// Get my orders (for customer feedback form)
+app.get('/api/my-orders-for-feedback', authenticateToken, async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    if (req.user.user_type !== 'customer') {
+      client.release();
+      return res.status(403).json(createErrorResponse('Only customers can access this endpoint', null, 'FORBIDDEN'));
+    }
+    
+    const result = await client.query(
+      'SELECT order_id, order_number, location_name, total_amount, created_at FROM orders WHERE user_id = $1 AND order_status IN (\'completed\', \'delivered\', \'collected\') ORDER BY created_at DESC LIMIT 10',
+      [req.user.user_id]
+    );
+    
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch orders', error, 'ORDERS_FETCH_ERROR'));
+  }
+});
+
+// Get internal users (staff/managers) for assignment (admin only)
+app.get('/api/internal-users', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT user_id, email, first_name, last_name, user_type FROM users WHERE user_type IN (\'staff\', \'manager\') AND account_status = \'active\' ORDER BY first_name, last_name'
+    );
+    
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch internal users', error, 'USERS_FETCH_ERROR'));
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
