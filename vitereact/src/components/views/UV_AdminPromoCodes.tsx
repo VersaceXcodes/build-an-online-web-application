@@ -87,8 +87,8 @@ const fetchPromoCodes = async (
 ): Promise<PromoCodesResponse> => {
   const params: any = { limit, offset };
   if (query) params.query = query;
-  if (discount_type) params.discount_type = discount_type;
-  if (is_active) params.is_active = is_active;
+  if (discount_type && discount_type !== 'all') params.discount_type = discount_type;
+  if (is_active && is_active !== 'all') params.is_active = is_active;
 
   const response = await axios.get(
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/promo-codes`,
@@ -132,8 +132,8 @@ const UV_AdminPromoCodes: React.FC = () => {
   // ==================================
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [discountTypeFilter, setDiscountTypeFilter] = useState('');
-  const [activeFilter, setActiveFilter] = useState('');
+  const [discountTypeFilter, setDiscountTypeFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('all');
   const [page, setPage] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   
@@ -303,7 +303,7 @@ const UV_AdminPromoCodes: React.FC = () => {
                 <SelectValue placeholder="All Discount Types" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Types</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="percentage">Percentage</SelectItem>
                 <SelectItem value="fixed">Fixed Amount</SelectItem>
               </SelectContent>
@@ -314,7 +314,7 @@ const UV_AdminPromoCodes: React.FC = () => {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="true">Active</SelectItem>
                 <SelectItem value="false">Inactive</SelectItem>
               </SelectContent>
