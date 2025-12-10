@@ -120,6 +120,7 @@ interface CartState {
   applied_discounts: {
     loyalty_points_used: number;
     promo_code: string | null;
+    promo_code_discount: number;
   };
 }
 
@@ -200,7 +201,7 @@ interface AppStore {
   add_to_cart: (item: CartItem) => void;
   remove_from_cart: (product_id: string) => void;
   update_cart_quantity: (product_id: string, quantity: number) => void;
-  apply_promo_code: (code: string) => void;
+  apply_promo_code: (code: string, discount_amount: number) => void;
   remove_promo_code: () => void;
   apply_loyalty_points: (points: number) => void;
   remove_loyalty_points: () => void;
@@ -335,6 +336,7 @@ export const useAppStore = create<AppStore>()(
           applied_discounts: {
             loyalty_points_used: 0,
             promo_code: null,
+            promo_code_discount: 0,
           },
         },
 
@@ -711,17 +713,18 @@ export const useAppStore = create<AppStore>()(
           get().calculate_cart_totals();
         },
 
-        apply_promo_code: (code: string) => {
+        apply_promo_code: (code: string, discount_amount: number) => {
           set((state) => ({
             cart_state: {
               ...state.cart_state,
               applied_discounts: {
                 ...state.cart_state.applied_discounts,
                 promo_code: code,
+                promo_code_discount: discount_amount,
               },
             },
           }));
-          // Note: Actual discount calculation happens in checkout flow
+          get().calculate_cart_totals();
         },
 
         remove_promo_code: () => {
@@ -731,6 +734,7 @@ export const useAppStore = create<AppStore>()(
               applied_discounts: {
                 ...state.cart_state.applied_discounts,
                 promo_code: null,
+                promo_code_discount: 0,
               },
             },
           }));
@@ -812,8 +816,11 @@ export const useAppStore = create<AppStore>()(
             applied_discounts.loyalty_points_used /
             system_config_state.points_redemption_rate;
 
-          // Total discount (promo code discount would be applied during checkout)
-          const total_discount = loyalty_discount;
+          // Calculate promo code discount
+          const promo_discount = applied_discounts.promo_code_discount || 0;
+
+          // Total discount (loyalty + promo code)
+          const total_discount = loyalty_discount + promo_discount;
 
           // Calculate total
           const current_delivery_fee = cart_state.totals.delivery_fee;
@@ -850,6 +857,7 @@ export const useAppStore = create<AppStore>()(
               applied_discounts: {
                 loyalty_points_used: 0,
                 promo_code: null,
+                promo_code_discount: 0,
               },
             },
           }));

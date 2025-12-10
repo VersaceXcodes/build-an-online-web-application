@@ -151,8 +151,9 @@ const GV_CartSlidePanel: React.FC = () => {
       );
       
       if (response.data.is_valid) {
-        applyPromoCodeAction(trimmedCode);
-        showToast('success', `Promo code applied! €${response.data.discount_amount.toFixed(2)} discount`);
+        const discountAmount = response.data.discount_amount || 0;
+        applyPromoCodeAction(trimmedCode, discountAmount);
+        showToast('success', `Promo code applied! €${discountAmount.toFixed(2)} discount`);
         setPromoCodeError(null);
       } else {
         setPromoCodeError(response.data.message || 'Invalid promo code');

@@ -270,7 +270,8 @@ const UV_Checkout_Step2: React.FC = () => {
       );
 
       if (response.data.is_valid) {
-        applyPromoCode(promoCodeInput.trim().toUpperCase());
+        const discountAmount = response.data.discount_amount || 0;
+        applyPromoCode(promoCodeInput.trim().toUpperCase(), discountAmount);
         showToast('success', response.data.message || 'Promo code applied!');
         setPromoCodeError(null);
       } else {
@@ -871,10 +872,10 @@ const UV_Checkout_Step2: React.FC = () => {
                     </div>
                   )}
 
-                  {appliedDiscounts.promo_code && (
-                    <div className="flex justify-between text-sm text-blue-700">
+                  {appliedDiscounts.promo_code && appliedDiscounts.promo_code_discount > 0 && (
+                    <div className="flex justify-between text-sm text-green-700">
                       <span>Promo Code ({appliedDiscounts.promo_code})</span>
-                      <span className="font-medium">Applied</span>
+                      <span className="font-medium">-€{Number(appliedDiscounts.promo_code_discount || 0).toFixed(2)}</span>
                     </div>
                   )}
                 </div>
