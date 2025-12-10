@@ -1,137 +1,47 @@
-# Quick Test Reference: Checkout Validation Fix
+# Quick Test Reference - User Role Update Fix
 
-## 🔍 Before You Start
-**OPEN BROWSER CONSOLE (F12)** - Console logs are the key to verifying this fix!
+## Issue Fixed
+❌ **Before:** Admins could not update user roles - returned 404 error  
+✅ **After:** Admins can successfully update user roles and information
 
-## ✅ Test 1: Happy Path (Should Work)
-1. Add items to cart
-2. Go to checkout  
-3. Fill: Email, Name, Phone
-4. Select: "Collection" + "ASAP" ✓
-5. Click: "Continue to Payment"
+## Test Credentials
+- **Admin:** admin@bakery.com / AdminPassword123!
+- **Test User:** new.staff@example.com (already exists in database)
+- **Test User ID:** usr_a7a7d38ffd554c0f9b114fd9088a17bb
 
-**✅ Expected:**
-- Goes to payment step
-- Console shows: `Validation passed! Proceeding to payment...`
+## Quick API Test
+```bash
+# 1. Login as admin
+TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@bakery.com","password":"AdminPassword123!"}' \
+  | grep -o '"token":"[^"]*' | cut -d'"' -f4)
 
-**❌ If fails:**
-- Check console for `[VALIDATE] ERROR:` lines
-- Report which field is showing as invalid
-
----
-
-## 🐛 Test 2: Missing Name (Should Fail Gracefully)
-1. Fill email and phone
-2. **Leave name empty**
-3. Click: "Continue to Payment"
-
-**✅ Expected:**
-- Stays on step 1
-- Toast says: "Please fix the following: customer name"
-- Console shows: `[VALIDATE] ERROR: Name is missing or too short`
-- Red border on name field
-
----
-
-## 📅 Test 3: Scheduled Pickup Empty (Should Fail Gracefully)
-1. Fill all customer info
-2. Select: "Collection" + "Schedule for later" ⏰
-3. **Leave date/time empty**
-4. Click: "Continue to Payment"
-
-**✅ Expected:**
-- Stays on step 1
-- Toast says: "Please fix the following: scheduled pickup date"
-- Console shows: `[VALIDATE] ERROR: Scheduled pickup date missing`
-- Red borders on date/time fields
-
----
-
-## 🚨 Edge Case: Invalid pickupTimeOption
-**If you see this console error:**
-```
-[VALIDATE] ERROR: pickupTimeOption is invalid: undefined
+# 2. Update user role
+curl -X PUT "http://localhost:3000/api/users/usr_a7a7d38ffd554c0f9b114fd9088a17bb" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"user_type":"manager"}'
 ```
 
-**🚨 REPORT IMMEDIATELY** - This is the bug we're trying to catch!
+## Expected Behavior
+1. Navigate to: https://123build-an-online-web-application.launchpulse.ai/admin/users
+2. Login as admin
+3. Search for "new.staff@example.com"
+4. Click edit button
+5. Change role from "Staff" to "Manager"
+6. Click Save
+7. ✅ Should see success message
+8. ✅ Role should update to "Manager"
 
-Include:
-- Full console output
-- Exact steps before clicking submit
-- Browser name/version
+## Network Request Details
+- **Endpoint:** PUT /api/users/{user_id}
+- **Status:** 200 OK (was 404 before fix)
+- **Response:** Returns updated user object with new role
 
----
+## Verification
+Run: `./verify-fix.sh` to test all update scenarios
 
-## 📋 What to Report
+## Modified Files
+- `/app/backend/server.ts` - Added PUT /api/users/:user_id endpoint (line ~2009)
 
-### ✅ Success Report (if working):
-- "Test passed: ASAP collection proceeds to payment"
-- Paste console output showing `Validation passed!`
-
-### ❌ Failure Report (if broken):
-- Exact error toast message shown
-- **Full console output** (copy/paste text)
-- Steps to reproduce
-- Browser details
-
----
-
-## 🎯 Console Keywords to Look For
-
-| Keyword | Meaning |
-|---------|---------|
-| `[VALIDATE] Starting validation...` | Validation began |
-| `[VALIDATE] ERROR:` | Something failed |
-| `[VALIDATE] ASAP pickup selected - validation passed` | Pickup time OK |
-| `Validation passed! Proceeding to payment...` | ✅ Success |
-| `Validation failed. Errors:` | ❌ Failed (check what follows) |
-
----
-
-## 💡 Quick Troubleshooting
-
-**Q: I don't see any console logs**
-- A: Make sure console tab is open and filter set to "All"
-
-**Q: Error appears but field looks filled**
-- A: Check console - might be a format issue (email, phone, postal code)
-
-**Q: Form passes validation but shouldn't**
-- A: Report! Include console output showing `Validation passed!`
-
-**Q: pickupTimeOption shows as undefined**
-- A: This is the bug! Report immediately with full logs
-
----
-
-## 📞 Report Format
-
-```
-Status: [PASS/FAIL]
-Test: [Which test number]
-Browser: [Chrome 120 / Firefox 115 / etc]
-Console Output:
-[paste console logs here]
-
-Steps Taken:
-1. [step]
-2. [step]
-...
-```
-
----
-
-## ⏱️ Estimated Test Time
-- All 3 tests: **~5 minutes**
-- With console review: **~10 minutes**
-
----
-
-## 🎓 Why Console Logs Matter
-
-The previous fix failed because we couldn't see **why** validation was failing. Console logs now show:
-- Exact state values when submit clicked
-- Which validation check failed
-- Why it failed (missing value, wrong format, etc.)
-
-This makes fixing issues 10x faster! 🚀

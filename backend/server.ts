@@ -2006,6 +2006,63 @@ app.get('/api/users/:user_id', async (req, res) => {
   }
 });
 
+app.put('/api/users/:user_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { email, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in } = req.body;
+    
+    // Check if user exists
+    const existingUser = await client.query('SELECT user_id FROM users WHERE user_id = $1', [req.params.user_id]);
+    if (existingUser.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
+    }
+    
+    // Build update query dynamically
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    
+    if (first_name !== undefined) { updates.push(`first_name = $${idx++}`); values.push(first_name); }
+    if (last_name !== undefined) { updates.push(`last_name = $${idx++}`); values.push(last_name); }
+    if (phone_number !== undefined) { updates.push(`phone_number = $${idx++}`); values.push(phone_number); }
+    if (user_type !== undefined) { updates.push(`user_type = $${idx++}`); values.push(user_type); }
+    if (account_status !== undefined) { updates.push(`account_status = $${idx++}`); values.push(account_status); }
+    if (marketing_opt_in !== undefined) { updates.push(`marketing_opt_in = $${idx++}`); values.push(marketing_opt_in); }
+    
+    // Check if email is being changed
+    if (email && email !== existingUser.rows[0].email) {
+      const emailCheck = await client.query('SELECT user_id FROM users WHERE email = $1 AND user_id != $2', [email, req.params.user_id]);
+      if (emailCheck.rows.length > 0) {
+        client.release();
+        return res.status(400).json(createErrorResponse('Email already exists', null, 'EMAIL_EXISTS'));
+      }
+      updates.push(`email = $${idx++}`);
+      values.push(email);
+    }
+    
+    if (updates.length === 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
+    }
+    
+    const now = new Date().toISOString();
+    updates.push(`updated_at = $${idx++}`);
+    values.push(now);
+    values.push(req.params.user_id);
+    
+    await client.query(`UPDATE users SET ${updates.join(', ')} WHERE user_id = $${idx}`, values);
+    
+    // Return updated user data
+    const result = await client.query('SELECT user_id, email, first_name, last_name, phone_number, user_type, account_status, marketing_opt_in, loyalty_points_balance, created_at, updated_at FROM users WHERE user_id = $1', [req.params.user_id]);
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update user', error, 'USER_UPDATE_ERROR'));
+  }
+});
+
 app.post('/api/auth/unlock-account', async (req, res) => {
   const client = await pool.connect();
   try {
