@@ -1,8 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { Mail, Phone, Instagram, Facebook, Music } from 'lucide-react';
+import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
+import tiktokLogo from '@/assets/images/tiktok-logo.png';
 
 const GV_Footer: React.FC = () => {
   // CRITICAL: Individual selectors - NO object destructuring
@@ -145,10 +146,10 @@ const GV_Footer: React.FC = () => {
                     href={social_media_urls.tiktok}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-pink-600 transition-colors duration-200 group"
+                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-pink-600 transition-colors duration-200 group p-1.5"
                     aria-label="Follow us on TikTok"
                   >
-                    <Music className="h-5 w-5 text-gray-300 group-hover:text-white" />
+                    <img src={tiktokLogo} alt="TikTok" className="w-full h-full object-contain" />
                   </a>
                 )}
               </div>
