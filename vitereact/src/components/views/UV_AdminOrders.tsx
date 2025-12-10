@@ -356,6 +356,31 @@ const UV_AdminOrders: React.FC = () => {
     return () => clearTimeout(timer);
   }, [localSearchInput]);
   
+  // Handle escape key to close detail panel
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showDetailPanel) {
+        setShowDetailPanel(false);
+        setTimeout(() => setSelectedOrderId(null), 300);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showDetailPanel]);
+  
+  // Handle escape key to close refund modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showRefundModal) {
+        setShowRefundModal(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [showRefundModal]);
+  
   // Build query params for API
   const queryParams = useMemo(() => ({
     query: searchQuery || undefined,
