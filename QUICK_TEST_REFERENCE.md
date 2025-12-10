@@ -1,47 +1,164 @@
-# Quick Test Reference - User Role Update Fix
+# Quick Test Reference Guide
 
-## Issue Fixed
-❌ **Before:** Admins could not update user roles - returned 404 error  
-✅ **After:** Admins can successfully update user roles and information
+## Critical Staff Credentials (VERIFIED WORKING)
 
-## Test Credentials
-- **Admin:** admin@bakery.com / AdminPassword123!
-- **Test User:** new.staff@example.com (already exists in database)
-- **Test User ID:** usr_a7a7d38ffd554c0f9b114fd9088a17bb
+### London Flagship Staff
 
-## Quick API Test
+**Staff Account:**
+- Email: `staff.london@bakery.com`
+- Password: `StaffPassword123!`
+- User: James Anderson
+- Type: `staff`
+- Location: London Flagship
+- Status: ✅ UNLOCKED & VERIFIED
+
+**Manager Account:**
+- Email: `manager.london@bakery.com`
+- Password: `ManagerPassword123!`
+- User: Laura Martinez
+- Type: `manager`
+- Location: London Flagship
+- Status: ✅ UNLOCKED & VERIFIED
+
+### Other Test Accounts
+
+**Admin Account:**
+- Email: `admin@bakery.com`
+- Password: `AdminPassword123!`
+
+**Customer Account:**
+- Email: `john.smith@example.com`
+- Password: `TestPassword123!`
+- User: John Smith
+
+## Quick Account Unlock
+
+If accounts get locked during testing:
+
 ```bash
-# 1. Login as admin
-TOKEN=$(curl -s -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"admin@bakery.com","password":"AdminPassword123!"}' \
-  | grep -o '"token":"[^"]*' | cut -d'"' -f4)
+cd /app/backend
 
-# 2. Update user role
-curl -X PUT "http://localhost:3000/api/users/usr_a7a7d38ffd554c0f9b114fd9088a17bb" \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"user_type":"manager"}'
+# Unlock single account
+node unlock-account.js staff.london@bakery.com
+
+# Unlock and reset both London staff accounts
+node fix-london-staff-accounts.js
+
+# Verify login works
+node test-staff-login.mjs
 ```
 
-## Expected Behavior
-1. Navigate to: https://123build-an-online-web-application.launchpulse.ai/admin/users
-2. Login as admin
-3. Search for "new.staff@example.com"
-4. Click edit button
-5. Change role from "Staff" to "Manager"
-6. Click Save
-7. ✅ Should see success message
-8. ✅ Role should update to "Manager"
+## Staff Order Fulfillment Test Flow
 
-## Network Request Details
-- **Endpoint:** PUT /api/users/{user_id}
-- **Status:** 200 OK (was 404 before fix)
-- **Response:** Returns updated user object with new role
+### Step 1: Customer Places Order
+- Login as `john.smith@example.com`
+- Add products to cart
+- Select "London Flagship" location
+- Choose "Collection" fulfillment
+- Complete payment
+- Note the order number (e.g., KK-42517)
 
-## Verification
-Run: `./verify-fix.sh` to test all update scenarios
+### Step 2: Staff Login & View Order
+- Login as `staff.london@bakery.com` / `StaffPassword123!`
+- Navigate to Staff Dashboard
+- View order list filtered by "London Flagship"
+- Find the customer's order
 
-## Modified Files
-- `/app/backend/server.ts` - Added PUT /api/users/:user_id endpoint (line ~2009)
+### Step 3: Staff Updates Order Status
+- Select order
+- Update status: `payment_confirmed` → `accepted_in_preparation`
+- Update status: `accepted_in_preparation` → `ready_for_collection`
+- Customer receives collection code
+- Update status: `ready_for_collection` → `collected`
+
+## Common Issues & Solutions
+
+### 🔒 Issue: "Account locked. Please try again in X minutes"
+
+**Root Cause:** 5+ failed login attempts
+
+**Solution:**
+```bash
+cd /app/backend
+node fix-london-staff-accounts.js
+```
+
+**Expected Output:**
+```
+✅ staff.london@bakery.com - UNLOCKED
+✅ manager.london@bakery.com - UNLOCKED
+```
+
+### ❌ Issue: "Invalid credentials"
+
+**Checklist:**
+- ✅ Email: `staff.london@bakery.com` (exact match, case-sensitive)
+- ✅ Password: `StaffPassword123!` (includes exclamation mark)
+- ✅ No extra spaces or characters
+- ✅ Account not locked
+
+**Verify Password:**
+```bash
+# Test login via API
+curl -X POST https://123build-an-online-web-application.launchpulse.ai/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"staff.london@bakery.com","password":"StaffPassword123!","remember_me":false}'
+```
+
+## Browser Testing URLs
+
+- **Frontend:** https://123build-an-online-web-application.launchpulse.ai
+- **Login:** https://123build-an-online-web-application.launchpulse.ai/login
+- **Staff Dashboard:** https://123build-an-online-web-application.launchpulse.ai/staff-dashboard
+- **Customer Dashboard:** https://123build-an-online-web-application.launchpulse.ai/dashboard
+
+## Account Security Limits
+
+- **Failed Login Attempts:** 5 attempts before lockout
+- **Lockout Duration:** 30 minutes
+- **Auto-Unlock:** After lockout period expires
+- **Token Expiry:** 7 days (24 hours without remember_me)
+
+## Test Data Reference
+
+**Locations:**
+- London Flagship
+- Manchester Store
+- Birmingham Store
+
+**Order Number Format:**
+- Standard: `KK-XXXXX`
+- Corporate: `CE-XXXXX`
+
+**Collection Code Format:**
+- `COL-XXXX` (4 digits)
+
+## Status Check Commands
+
+```bash
+# Check account status in database
+cd /app/backend
+node -e "import('pg').then(m => { const p = new m.default.Pool({connectionString: process.env.DATABASE_URL, ssl: {rejectUnauthorized: false}}); p.query('SELECT email, user_type, failed_login_attempts, locked_until FROM users WHERE email LIKE \\'%london@bakery.com\\'', (e,r) => {console.table(r.rows); p.end();}); });"
+
+# Test login endpoint
+node test-staff-login.mjs
+
+# Expected output:
+# ✅ Login successful for staff.london@bakery.com
+# ✅ Login successful for manager.london@bakery.com
+```
+
+## Fixed Issues Log
+
+### ✅ Staff Account Lockout Fix (Dec 10, 2025)
+- **Issue:** Both London staff accounts locked after failed login attempts
+- **Solution:** Created fix script to unlock accounts and reset passwords
+- **Status:** RESOLVED - Both accounts operational
+- **Files:** `fix-london-staff-accounts.js`, `STAFF_ACCOUNT_LOCKOUT_FIX.md`
+
+### ✅ User Role Update Fix (Previous)
+- **Issue:** Admins could not update user roles (404 error)
+- **Solution:** Added PUT /api/users/:user_id endpoint
+- **Status:** RESOLVED
+- **File:** `/app/backend/server.ts` line ~2009
 
