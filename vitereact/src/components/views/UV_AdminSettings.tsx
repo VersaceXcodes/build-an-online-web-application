@@ -670,20 +670,31 @@ const UV_AdminSettings: React.FC = () => {
                                         className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
                                       />
                                     </div>
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                      <input
-                                        type="email"
-                                        value={currentData.email || ''}
-                                        onChange={(e) => handleLocationFieldChange('email', e.target.value)}
-                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
+                                     <div>
+                                       <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                       <input
+                                         type="email"
+                                         value={currentData.email || ''}
+                                         onChange={(e) => handleLocationFieldChange('email', e.target.value)}
+                                         className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                       />
+                                     </div>
+                                     <div>
+                                       <label className="block text-sm font-medium text-gray-700 mb-1">Opening Hours</label>
+                                       <textarea
+                                         value={currentData.opening_hours || ''}
+                                         onChange={(e) => handleLocationFieldChange('opening_hours', e.target.value)}
+                                         className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                         rows={4}
+                                         placeholder="e.g., Mon-Fri: 9am-6pm, Sat: 10am-4pm, Sun: Closed"
+                                       />
+                                       <p className="text-xs text-gray-500 mt-1">Enter the opening hours for this location</p>
+                                     </div>
+                                   </div>
+                                 </div>
 
-                                {/* Operational Settings */}
-                                <div>
+                                 {/* Operational Settings */}
+                                 <div>
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
                                   <div className="space-y-4">
                                     <div>
@@ -795,14 +806,23 @@ const UV_AdminSettings: React.FC = () => {
                                     <p className="text-sm text-gray-600">
                                       <span className="font-medium">Phone:</span> {location.phone_number}
                                     </p>
-                                    <p className="text-sm text-gray-600">
-                                      <span className="font-medium">Email:</span> {location.email}
-                                    </p>
-                                  </div>
-                                </div>
+                                     <p className="text-sm text-gray-600">
+                                       <span className="font-medium">Email:</span> {location.email}
+                                     </p>
+                                     <div className="mt-3 pt-3 border-t border-gray-200">
+                                       <p className="text-sm font-medium text-gray-900 mb-1 flex items-center gap-2">
+                                         <Clock className="w-4 h-4 text-blue-600" />
+                                         Opening Hours
+                                       </p>
+                                       <p className="text-sm text-gray-600 whitespace-pre-line">
+                                         {location.opening_hours}
+                                       </p>
+                                     </div>
+                                   </div>
+                                 </div>
 
-                                {/* Operational Settings */}
-                                <div>
+                                 {/* Operational Settings */}
+                                 <div>
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
                                   <div className="space-y-2">
                                     <div className="flex items-center gap-2">
