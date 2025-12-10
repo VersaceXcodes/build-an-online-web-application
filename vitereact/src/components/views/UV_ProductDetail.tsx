@@ -138,7 +138,7 @@ const UV_ProductDetail: React.FC = () => {
     ? (() => {
         try {
           return JSON.parse(product.dietary_tags);
-        } catch (e) {
+        } catch {
           // Fallback to comma-separated parsing
           return product.dietary_tags.split(',').map(tag => tag.trim()).filter(Boolean);
         }

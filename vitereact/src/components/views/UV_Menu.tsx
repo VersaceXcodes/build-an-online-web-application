@@ -217,7 +217,7 @@ const UV_Menu: React.FC = () => {
           let productTags: string[] = [];
           try {
             productTags = JSON.parse(product.dietary_tags);
-          } catch (e) {
+          } catch {
             // Fallback to comma-separated parsing if not JSON
             productTags = product.dietary_tags.split(',').map(t => t.trim());
           }
@@ -725,7 +725,7 @@ const UV_Menu: React.FC = () => {
                       if (product.dietary_tags) {
                         try {
                           dietary_tags_array = JSON.parse(product.dietary_tags);
-                        } catch (e) {
+                        } catch {
                           // Fallback to comma-separated parsing
                           dietary_tags_array = product.dietary_tags.split(',').map(t => t.trim());
                         }

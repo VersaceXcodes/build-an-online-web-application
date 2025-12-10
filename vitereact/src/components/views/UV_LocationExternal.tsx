@@ -126,7 +126,7 @@ const UV_LocationExternal: React.FC = () => {
     if (!tags) return [];
     try {
       return JSON.parse(tags);
-    } catch (e) {
+    } catch {
       // Fallback to comma-separated parsing
       return tags.split(',').map(tag => tag.trim());
     }

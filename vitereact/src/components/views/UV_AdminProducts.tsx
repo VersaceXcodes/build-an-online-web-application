@@ -377,14 +377,14 @@ const UV_AdminProducts: React.FC = () => {
       dietary_tags: product.dietary_tags ? (() => {
         try {
           return JSON.parse(product.dietary_tags);
-        } catch (e) {
+        } catch {
           return product.dietary_tags.split(',');
         }
       })() : [],
       custom_tags: product.custom_tags ? (() => {
         try {
           return JSON.parse(product.custom_tags);
-        } catch (e) {
+        } catch {
           return product.custom_tags.split(',');
         }
       })() : [],
@@ -904,7 +904,7 @@ const UV_AdminProducts: React.FC = () => {
                           {(() => {
                             try {
                               return JSON.parse(product.dietary_tags);
-                            } catch (e) {
+                            } catch {
                               return product.dietary_tags.split(',');
                             }
                           })().map((tag: string, index: number) => (

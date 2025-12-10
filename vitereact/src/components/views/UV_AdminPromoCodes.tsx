@@ -6,7 +6,6 @@ import {
   Plus,
   Search,
   Ticket,
-  Calendar,
   DollarSign,
   Percent,
   AlertCircle,
@@ -124,8 +123,6 @@ const UV_AdminPromoCodes: React.FC = () => {
 
   const authToken = useAppStore(state => state.authentication_state.auth_token);
   const showToast = useAppStore(state => state.show_toast);
-  const showLoading = useAppStore(state => state.show_loading);
-  const hideLoading = useAppStore(state => state.hide_loading);
 
   // ==================================
   // LOCAL STATE
@@ -158,10 +155,8 @@ const UV_AdminPromoCodes: React.FC = () => {
   // ==================================
 
   const {
-    data: promoData,
     isLoading,
     error,
-    refetch,
   } = useQuery({
     queryKey: ['promo-codes', searchQuery, discountTypeFilter, activeFilter, page],
     queryFn: () =>

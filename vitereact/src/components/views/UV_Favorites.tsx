@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { Heart, ShoppingCart, Trash2, Package } from 'lucide-react';
+import { Heart, ShoppingCart, Package } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -58,7 +58,7 @@ const UV_Favorites: React.FC = () => {
   // DATA FETCHING
   // ============================================================================
 
-  const { data: favorites = [], isLoading, refetch } = useQuery({
+  const { data: favorites = [], isLoading } = useQuery({
     queryKey: ['favorites', currentUser?.user_id],
     queryFn: async () => {
       const response = await apiClient.get('/favorites');
