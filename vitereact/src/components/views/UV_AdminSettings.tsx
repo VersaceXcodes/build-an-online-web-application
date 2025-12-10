@@ -546,7 +546,8 @@ const UV_AdminSettings: React.FC = () => {
                     
                     // Generate Google Maps URL
                     const mapsAddress = `${location.address_line1}, ${location.city}, ${location.postal_code}`;
-                    const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(mapsAddress)}`;
+                    const googleMapsApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8';
+                    const mapsUrl = `https://www.google.com/maps/embed/v1/place?key=${googleMapsApiKey}&q=${encodeURIComponent(mapsAddress)}`;
                     
                     return (
                       <div

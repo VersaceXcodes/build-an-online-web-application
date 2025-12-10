@@ -391,7 +391,7 @@ app.get('/api/locations/:location_id', async (req, res) => {
   }
 });
 
-app.put('/api/locations/:location_id', requireAuth, requireRole(['admin']), async (req, res) => {
+app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_id } = req.params;
