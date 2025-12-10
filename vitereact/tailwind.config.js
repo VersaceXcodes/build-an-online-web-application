@@ -9,7 +9,76 @@ export default {
 				md: "calc(var(--radius) - 2px)",
 				sm: "calc(var(--radius) - 4px)",
 			},
-			colors: {},
+			colors: {
+				// KAKE Brand Colors - Dessert-inspired palette
+				kake: {
+					// Primary: Caramel tones (warm, inviting)
+					caramel: {
+						50: '#fef9f3',
+						100: '#fdf2e6',
+						200: '#fbe4c0',
+						300: '#f9d49a',
+						400: '#f5b74d',
+						500: '#f19a00', // Main caramel
+						600: '#d98b00',
+						700: '#b57400',
+						800: '#915d00',
+						900: '#764c00',
+					},
+					// Secondary: Frosting cream (soft, light)
+					cream: {
+						50: '#fffefb',
+						100: '#fffdf7',
+						200: '#fffaeb',
+						300: '#fff7df',
+						400: '#fff1c7',
+						500: '#ffeaaf', // Main cream
+						600: '#e6d49e',
+						700: '#bfb184',
+						800: '#998d6a',
+						900: '#7d7457',
+					},
+					// Accent: Chocolate brown (rich, deep)
+					chocolate: {
+						50: '#f9f7f6',
+						100: '#f3efed',
+						200: '#e1d7d2',
+						300: '#cfbfb7',
+						400: '#ab8f81',
+						500: '#875f4b', // Main chocolate
+						600: '#7a5644',
+						700: '#664839',
+						800: '#523a2e',
+						900: '#433025',
+					},
+					// Highlight: Warm berry (for accents, success states)
+					berry: {
+						50: '#fef5f7',
+						100: '#fdeaef',
+						200: '#fbcbd7',
+						300: '#f8acbf',
+						400: '#f36d8f',
+						500: '#ee2e5f', // Warm berry
+						600: '#d62956',
+						700: '#b32348',
+						800: '#8f1c3a',
+						900: '#75172f',
+					},
+				},
+				// Neutral colors with warm undertones
+				warm: {
+					50: '#fafaf9',
+					100: '#f5f5f4',
+					200: '#e7e5e4',
+					300: '#d6d3d1',
+					400: '#a8a29e',
+					500: '#78716c',
+					600: '#57534e',
+					700: '#44403c',
+					800: '#292524',
+					900: '#1c1917',
+				},
+			},
 			keyframes: {
 				"accordion-down": {
 					from: {
@@ -27,10 +96,44 @@ export default {
 						height: "0",
 					},
 				},
+				// KAKE animations
+				"drip": {
+					"0%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(2px)" },
+					"100%": { transform: "translateY(0)" },
+				},
+				"cream-fade-in": {
+					"0%": { opacity: "0", transform: "translateY(-10px)" },
+					"100%": { opacity: "1", transform: "translateY(0)" },
+				},
+				"wobble": {
+					"0%, 100%": { transform: "rotate(0deg)" },
+					"25%": { transform: "rotate(-1deg)" },
+					"75%": { transform: "rotate(1deg)" },
+				},
+				"soft-bounce": {
+					"0%, 100%": { transform: "translateY(0)" },
+					"50%": { transform: "translateY(-5px)" },
+				},
+				"frosting-blur": {
+					"0%": { opacity: "0", backdropFilter: "blur(0px)" },
+					"100%": { opacity: "1", backdropFilter: "blur(8px)" },
+				},
+				"shimmer": {
+					"0%": { backgroundPosition: "-200% 0" },
+					"100%": { backgroundPosition: "200% 0" },
+				},
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
 				"accordion-up": "accordion-up 0.2s ease-out",
+				// KAKE animations
+				"drip": "drip 0.6s ease-in-out",
+				"cream-fade-in": "cream-fade-in 0.3s ease-out",
+				"wobble": "wobble 0.5s ease-in-out",
+				"soft-bounce": "soft-bounce 0.6s ease-in-out infinite",
+				"frosting-blur": "frosting-blur 0.3s ease-out",
+				"shimmer": "shimmer 2s linear infinite",
 			},
 		},
 	},

@@ -24,7 +24,7 @@ const GV_LoadingOverlay: React.FC = () => {
     <>
       {/* Full-screen overlay */}
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-kake-chocolate-900/50 backdrop-blur-md transition-all duration-300 animate-frosting-blur"
         role="dialog"
         aria-modal="true"
         aria-busy="true"
@@ -32,36 +32,36 @@ const GV_LoadingOverlay: React.FC = () => {
         aria-label="Loading content"
       >
         {/* Content container */}
-        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4">
+        <div className="flex flex-col items-center justify-center space-y-4 p-8 bg-white rounded-2xl shadow-caramel-lg border-2 border-kake-cream-300 max-w-sm w-full mx-4 animate-cream-fade-in">
           {/* Spinner Animation */}
           <div className="relative">
             {/* Outer rotating ring */}
-            <div className="h-16 w-16 rounded-full border-4 border-gray-200"></div>
+            <div className="h-16 w-16 rounded-full border-4 border-kake-cream-300"></div>
             
             {/* Inner animated spinner */}
-            <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+            <div className="absolute top-0 left-0 h-16 w-16 rounded-full border-4 border-kake-caramel-500 border-t-transparent animate-spin shadow-caramel"></div>
             
             {/* Center dot for visual appeal */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-blue-600"></div>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full gradient-caramel animate-pulse"></div>
           </div>
 
           {/* Loading Message */}
           <div className="text-center space-y-2">
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-lg font-bold text-kake-chocolate-800">
               {loadingMessage || 'Loading...'}
             </p>
             
             {/* Subtle hint text */}
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-warm-600">
               Please wait...
             </p>
           </div>
 
           {/* Optional: Animated dots for additional visual feedback */}
           <div className="flex items-center justify-center space-x-1">
-            <span className="h-2 w-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-            <span className="h-2 w-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-            <span className="h-2 w-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+            <span className="h-2 w-2 gradient-caramel rounded-full animate-bounce shadow-soft" style={{ animationDelay: '0ms' }}></span>
+            <span className="h-2 w-2 gradient-caramel rounded-full animate-bounce shadow-soft" style={{ animationDelay: '150ms' }}></span>
+            <span className="h-2 w-2 gradient-caramel rounded-full animate-bounce shadow-soft" style={{ animationDelay: '300ms' }}></span>
           </div>
         </div>
       </div>

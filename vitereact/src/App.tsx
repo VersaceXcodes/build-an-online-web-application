@@ -77,11 +77,11 @@ const queryClient = new QueryClient({
 // ============================================================================
 
 const LoadingSpinner: React.FC = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="text-center">
-      <img src={kakeLogo} alt="Kake Logo" className="h-20 w-auto mx-auto mb-6 animate-pulse" />
-      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
-      <p className="text-gray-600 text-lg font-medium">Loading Kake...</p>
+  <div className="min-h-screen flex items-center justify-center gradient-cream">
+    <div className="text-center animate-cream-fade-in">
+      <img src={kakeLogo} alt="Kake Logo" className="h-20 w-auto mx-auto mb-6 animate-soft-bounce" />
+      <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-kake-caramel-500 mx-auto mb-4"></div>
+      <p className="text-kake-chocolate-700 text-lg font-semibold">Loading Kake...</p>
     </div>
   </div>
 );
@@ -195,14 +195,14 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Page transition overlay */}
       {isTransitioning && (
         <div 
-          className="fixed inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center transition-opacity duration-150"
+          className="fixed inset-0 bg-white/60 backdrop-blur-md z-30 flex items-center justify-center transition-all duration-200 animate-frosting-blur"
           role="status"
           aria-live="polite"
           aria-label="Loading page"
         >
           <div className="flex flex-col items-center space-y-3">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-purple-600"></div>
-            <p className="text-gray-700 text-sm font-medium">Loading...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-kake-caramel-500 shadow-caramel"></div>
+            <p className="text-kake-chocolate-700 text-sm font-semibold">Loading...</p>
           </div>
         </div>
       )}

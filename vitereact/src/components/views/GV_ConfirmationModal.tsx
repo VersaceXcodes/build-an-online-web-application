@@ -169,7 +169,7 @@ const GV_ConfirmationModal: React.FC = () => {
     <>
       {/* Backdrop Overlay */}
       <div
-        className="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity z-50"
+        className="fixed inset-0 bg-kake-chocolate-900 bg-opacity-60 backdrop-blur-sm transition-all duration-300 z-50 animate-frosting-blur"
         aria-hidden="true"
         onClick={handleBackdropClick}
       />
@@ -182,7 +182,7 @@ const GV_ConfirmationModal: React.FC = () => {
           aria-modal="true"
           aria-labelledby="modal-title"
           aria-describedby="modal-description"
-          className="relative w-full max-w-lg transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all animate-in fade-in-0 zoom-in-95 duration-200"
+          className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-white shadow-caramel-lg transition-all animate-cream-fade-in duration-300 border-2 border-kake-cream-300"
         >
           {/* Modal Header */}
           <div className="px-6 pt-6 pb-4">
@@ -190,12 +190,12 @@ const GV_ConfirmationModal: React.FC = () => {
               <div className="flex items-center space-x-3">
                 {/* Icon - Conditional based on danger action */}
                 {isDangerAction ? (
-                  <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <AlertTriangle className="h-6 w-6 text-red-600" aria-hidden="true" />
+                  <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-kake-berry-100 animate-soft-bounce">
+                    <AlertTriangle className="h-6 w-6 text-kake-berry-600" aria-hidden="true" />
                   </div>
                 ) : (
-                  <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-                    <Info className="h-6 w-6 text-blue-600" aria-hidden="true" />
+                  <div className="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full gradient-caramel-soft">
+                    <Info className="h-6 w-6 text-kake-caramel-700" aria-hidden="true" />
                   </div>
                 )}
 
@@ -203,7 +203,7 @@ const GV_ConfirmationModal: React.FC = () => {
                 <h3
                   id="modal-title"
                   className={`text-xl font-bold leading-tight ${
-                    isDangerAction ? 'text-red-900' : 'text-gray-900'
+                    isDangerAction ? 'text-kake-berry-900' : 'text-kake-chocolate-800'
                   }`}
                 >
                   {modalTitle}
@@ -214,7 +214,7 @@ const GV_ConfirmationModal: React.FC = () => {
               <button
                 type="button"
                 onClick={handleCancel}
-                className="text-gray-400 hover:text-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1"
+                className="text-warm-400 hover:text-warm-600 transition-colors focus:outline-none focus:ring-2 focus:ring-kake-caramel-400 rounded-lg p-1"
                 aria-label="Close modal"
               >
                 <X className="h-5 w-5" />
@@ -226,19 +226,19 @@ const GV_ConfirmationModal: React.FC = () => {
           <div className="px-6 pb-6">
             <p
               id="modal-description"
-              className="text-base text-gray-600 leading-relaxed whitespace-pre-wrap"
+              className="text-base text-warm-700 leading-relaxed whitespace-pre-wrap"
             >
               {modalMessage}
             </p>
           </div>
 
           {/* Modal Footer - Action Buttons */}
-          <div className="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0">
+          <div className="gradient-cream px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 space-y-3 space-y-reverse sm:space-y-0">
             {/* Cancel Button */}
             <button
               type="button"
               onClick={handleCancel}
-              className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-lg border border-gray-300 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-200 shadow-sm"
+              className="w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-lg border-2 border-warm-300 bg-white text-base font-medium text-warm-700 hover:bg-warm-50 focus:outline-none focus:ring-4 focus:ring-kake-caramel-200 transition-all duration-200 shadow-soft active:scale-95"
             >
               {cancelButtonText}
             </button>
@@ -248,11 +248,11 @@ const GV_ConfirmationModal: React.FC = () => {
               type="button"
               onClick={handleConfirm}
               className={`
-                w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-lg border border-transparent text-base font-medium text-white focus:outline-none focus:ring-4 transition-all duration-200 shadow-lg hover:shadow-xl
+                w-full sm:w-auto inline-flex justify-center items-center px-6 py-3 rounded-lg border border-transparent text-base font-medium text-white focus:outline-none focus:ring-4 transition-all duration-200 shadow-caramel hover:shadow-caramel-lg active:scale-95
                 ${
                   isDangerAction
-                    ? 'bg-red-600 hover:bg-red-700 focus:ring-red-100'
-                    : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-100'
+                    ? 'bg-kake-berry-500 hover:bg-kake-berry-600 focus:ring-kake-berry-200'
+                    : 'gradient-caramel hover:animate-drip focus:ring-kake-caramel-200'
                 }
               `}
               autoFocus={isDangerAction}

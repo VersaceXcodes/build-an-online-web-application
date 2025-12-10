@@ -108,13 +108,13 @@ const GV_TopNav: React.FC = () => {
         <div className="flex items-center space-x-3">
           <Link
             to="/login"
-            className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            className="text-kake-chocolate-700 hover:text-kake-caramel-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 drip-border-bottom"
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+            className="gradient-caramel text-white px-4 py-2 rounded-lg text-sm font-medium shadow-caramel hover:shadow-caramel-lg transition-all duration-200 active:scale-95"
           >
             Sign Up
           </Link>
@@ -126,22 +126,22 @@ const GV_TopNav: React.FC = () => {
     if (currentUser.user_type === 'customer') {
       return (
         <div className="relative" ref={accountDropdownRef}>
-          <button
-            onClick={handleToggleAccountDropdown}
-            className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-            aria-expanded={accountDropdownOpen}
-            aria-haspopup="true"
-          >
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-semibold text-sm">
-                {currentUser.first_name.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <span className="hidden lg:block">{currentUser.first_name}</span>
-          </button>
+            <button
+              onClick={handleToggleAccountDropdown}
+              className="flex items-center space-x-2 text-kake-chocolate-700 hover:text-kake-caramel-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              aria-expanded={accountDropdownOpen}
+              aria-haspopup="true"
+            >
+              <div className="w-8 h-8 gradient-caramel-soft rounded-full flex items-center justify-center shadow-soft">
+                <span className="text-kake-caramel-700 font-semibold text-sm">
+                  {currentUser.first_name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <span className="hidden lg:block">{currentUser.first_name}</span>
+            </button>
           
           {accountDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
+            <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-caramel-lg border-2 border-kake-cream-300 py-2 z-50 animate-cream-fade-in">
               <div className="px-4 py-3 border-b border-gray-100">
                 <p className="text-sm font-semibold text-gray-900">
                   {currentUser.first_name} {currentUser.last_name}
@@ -152,7 +152,7 @@ const GV_TopNav: React.FC = () => {
               <div className="py-2">
                 <Link
                   to="/account"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <User className="w-4 h-4 mr-3" />
@@ -161,7 +161,7 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/favorites"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Heart className="w-4 h-4 mr-3" />
@@ -170,7 +170,7 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/account?tab=orders"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Package className="w-4 h-4 mr-3" />
@@ -179,21 +179,21 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/account?tab=loyalty_points"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Award className="w-4 h-4 mr-3" />
                   Loyalty Points
-                  <span className="ml-auto text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">
+                  <span className="ml-auto text-xs font-semibold text-white gradient-caramel px-2 py-1 rounded-full shadow-soft">
                     {currentUser.loyalty_points_balance}
                   </span>
                 </Link>
               </div>
               
-              <div className="border-t border-gray-100 pt-2">
+              <div className="border-t border-kake-cream-300 pt-2">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  className="flex items-center w-full px-4 py-2 text-sm text-kake-berry-600 hover:bg-kake-berry-50 transition-all duration-200 rounded-md mx-2"
                 >
                   <LogOut className="w-4 h-4 mr-3" />
                   Logout
@@ -372,14 +372,14 @@ const GV_TopNav: React.FC = () => {
         <div className="px-4 py-3 border-t border-gray-200 space-y-2">
           <Link
             to="/login"
-            className="block w-full text-center px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-md text-sm font-medium transition-colors"
+            className="block w-full text-center px-4 py-2 text-kake-chocolate-700 hover:bg-kake-cream-200 rounded-lg text-sm font-medium transition-all duration-200"
             onClick={() => setMobileMenuOpen(false)}
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+            className="block w-full text-center px-4 py-2 gradient-caramel text-white rounded-lg text-sm font-medium shadow-caramel hover:shadow-caramel-lg transition-all duration-200"
             onClick={() => setMobileMenuOpen(false)}
           >
             Sign Up
@@ -593,7 +593,7 @@ const GV_TopNav: React.FC = () => {
   return (
     <>
       {/* Fixed Navigation Bar */}
-      <nav className="fixed top-0 left-0 right-0 bg-white shadow-md z-40">
+      <nav className="fixed top-0 left-0 right-0 bg-white shadow-caramel border-b-2 border-kake-cream-300 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left: Logo */}
@@ -607,7 +607,7 @@ const GV_TopNav: React.FC = () => {
             <div className="hidden md:flex items-center space-x-6">
               <Link
                 to="/"
-                className="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center text-kake-chocolate-700 hover:text-kake-caramel-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 drip-border-bottom"
               >
                 <Home className="w-4 h-4 mr-2" />
                 Home
@@ -615,7 +615,7 @@ const GV_TopNav: React.FC = () => {
               
               <Link
                 to="/about"
-                className="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center text-kake-chocolate-700 hover:text-kake-caramel-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 drip-border-bottom"
               >
                 <Info className="w-4 h-4 mr-2" />
                 About
@@ -627,12 +627,12 @@ const GV_TopNav: React.FC = () => {
               {/* Cart Icon with Badge (hidden in checkout) */}
               <button
                 onClick={handleCartClick}
-                className="relative p-2 text-gray-700 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-all duration-200"
+                className="relative p-2 text-kake-chocolate-700 hover:text-kake-caramel-600 rounded-full hover:bg-kake-cream-200 transition-all duration-200"
                 aria-label={`Shopping cart with ${cartItemCount} items`}
               >
                 <ShoppingCart className="w-6 h-6" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+                  <span className="absolute -top-1 -right-1 gradient-caramel text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-soft-bounce shadow-caramel">
                     {cartItemCount > 9 ? '9+' : cartItemCount}
                   </span>
                 )}
@@ -662,11 +662,11 @@ const GV_TopNav: React.FC = () => {
         
         {/* Mobile Navigation Panel */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
+          <div className="md:hidden bg-white border-t-2 border-kake-cream-300 shadow-caramel-lg animate-cream-fade-in">
             <div className="px-4 py-3 space-y-1">
               <Link
                 to="/"
-                className="flex items-center px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center px-3 py-2 text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 rounded-lg text-sm font-medium transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Home className="w-4 h-4 mr-3" />
@@ -675,7 +675,7 @@ const GV_TopNav: React.FC = () => {
               
               <Link
                 to="/about"
-                className="flex items-center px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md text-sm font-medium transition-colors"
+                className="flex items-center px-3 py-2 text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 rounded-lg text-sm font-medium transition-all duration-200"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Info className="w-4 h-4 mr-3" />

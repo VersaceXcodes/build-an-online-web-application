@@ -16,9 +16,9 @@
 }
 
 *::selection {
-	background-color: #444;
+	background-color: #f19a00;
 	color: white;
-	/* Selected state text color */
+	/* KAKE caramel selection */
 }
 
 ::-webkit-scrollbar {
@@ -29,19 +29,21 @@
 }
 
 ::-webkit-scrollbar-track {
-	background: #eee;
-	/* Light track */
+	background: #fff7df;
+	/* KAKE cream track */
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(150, 150, 150, 0.4);
-	/* Light thumb */
+	background: rgba(241, 154, 0, 0.3);
+	/* KAKE caramel thumb */
 	height: 50px;
 	/* Vertical scrollbar thumb height */
+	border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: #aaa;
+	background: rgba(241, 154, 0, 0.5);
+	/* Darker caramel on hover */
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
@@ -52,5 +54,92 @@
 @layer base {
 	:root {
 		--radius: 0.5rem;
+		
+		/* KAKE Brand Color Variables */
+		--color-primary: 241 154 0; /* Caramel */
+		--color-primary-light: 251 228 192;
+		--color-primary-dark: 149 93 0;
+		
+		--color-secondary: 255 234 175; /* Cream */
+		--color-secondary-light: 255 253 247;
+		--color-secondary-dark: 191 177 132;
+		
+		--color-accent: 135 95 75; /* Chocolate */
+		--color-accent-light: 207 191 183;
+		--color-accent-dark: 67 48 37;
+		
+		--color-highlight: 238 46 95; /* Berry */
+		--color-highlight-light: 251 203 215;
+		--color-highlight-dark: 143 28 58;
+		
+		/* Semantic colors */
+		--color-success: 34 197 94; /* Green */
+		--color-warning: 245 158 11; /* Amber */
+		--color-error: 239 68 68; /* Red */
+		--color-info: 59 130 246; /* Blue */
+		
+		/* Neutral warm tones */
+		--color-background: 250 250 249;
+		--color-surface: 255 255 255;
+		--color-surface-elevated: 255 253 247;
+		--color-border: 231 229 228;
+		--color-text: 28 25 23;
+		--color-text-secondary: 120 113 108;
+		--color-text-tertiary: 168 162 158;
+	}
+}
+
+/* KAKE Custom Utility Classes */
+@layer utilities {
+	.gradient-caramel {
+		background: linear-gradient(135deg, #f9d49a 0%, #f19a00 100%);
+	}
+	
+	.gradient-caramel-soft {
+		background: linear-gradient(135deg, #fef9f3 0%, #fbe4c0 100%);
+	}
+	
+	.gradient-cream {
+		background: linear-gradient(135deg, #fffefb 0%, #ffeaaf 100%);
+	}
+	
+	.shadow-caramel {
+		box-shadow: 0 4px 14px rgba(241, 154, 0, 0.15);
+	}
+	
+	.shadow-caramel-lg {
+		box-shadow: 0 10px 25px rgba(241, 154, 0, 0.2);
+	}
+	
+	.shadow-soft {
+		box-shadow: 0 2px 8px rgba(120, 113, 108, 0.08);
+	}
+	
+	.shadow-soft-lg {
+		box-shadow: 0 8px 20px rgba(120, 113, 108, 0.12);
+	}
+	
+	.text-shadow-soft {
+		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+	
+	.drip-border-bottom {
+		position: relative;
+	}
+	
+	.drip-border-bottom::after {
+		content: '';
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		width: 100%;
+		height: 2px;
+		background: linear-gradient(90deg, transparent, #f19a00, transparent);
+		opacity: 0;
+		transition: opacity 0.3s ease;
+	}
+	
+	.drip-border-bottom:hover::after {
+		opacity: 1;
 	}
 }
