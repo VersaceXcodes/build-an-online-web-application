@@ -209,8 +209,16 @@ app.post('/api/auth/login', async (req, res) => {
     const session_id = generateId('sess');
     const expires_at = new Date(Date.now() + (remember_me ? 30 * 24 : 24) * 60 * 60 * 1000).toISOString();
     await client.query('INSERT INTO sessions (session_id, user_id, token, remember_me, expires_at, last_activity_at, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [session_id, user.user_id, token, remember_me, expires_at, now, now]);
+    
+    // Include assigned locations for staff/manager users
+    let assignedLocations = [];
+    if (user.user_type === 'staff' || user.user_type === 'manager') {
+      const assignmentsResult = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [user.user_id]);
+      assignedLocations = assignmentsResult.rows.map(r => r.location_name);
+    }
+    
     client.release();
-    res.json({ token, user: { user_id: user.user_id, email: user.email, first_name: user.first_name, last_name: user.last_name, phone_number: user.phone_number, user_type: user.user_type, account_status: user.account_status, marketing_opt_in: user.marketing_opt_in, loyalty_points_balance: parseFloat(user.loyalty_points_balance), last_login_at: now, created_at: user.created_at, updated_at: now } });
+    res.json({ token, user: { user_id: user.user_id, email: user.email, first_name: user.first_name, last_name: user.last_name, phone_number: user.phone_number, user_type: user.user_type, account_status: user.account_status, marketing_opt_in: user.marketing_opt_in, loyalty_points_balance: parseFloat(user.loyalty_points_balance), last_login_at: now, created_at: user.created_at, updated_at: now, assigned_locations: assignedLocations } });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Login failed', error, 'LOGIN_ERROR'));
@@ -277,7 +285,22 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 app.get('/api/users/me', authenticateToken, async (req: AuthRequest, res: Response) => {
-  res.json(req.user);
+  const client = await pool.connect();
+  try {
+    // If user is staff, include their assigned locations
+    if (req.user.user_type === 'staff' || req.user.user_type === 'manager') {
+      const assignmentsResult = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [req.user.user_id]);
+      const assignedLocations = assignmentsResult.rows.map(r => r.location_name);
+      client.release();
+      res.json({ ...req.user, assigned_locations: assignedLocations });
+    } else {
+      client.release();
+      res.json(req.user);
+    }
+  } catch (error) {
+    client.release();
+    res.json(req.user);
+  }
 });
 
 app.put('/api/users/me', authenticateToken, async (req: AuthRequest, res: Response) => {

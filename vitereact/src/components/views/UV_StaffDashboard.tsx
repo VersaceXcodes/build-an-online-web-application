@@ -273,17 +273,16 @@ const UV_StaffDashboard: React.FC = () => {
   // DEFINE ASSIGNED LOCATIONS
   // ========================================
   
-  // In production, this would come from staff_assignments table
-  // For now, using a simple check based on user data
+  // Get assigned locations from user data (fetched from backend staff_assignments table)
   const assignedLocations = useMemo(() => {
-    // Admin can see all locations
-    if (currentUser?.user_type === 'admin') {
-      return ['Blanchardstown', 'Tallaght', 'Glasnevin'];
+    // Check if user has assigned_locations from backend
+    if (currentUser && 'assigned_locations' in currentUser && Array.isArray((currentUser as any).assigned_locations)) {
+      const locations = (currentUser as any).assigned_locations;
+      return locations.length > 0 ? locations : ['London Flagship']; // Fallback to London Flagship if no assignments
     }
     
-    // For staff, we'd fetch from staff_assignments API
-    // For MVP, default to first location
-    return ['Blanchardstown'];
+    // Fallback for users without assigned_locations (shouldn't happen for staff)
+    return ['London Flagship'];
   }, [currentUser]);
 
   // Current location filter - default to first assigned location
