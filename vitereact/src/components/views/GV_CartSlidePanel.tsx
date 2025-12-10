@@ -592,6 +592,11 @@ const GV_CartSlidePanel: React.FC = () => {
                     </div>
                   )}
                   
+                  <div className="flex justify-between text-gray-700">
+                    <span>Tax (20%)</span>
+                    <span className="font-medium">€{Number(totals.tax || 0).toFixed(2)}</span>
+                  </div>
+                  
                   {/* Free delivery progress */}
                   {fulfillmentMethod === 'delivery' && !isFreeDeliveryEligible && freeDeliveryThreshold && (
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">

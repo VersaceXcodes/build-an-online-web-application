@@ -69,9 +69,10 @@ const UV_Checkout_Step1: React.FC = () => {
   const authToken = useAppStore(state => state.authentication_state.auth_token);
   
   const cartItems = useAppStore(state => state.cart_state.items);
-  const cartSubtotal = useAppStore(state => state.cart_state.totals.subtotal);
+                  const cartSubtotal = useAppStore(state => state.cart_state.totals.subtotal);
   const cartDeliveryFee = useAppStore(state => state.cart_state.totals.delivery_fee);
   const cartDiscount = useAppStore(state => state.cart_state.totals.discount);
+  const cartTax = useAppStore(state => state.cart_state.totals.tax);
   const cartTotal = useAppStore(state => state.cart_state.totals.total);
   const selectedLocation = useAppStore(state => state.cart_state.selected_location);
   const cartFulfillmentMethod = useAppStore(state => state.cart_state.fulfillment_method);
@@ -1300,6 +1301,12 @@ const UV_Checkout_Step1: React.FC = () => {
                         <span className="font-medium">-€{Number(cartDiscount || 0).toFixed(2)}</span>
                       </div>
                     )}
+
+                    {/* Tax */}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Tax (20%)</span>
+                      <span className="font-medium text-gray-900">€{Number(cartTax || 0).toFixed(2)}</span>
+                    </div>
 
                     {/* Total */}
                     <div className="flex justify-between text-lg font-bold text-gray-900 border-t-2 border-gray-300 pt-4 mt-4">

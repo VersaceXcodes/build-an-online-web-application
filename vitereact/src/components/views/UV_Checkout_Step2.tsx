@@ -881,6 +881,11 @@ const UV_Checkout_Step2: React.FC = () => {
                       <span className="font-medium">-€{Number(appliedDiscounts.promo_code_discount || 0).toFixed(2)}</span>
                     </div>
                   )}
+
+                  <div className="flex justify-between text-base text-gray-700">
+                    <span>Tax (20%)</span>
+                    <span className="font-medium">€{Number(cartTotals.tax || 0).toFixed(2)}</span>
+                  </div>
                 </div>
 
                 {/* Total */}

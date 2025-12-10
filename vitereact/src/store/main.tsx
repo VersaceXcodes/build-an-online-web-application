@@ -115,6 +115,7 @@ interface CartState {
     subtotal: number;
     delivery_fee: number;
     discount: number;
+    tax: number;
     total: number;
   };
   applied_discounts: {
@@ -331,6 +332,7 @@ export const useAppStore = create<AppStore>()(
             subtotal: 0,
             delivery_fee: 0,
             discount: 0,
+            tax: 0,
             total: 0,
           },
           applied_discounts: {
@@ -830,14 +832,19 @@ export const useAppStore = create<AppStore>()(
           // Total discount (loyalty + promo code)
           const total_discount = loyalty_discount + promo_discount;
 
+          // Calculate tax on subtotal (before discounts and delivery)
+          const tax_rate = system_config_state.tax_rate_percentage / 100;
+          const tax = subtotal * tax_rate;
+
           // Calculate total
           const current_delivery_fee = cart_state.totals.delivery_fee;
           const total = Math.max(
             0,
-            subtotal + current_delivery_fee - total_discount
+            subtotal + current_delivery_fee + tax - total_discount
           );
 
           console.log('[CALCULATE_TOTALS] Total discount:', total_discount);
+          console.log('[CALCULATE_TOTALS] Tax (20% of subtotal):', tax);
           console.log('[CALCULATE_TOTALS] Delivery fee:', current_delivery_fee);
           console.log('[CALCULATE_TOTALS] Final total:', total);
 
@@ -848,6 +855,7 @@ export const useAppStore = create<AppStore>()(
                 ...state.cart_state.totals,
                 subtotal,
                 discount: total_discount,
+                tax,
                 total,
               },
             },
@@ -864,6 +872,7 @@ export const useAppStore = create<AppStore>()(
                 subtotal: 0,
                 delivery_fee: 0,
                 discount: 0,
+                tax: 0,
                 total: 0,
               },
               applied_discounts: {
