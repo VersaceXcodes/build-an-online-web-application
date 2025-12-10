@@ -125,6 +125,15 @@ const UV_StaffTraining: React.FC = () => {
     return response.data;
   };
 
+  const fetchLessonCompletions = async (courseId: string) => {
+    const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/courses/${courseId}/lessons/completions`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    return response.data;
+  };
+
   const fetchAllProgress = async () => {
     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/training/progress`, {
       headers: {
@@ -183,12 +192,21 @@ const UV_StaffTraining: React.FC = () => {
     staleTime: 1 * 60 * 1000,
   });
 
+  // Fetch lesson completions (when course_id exists)
+  const { data: lesson_completions = [] } = useQuery({
+    queryKey: ['lesson_completions', course_id],
+    queryFn: () => fetchLessonCompletions(course_id!),
+    enabled: !!course_id,
+    staleTime: 1 * 60 * 1000,
+  });
+
   // Mark lesson complete mutation
   const markCompleteMutation = useMutation({
     mutationFn: markLessonCompleteMutation,
     onSuccess: (data) => {
       // Invalidate queries to refresh progress
       queryClient.invalidateQueries({ queryKey: ['course_progress', course_id] });
+      queryClient.invalidateQueries({ queryKey: ['lesson_completions', course_id] });
       queryClient.invalidateQueries({ queryKey: ['training_progress'] });
       queryClient.invalidateQueries({ queryKey: ['training_course', course_id] });
       
@@ -231,6 +249,14 @@ const UV_StaffTraining: React.FC = () => {
       completed_at: null,
     };
   }, [all_progress]);
+
+  // Check if a lesson is completed
+  const isLessonCompleted = useCallback((lessonId: string) => {
+    return lesson_completions.some((lc: any) => lc.lesson_id === lessonId && lc.is_completed);
+  }, [lesson_completions]);
+
+  // Get count of completed lessons
+  const completed_lessons_count = lesson_completions.filter((lc: any) => lc.is_completed).length;
 
   // Filter courses based on search and completion filter
   const filtered_courses = courses_catalog.filter((course: TrainingCourse) => {
@@ -648,10 +674,7 @@ const UV_StaffTraining: React.FC = () => {
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-gray-700">Your Progress</span>
                           <span className="text-sm text-gray-500">
-                            {course_lessons.filter(() => {
-                              // Check completion - this is simplified, in real app would query completion status
-                              return false;
-                            }).length} of {course_lessons.length} lessons completed
+                            {completed_lessons_count} of {course_lessons.length} lessons completed
                           </span>
                         </div>
                         <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -692,8 +715,8 @@ const UV_StaffTraining: React.FC = () => {
                       {course_lessons
                         .sort((a, b) => a.lesson_order - b.lesson_order)
                         .map((lesson) => {
-                          // Check if completed (simplified - would need actual query in production)
-                          const is_completed = false;
+                          // Check if completed
+                          const is_completed = isLessonCompleted(lesson.lesson_id);
 
                           return (
                             <Link
@@ -972,7 +995,7 @@ const UV_StaffTraining: React.FC = () => {
                             .sort((a, b) => a.lesson_order - b.lesson_order)
                             .map((lesson) => {
                               const is_current = lesson.lesson_id === lesson_id;
-                              const is_completed = false; // Simplified
+                              const is_completed = isLessonCompleted(lesson.lesson_id);
 
                               return (
                                 <Link

@@ -1452,6 +1452,23 @@ app.get('/api/training/courses/:course_id/progress', authenticateToken, requireR
   }
 });
 
+app.get('/api/training/courses/:course_id/lessons/completions', authenticateToken, requireRole(['staff']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      `SELECT slc.* FROM staff_lesson_completion slc 
+       INNER JOIN training_lessons tl ON slc.lesson_id = tl.lesson_id 
+       WHERE slc.user_id = $1 AND tl.course_id = $2`,
+      [req.user.user_id, req.params.course_id]
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch lesson completions', error, 'LESSON_COMPLETIONS_FETCH_ERROR'));
+  }
+});
+
 app.post('/api/training/lessons/:lesson_id/complete', authenticateToken, requireRole(['staff']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
