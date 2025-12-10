@@ -771,7 +771,7 @@ const UV_Register: React.FC = () => {
               <button
                 type="submit"
                 disabled={is_submitting || is_auth_loading}
-                className="w-full flex justify-center items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:hover:shadow-lg"
+                className="w-full flex justify-center items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg shadow-lg hover:bg-blue-700 hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100 transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:hover:shadow-lg disabled:hover:scale-100"
               >
                 {is_submitting || is_auth_loading ? (
                   <>

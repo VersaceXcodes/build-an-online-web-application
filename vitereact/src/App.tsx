@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
 import kakeLogo from '@/assets/images/kake-logo.png';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Global Shared Views
 import GV_TopNav from '@/components/views/GV_TopNav';
@@ -141,27 +142,12 @@ const RoleProtectedRoute: React.FC<{
 
 const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
-  const [isTransitioning, setIsTransitioning] = React.useState(false);
-  const [displayLocation, setDisplayLocation] = React.useState(location);
-  
-  // Handle page transitions
-  useEffect(() => {
-    if (location.pathname !== displayLocation.pathname) {
-      setIsTransitioning(true);
-      // Show transition for a brief moment
-      const timer = setTimeout(() => {
-        setDisplayLocation(location);
-        setIsTransitioning(false);
-      }, 150); // Short transition
-      return () => clearTimeout(timer);
-    }
-  }, [location, displayLocation]);
   
   // Determine if we should show footer based on route
   const showFooter = ![
     '/staff/', 
     '/admin/'
-  ].some(prefix => displayLocation.pathname.startsWith(prefix));
+  ].some(prefix => location.pathname.startsWith(prefix));
   
   // Determine if we should show cart panel based on route
   const showCartPanel = ![
@@ -172,7 +158,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     '/staff/',
     '/admin/',
     '/checkout'
-  ].some(path => displayLocation.pathname.startsWith(path));
+  ].some(path => location.pathname.startsWith(path));
   
   // Determine if we should show cookie banner (public routes only)
   const showCookieBanner = ![
@@ -182,35 +168,53 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     '/orders/',
     '/feedback/',
     '/checkout'
-  ].some(path => displayLocation.pathname.startsWith(path));
+  ].some(path => location.pathname.startsWith(path));
   
   const cookieConsentGiven = useAppStore(state => state.ui_state.cookie_consent_given);
   const isAuthenticated = useAppStore(state => state.authentication_state.authentication_status.is_authenticated);
+  
+  // Page transition variants - Fade and Slide Up effect
+  const pageVariants = {
+    initial: {
+      opacity: 0,
+      y: 20,
+    },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.4,
+        ease: [0.25, 0.46, 0.45, 0.94], // Smooth easing
+      },
+    },
+    exit: {
+      opacity: 0,
+      y: -20,
+      transition: {
+        duration: 0.3,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      },
+    },
+  };
   
   return (
     <>
       {/* Top Navigation - Always visible */}
       <GV_TopNav />
       
-      {/* Page transition overlay */}
-      {isTransitioning && (
-        <div 
-          className="fixed inset-0 bg-white/60 backdrop-blur-md z-30 flex items-center justify-center transition-all duration-200 animate-frosting-blur"
-          role="status"
-          aria-live="polite"
-          aria-label="Loading page"
+      {/* Main Content Area with Page Transitions */}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.main
+          key={location.pathname}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          className="min-h-screen"
         >
-          <div className="flex flex-col items-center space-y-3">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-kake-caramel-500 shadow-caramel"></div>
-            <p className="text-kake-chocolate-700 text-sm font-semibold">Loading...</p>
-          </div>
-        </div>
-      )}
-      
-      {/* Main Content Area */}
-      <main className={`min-h-screen transition-opacity duration-150 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
-        {children}
-      </main>
+          {children}
+        </motion.main>
+      </AnimatePresence>
       
       {/* Footer - Conditional based on route */}
       {showFooter && <GV_Footer />}

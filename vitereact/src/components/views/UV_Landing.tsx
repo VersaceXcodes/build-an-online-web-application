@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
+import { motion } from 'framer-motion';
 
 // ============================================================================
 // TYPE DEFINITIONS (from Zod schemas)
@@ -193,7 +194,7 @@ const UV_Landing: React.FC = () => {
               <div className="text-center">
                 <a
                   href="#locations"
-                  className="inline-block bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="inline-block bg-kake-chocolate-500 hover:bg-[#6d3d26] text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Choose Your Location
                 </a>
@@ -257,24 +258,34 @@ const UV_Landing: React.FC = () => {
           {/* Location Cards */}
           {!locations_loading && !locations_error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {location_card_data.map((card) => {
+              {location_card_data.map((card, index) => {
                 // Match location by name (exact match)
                 const location = locations.find(
                   (loc) => loc.location_name === card.name
                 );
 
                 return (
-                  <Link
+                  <motion.div
                     key={card.slug}
-                    to={`/location/${card.slug}`}
-                    onClick={() => {
-                      if (location) {
-                        setCurrentLocation(location.location_name);
-                        setLocationDetails(location);
-                      }
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.15,
+                      ease: [0.25, 0.46, 0.45, 0.94],
                     }}
-                    className="group bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-kake-cream-300 overflow-hidden hover:shadow-[0_8px_30px_rgba(139,69,19,0.15)] hover:scale-[1.02] transition-all duration-300"
                   >
+                    <Link
+                      to={`/location/${card.slug}`}
+                      onClick={() => {
+                        if (location) {
+                          setCurrentLocation(location.location_name);
+                          setLocationDetails(location);
+                        }
+                      }}
+                      className="block group bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-kake-cream-300 overflow-hidden hover:shadow-[0_8px_30px_rgba(139,69,19,0.15)] hover:scale-[1.02] transition-all duration-300"
+                    >
                     {/* Card Image */}
                     <div className="relative h-56 overflow-hidden">
                       <img
@@ -325,7 +336,8 @@ const UV_Landing: React.FC = () => {
                         </svg>
                       </div>
                     </div>
-                  </Link>
+                    </Link>
+                  </motion.div>
                 );
               })}
             </div>

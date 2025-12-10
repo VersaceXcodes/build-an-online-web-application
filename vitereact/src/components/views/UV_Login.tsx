@@ -349,7 +349,8 @@ const UV_Login: React.FC = () => {
                       shadow-lg hover:shadow-xl
                       focus:outline-none focus:ring-4 focus:ring-blue-100
                       transition-all duration-200
-                      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:hover:shadow-lg
+                      hover:scale-105
+                      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 disabled:hover:shadow-lg disabled:hover:scale-100
                     "
                   >
                     {isLoading ? (
