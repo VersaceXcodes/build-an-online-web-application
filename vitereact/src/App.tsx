@@ -213,29 +213,70 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const loadSystemSettings = useAppStore(state => state.load_system_settings);
   const fetchLocations = useAppStore(state => state.fetch_locations);
   const systemConfigLoaded = useAppStore(state => state.system_config_state.loaded);
+  const [initError, setInitError] = React.useState<Error | null>(null);
   
   useEffect(() => {
     // Initialize app on mount
     const initializeApp = async () => {
       try {
+        console.log('Starting app initialization...');
+        
         // Initialize authentication state
+        console.log('Initializing auth...');
         await initializeAuth();
+        console.log('Auth initialized');
         
         // Load system settings if not already loaded
         if (!systemConfigLoaded) {
+          console.log('Loading system settings...');
           await loadSystemSettings();
+          console.log('System settings loaded');
         }
         
         // Fetch available locations
+        console.log('Fetching locations...');
         await fetchLocations();
+        console.log('Locations fetched');
+        
+        console.log('App initialization complete');
       } catch (error) {
         console.error('App initialization error:', error);
+        setInitError(error instanceof Error ? error : new Error(String(error)));
       }
     };
     
     initializeApp();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  // Show error if initialization failed
+  if (initError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
+          <h2 className="text-xl font-bold text-red-600 mb-4">Initialization Error</h2>
+          <p className="text-gray-700 mb-4">
+            The application failed to initialize properly. Please refresh the page to try again.
+          </p>
+          <details className="text-sm">
+            <summary className="cursor-pointer font-semibold text-gray-600 mb-2">
+              Technical Details
+            </summary>
+            <pre className="bg-gray-100 p-3 rounded overflow-auto text-xs">
+              {initError.message}
+              {initError.stack && `\n\n${initError.stack}`}
+            </pre>
+          </details>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   // Show loading spinner during initial auth check
   if (isLoading) {
