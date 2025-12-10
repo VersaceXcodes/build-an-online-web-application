@@ -226,6 +226,7 @@ const UV_Login: React.FC = () => {
                       onBlur={handleEmailBlur}
                       disabled={isLoading}
                       placeholder="your.email@example.com"
+                      data-testid="login-email-input"
                       className={`
                         block w-full pl-10 pr-4 py-3 
                         border-2 rounded-lg
@@ -269,6 +270,7 @@ const UV_Login: React.FC = () => {
                       onBlur={handlePasswordBlur}
                       disabled={isLoading}
                       placeholder="Enter your password"
+                      data-testid="login-password-input"
                       className={`
                         block w-full pl-10 pr-12 py-3 
                         border-2 rounded-lg
@@ -335,6 +337,7 @@ const UV_Login: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
+                    data-testid="login-submit-button"
                     className="
                       w-full flex justify-center items-center
                       px-6 py-3 
