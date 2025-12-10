@@ -715,12 +715,17 @@ app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff',
     if (['collected', 'delivered'].includes(order_status)) completed_at = now;
     await client.query('UPDATE orders SET order_status = $1, collection_code = $2, completed_at = $3, updated_at = $4 WHERE order_id = $5', [order_status, collection_code, completed_at, now, req.params.order_id]);
     await client.query('INSERT INTO order_status_history (history_id, order_id, previous_status, new_status, changed_by_user_id, notes, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)', [generateId('hist'), req.params.order_id, order.order_status, order_status, req.user.user_id, notes, now]);
+    // Award loyalty points when order is collected/delivered, but only if not already awarded
     if (['collected', 'delivered'].includes(order_status) && order.user_id && parseFloat(order.loyalty_points_earned) > 0) {
-      const userResult = await client.query('SELECT loyalty_points_balance FROM users WHERE user_id = $1', [order.user_id]);
-      const current_balance = parseFloat(userResult.rows[0].loyalty_points_balance);
-      const new_balance = current_balance + parseFloat(order.loyalty_points_earned);
-      await client.query('INSERT INTO loyalty_points_transactions (transaction_id, user_id, transaction_type, points_change, balance_after, order_id, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [generateId('lpt'), order.user_id, 'earned', parseFloat(order.loyalty_points_earned), new_balance, req.params.order_id, `Points earned from order ${order.order_number}`, now]);
-      await client.query('UPDATE users SET loyalty_points_balance = $1, updated_at = $2 WHERE user_id = $3', [new_balance, now, order.user_id]);
+      // Check if points were already awarded for this order
+      const existingTransaction = await client.query('SELECT transaction_id FROM loyalty_points_transactions WHERE order_id = $1 AND transaction_type = $2', [req.params.order_id, 'earned']);
+      if (existingTransaction.rows.length === 0) {
+        const userResult = await client.query('SELECT loyalty_points_balance FROM users WHERE user_id = $1', [order.user_id]);
+        const current_balance = parseFloat(userResult.rows[0].loyalty_points_balance);
+        const new_balance = current_balance + parseFloat(order.loyalty_points_earned);
+        await client.query('INSERT INTO loyalty_points_transactions (transaction_id, user_id, transaction_type, points_change, balance_after, order_id, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [generateId('lpt'), order.user_id, 'earned', parseFloat(order.loyalty_points_earned), new_balance, req.params.order_id, `Points earned from order ${order.order_number}`, now]);
+        await client.query('UPDATE users SET loyalty_points_balance = $1, updated_at = $2 WHERE user_id = $3', [new_balance, now, order.user_id]);
+      }
     }
     const email_id = generateId('email');
     let email_type = 'order_status_update';
@@ -786,6 +791,15 @@ app.put('/api/orders/:order_id/confirm-payment', authenticateToken, async (req: 
       'INSERT INTO order_status_history (history_id, order_id, previous_status, new_status, changed_by_user_id, notes, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
       [generateId('hist'), req.params.order_id, order.order_status, new_status, req.user.user_id, 'Payment confirmed by customer', now]
     );
+    
+    // Award loyalty points when payment is confirmed
+    if (order.user_id && parseFloat(order.loyalty_points_earned) > 0) {
+      const userResult = await client.query('SELECT loyalty_points_balance FROM users WHERE user_id = $1', [order.user_id]);
+      const current_balance = parseFloat(userResult.rows[0].loyalty_points_balance);
+      const new_balance = current_balance + parseFloat(order.loyalty_points_earned);
+      await client.query('INSERT INTO loyalty_points_transactions (transaction_id, user_id, transaction_type, points_change, balance_after, order_id, description, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [generateId('lpt'), order.user_id, 'earned', parseFloat(order.loyalty_points_earned), new_balance, req.params.order_id, `Points earned from order ${order.order_number}`, now]);
+      await client.query('UPDATE users SET loyalty_points_balance = $1, updated_at = $2 WHERE user_id = $3', [new_balance, now, order.user_id]);
+    }
     
     await client.query('COMMIT');
     
