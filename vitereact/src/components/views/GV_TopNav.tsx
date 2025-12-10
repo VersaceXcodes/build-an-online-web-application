@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket } from 'lucide-react';
 
 const GV_TopNav: React.FC = () => {
   // ============================================================================
@@ -323,6 +323,15 @@ const GV_TopNav: React.FC = () => {
                 </Link>
                 
                 <Link
+                  to="/admin/promo_codes"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Ticket className="w-4 h-4 mr-3" />
+                  Promo Codes
+                </Link>
+                
+                <Link
                   to="/admin/settings"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
                   onClick={() => setAccountDropdownOpen(false)}
@@ -536,6 +545,15 @@ const GV_TopNav: React.FC = () => {
             >
               <Package className="w-4 h-4 mr-3" />
               Products
+            </Link>
+            
+            <Link
+              to="/admin/promo_codes"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Ticket className="w-4 h-4 mr-3" />
+              Promo Codes
             </Link>
             
             <Link

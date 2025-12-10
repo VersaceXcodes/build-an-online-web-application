@@ -52,6 +52,7 @@ import UV_AdminFeedbackStaff from '@/components/views/UV_AdminFeedbackStaff';
 import UV_AdminInventoryAlerts from '@/components/views/UV_AdminInventoryAlerts';
 import UV_AdminSettings from '@/components/views/UV_AdminSettings';
 import UV_AdminReports from '@/components/views/UV_AdminReports';
+import UV_AdminPromoCodes from '@/components/views/UV_AdminPromoCodes';
 
 // ============================================================================
 // QUERY CLIENT CONFIGURATION
@@ -465,6 +466,15 @@ export const AppRoutes: React.FC = () => {
                 element={
                   <RoleProtectedRoute allowedRoles={['admin']}>
                     <UV_AdminProducts />
+                  </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/promo_codes" 
+                element={
+                  <RoleProtectedRoute allowedRoles={['admin']}>
+                    <UV_AdminPromoCodes />
                   </RoleProtectedRoute>
                 } 
               />
