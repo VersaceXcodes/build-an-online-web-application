@@ -326,7 +326,8 @@ const UV_StaffDashboard: React.FC = () => {
     queryFn: () => fetchOrders(
       {
         location_name: currentLocationFilter,
-        order_status: statusFilter || undefined,
+        // Don't send 'ready_out' to API - filter client-side instead
+        order_status: (statusFilter && statusFilter !== 'ready_out') ? statusFilter : undefined,
         date_from: dateFrom,
         date_to: dateTo,
         search: searchQuery || undefined,
@@ -475,7 +476,11 @@ const UV_StaffDashboard: React.FC = () => {
   // ACTIVE TAB LOGIC
   // ========================================
 
-  const activeTab = statusFilter || 'awaiting_confirmation';
+  const activeTab = statusFilter === 'payment_confirmed' ? 'awaiting_confirmation'
+    : statusFilter === 'preparing' ? 'in_preparation'
+    : statusFilter === 'ready_out' ? 'ready_out'
+    : statusFilter === 'completed' ? 'completed_today'
+    : statusFilter || 'awaiting_confirmation';
 
   const tabs = [
     { 
@@ -494,7 +499,7 @@ const UV_StaffDashboard: React.FC = () => {
       id: 'ready_out', 
       label: 'Ready/Out', 
       count: orderCounts.ready_collection + orderCounts.out_for_delivery,
-      status_filter: null // Will show both ready_for_collection and out_for_delivery
+      status_filter: 'ready_out' // Special filter value to show both ready_for_collection and out_for_delivery
     },
     { 
       id: 'completed_today', 
@@ -509,19 +514,20 @@ const UV_StaffDashboard: React.FC = () => {
   // ========================================
 
   const filteredOrders = useMemo(() => {
-    if (activeTab === 'ready_out') {
+    // Special handling for ready_out tab - show both ready_for_collection and out_for_delivery
+    if (activeTab === 'ready_out' || statusFilter === 'ready_out') {
       return ordersList.filter(o => 
         o.order_status === 'ready_for_collection' || o.order_status === 'out_for_delivery'
       );
     }
     
     const tabConfig = tabs.find(t => t.id === activeTab);
-    if (tabConfig?.status_filter) {
+    if (tabConfig?.status_filter && tabConfig.status_filter !== 'ready_out') {
       return ordersList.filter(o => o.order_status === tabConfig.status_filter);
     }
     
     return ordersList;
-  }, [ordersList, activeTab]);
+  }, [ordersList, activeTab, statusFilter]);
 
   // ============================================================================
   // RENDER
@@ -693,34 +699,39 @@ const UV_StaffDashboard: React.FC = () => {
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="border-b border-gray-200">
               <nav className="flex -mb-px overflow-x-auto">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleFilterChange('status', tab.status_filter)}
-                    className={`
-                      whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors
-                      ${activeTab === tab.id || (tab.id === 'ready_out' && (statusFilter === 'ready_for_collection' || statusFilter === 'out_for_delivery'))
-                        ? 'border-blue-500 text-blue-600' 
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                      }
-                    `}
-                  >
-                    <span className="flex items-center space-x-2">
-                      <span>{tab.label}</span>
-                      {tab.count > 0 && (
-                        <span className={`
-                          inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
-                          ${activeTab === tab.id || (tab.id === 'ready_out' && (statusFilter === 'ready_for_collection' || statusFilter === 'out_for_delivery'))
-                            ? 'bg-blue-100 text-blue-800' 
-                            : 'bg-gray-100 text-gray-700'
-                          }
-                        `}>
-                          {tab.count}
-                        </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
+                {tabs.map((tab) => {
+                  // Check if this tab should be highlighted as active
+                  const isActive = activeTab === tab.id || (tab.id === 'ready_out' && statusFilter === 'ready_out');
+                  
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => handleFilterChange('status', tab.status_filter)}
+                      className={`
+                        whitespace-nowrap py-4 px-6 border-b-2 font-medium text-sm transition-colors
+                        ${isActive
+                          ? 'border-blue-500 text-blue-600' 
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }
+                      `}
+                    >
+                      <span className="flex items-center space-x-2">
+                        <span>{tab.label}</span>
+                        {tab.count > 0 && (
+                          <span className={`
+                            inline-flex items-center justify-center px-2 py-1 text-xs font-bold rounded-full
+                            ${isActive
+                              ? 'bg-blue-100 text-blue-800' 
+                              : 'bg-gray-100 text-gray-700'
+                            }
+                          `}>
+                            {tab.count}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
               </nav>
             </div>
 
