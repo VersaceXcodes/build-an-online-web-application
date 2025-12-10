@@ -37,6 +37,7 @@ const GV_CartSlidePanel: React.FC = () => {
   const [promoCodeError, setPromoCodeError] = useState<string | null>(null);
   const [applyingPromo, setApplyingPromo] = useState(false);
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
+  const [loyaltyPointsInput, setLoyaltyPointsInput] = useState('');
   const [updatingQuantity, setUpdatingQuantity] = useState<string | null>(null);
   
   // Calculate loyalty points that can be used
@@ -53,7 +54,11 @@ const GV_CartSlidePanel: React.FC = () => {
   
   // Sync loyalty points toggle with store state
   useEffect(() => {
-    setUseLoyaltyPoints(appliedDiscounts.loyalty_points_used > 0);
+    const pointsUsed = appliedDiscounts.loyalty_points_used;
+    setUseLoyaltyPoints(pointsUsed > 0);
+    if (pointsUsed > 0) {
+      setLoyaltyPointsInput(String(pointsUsed));
+    }
   }, [appliedDiscounts.loyalty_points_used]);
   
   // Sync promo code input with store state
@@ -179,6 +184,8 @@ const GV_CartSlidePanel: React.FC = () => {
     
     if (checked) {
       if (maxLoyaltyPointsUsable > 0) {
+        // Default to max points when toggling on, but user can change
+        setLoyaltyPointsInput(String(maxLoyaltyPointsUsable));
         applyLoyaltyPointsAction(maxLoyaltyPointsUsable);
         showToast('success', `Using ${maxLoyaltyPointsUsable} points for €${maxLoyaltyDiscount.toFixed(2)} discount`);
       } else {
@@ -187,8 +194,41 @@ const GV_CartSlidePanel: React.FC = () => {
       }
     } else {
       removeLoyaltyPointsAction();
+      setLoyaltyPointsInput('');
       showToast('info', 'Loyalty points removed');
     }
+  };
+  
+  // Handle loyalty points input change
+  const handleLoyaltyPointsInputChange = (value: string) => {
+    // Allow only numbers
+    if (value === '' || /^\d+$/.test(value)) {
+      setLoyaltyPointsInput(value);
+    }
+  };
+  
+  // Handle loyalty points application
+  const handleApplyLoyaltyPoints = () => {
+    const points = parseInt(loyaltyPointsInput) || 0;
+    
+    if (points === 0) {
+      showToast('warning', 'Please enter a valid number of points');
+      return;
+    }
+    
+    if (points > loyaltyPointsAvailable) {
+      showToast('error', `You only have ${loyaltyPointsAvailable} points available`);
+      return;
+    }
+    
+    if (points > maxLoyaltyPointsUsable) {
+      showToast('error', `Maximum ${maxLoyaltyPointsUsable} points can be used for this order`);
+      return;
+    }
+    
+    applyLoyaltyPointsAction(points);
+    const discount = (points / pointsRedemptionRate).toFixed(2);
+    showToast('success', `Using ${points} points for €${discount} discount`);
   };
   
   // Handle checkout navigation
@@ -408,17 +448,43 @@ const GV_CartSlidePanel: React.FC = () => {
                       </div>
                       
                       {maxLoyaltyPointsUsable > 0 ? (
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={useLoyaltyPoints}
-                            onChange={(e) => handleLoyaltyToggle(e.target.checked)}
-                            className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
-                          />
-                          <span className="text-sm text-purple-800">
-                            Use {maxLoyaltyPointsUsable} points for €{maxLoyaltyDiscount.toFixed(2)} discount
-                          </span>
-                        </label>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={useLoyaltyPoints}
+                              onChange={(e) => handleLoyaltyToggle(e.target.checked)}
+                              className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                            />
+                            <span className="text-sm text-purple-800">
+                              Use loyalty points
+                            </span>
+                          </label>
+                          
+                          {useLoyaltyPoints && (
+                            <div className="flex gap-2 mt-2">
+                              <input
+                                type="text"
+                                value={loyaltyPointsInput}
+                                onChange={(e) => handleLoyaltyPointsInputChange(e.target.value)}
+                                placeholder="Enter points"
+                                className="flex-1 px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                              />
+                              <button
+                                onClick={handleApplyLoyaltyPoints}
+                                className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                          )}
+                          
+                          {useLoyaltyPoints && (
+                            <p className="text-xs text-purple-700">
+                              Max {maxLoyaltyPointsUsable} points (€{maxLoyaltyDiscount.toFixed(2)} discount)
+                            </p>
+                          )}
+                        </div>
                       ) : (
                         <p className="text-xs text-purple-700">
                           Minimum order value required to use points

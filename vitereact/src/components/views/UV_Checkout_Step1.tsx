@@ -123,6 +123,9 @@ const UV_Checkout_Step1: React.FC = () => {
 
   // Special Instructions
   const [specialInstructions, setSpecialInstructions] = useState('');
+  
+  // Loyalty Points
+  const [loyaltyPointsInput, setLoyaltyPointsInput] = useState('');
 
   // Validation & UI State
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -186,6 +189,15 @@ const UV_Checkout_Step1: React.FC = () => {
       }
     }
   }, [savedAddresses]);
+
+  // Sync loyalty points input with store
+  useEffect(() => {
+    if (loyaltyPointsUsed > 0) {
+      setLoyaltyPointsInput(String(loyaltyPointsUsed));
+    } else {
+      setLoyaltyPointsInput('');
+    }
+  }, [loyaltyPointsUsed]);
 
   // Calculate delivery fee when fulfillment method changes
   useEffect(() => {
@@ -405,6 +417,8 @@ const UV_Checkout_Step1: React.FC = () => {
       const pointsToUse = Math.min(availablePoints, maxPointsUsable);
       
       if (pointsToUse > 0) {
+        // Set default to max points, but user can change
+        setLoyaltyPointsInput(String(pointsToUse));
         applyLoyaltyPoints(pointsToUse);
         showToast('success', `Using ${pointsToUse} points for €${(pointsToUse / pointsRedemptionRate).toFixed(2)} discount`);
       } else {
@@ -412,7 +426,42 @@ const UV_Checkout_Step1: React.FC = () => {
       }
     } else {
       removeLoyaltyPoints();
+      setLoyaltyPointsInput('');
     }
+  };
+  
+  const handleLoyaltyPointsInputChange = (value: string) => {
+    // Allow only numbers
+    if (value === '' || /^\d+$/.test(value)) {
+      setLoyaltyPointsInput(value);
+    }
+  };
+  
+  const handleApplyLoyaltyPoints = () => {
+    if (!currentUser) return;
+    
+    const points = parseInt(loyaltyPointsInput) || 0;
+    const availablePoints = Number(currentUser.loyalty_points_balance || 0);
+    const maxPointsUsable = Math.floor(cartSubtotal * pointsRedemptionRate);
+    
+    if (points === 0) {
+      showToast('warning', 'Please enter a valid number of points');
+      return;
+    }
+    
+    if (points > availablePoints) {
+      showToast('error', `You only have ${availablePoints} points available`);
+      return;
+    }
+    
+    if (points > maxPointsUsable) {
+      showToast('error', `Maximum ${maxPointsUsable} points can be used for this order`);
+      return;
+    }
+    
+    applyLoyaltyPoints(points);
+    const discount = (points / pointsRedemptionRate).toFixed(2);
+    showToast('success', `Using ${points} points for €${discount} discount`);
   };
 
   // Calculate estimated ready time
@@ -1140,7 +1189,7 @@ const UV_Checkout_Step1: React.FC = () => {
                     )}
 
                     {/* Loyalty Points Section */}
-                    {isAuthenticated && currentUser && (
+                    {isAuthenticated && currentUser && Number(currentUser.loyalty_points_balance || 0) > 0 && (
                       <div className="border-t border-gray-200 pt-3 mt-3">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-gray-700">Loyalty Points</span>
@@ -1148,7 +1197,7 @@ const UV_Checkout_Step1: React.FC = () => {
                             {Number(currentUser.loyalty_points_balance || 0)} available
                           </span>
                         </div>
-                        <label className="flex items-center space-x-3 cursor-pointer">
+                        <label className="flex items-center space-x-3 cursor-pointer mb-2">
                           <input
                             type="checkbox"
                             checked={loyaltyPointsUsed > 0}
@@ -1156,13 +1205,33 @@ const UV_Checkout_Step1: React.FC = () => {
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
                           <span className="text-sm text-gray-700">
-                            Use points for discount
+                            Use loyalty points
                           </span>
                         </label>
                         {loyaltyPointsUsed > 0 && (
-                          <p className="text-xs text-green-600 mt-2">
-                            -{loyaltyPointsUsed} points (€{(loyaltyPointsUsed / pointsRedemptionRate).toFixed(2)} discount)
-                          </p>
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={loyaltyPointsInput}
+                                onChange={(e) => handleLoyaltyPointsInputChange(e.target.value)}
+                                placeholder="Enter points"
+                                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              />
+                              <button
+                                onClick={handleApplyLoyaltyPoints}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                              >
+                                Apply
+                              </button>
+                            </div>
+                            <p className="text-xs text-gray-600">
+                              Max {Math.min(Number(currentUser.loyalty_points_balance || 0), Math.floor(cartSubtotal * pointsRedemptionRate))} points
+                            </p>
+                            <p className="text-xs text-green-600">
+                              Current: -{loyaltyPointsUsed} points (€{(loyaltyPointsUsed / pointsRedemptionRate).toFixed(2)} discount)
+                            </p>
+                          </div>
                         )}
                       </div>
                     )}

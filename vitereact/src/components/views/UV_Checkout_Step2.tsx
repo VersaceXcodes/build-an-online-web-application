@@ -897,6 +897,8 @@ const UV_Checkout_Step2: React.FC = () => {
                   onClick={handlePlaceOrder}
                   disabled={processingPayment || !cardholderName || !cardNumber || !cardExpiry || !cardCvc}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-100"
+                  data-testid="place-order-button"
+                  aria-label={`Place order for total of €${Number(cartTotals.total || 0).toFixed(2)}`}
                 >
                   {processingPayment ? (
                     <span className="flex items-center justify-center">
@@ -906,6 +908,8 @@ const UV_Checkout_Step2: React.FC = () => {
                       </svg>
                       Processing Payment...
                     </span>
+                  ) : Number(cartTotals.total || 0) === 0 ? (
+                    'Place Order (Free)'
                   ) : (
                     `Place Order & Pay €${Number(cartTotals.total || 0).toFixed(2)}`
                   )}
