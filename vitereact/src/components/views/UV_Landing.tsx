@@ -167,7 +167,7 @@ const UV_Landing: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 py-20 lg:py-32 overflow-hidden">
+      <section className="relative gradient-cream-soft py-20 lg:py-32 overflow-hidden">
         <img 
           src="https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80"
           alt="Decorative background showing artisan desserts"
@@ -176,21 +176,21 @@ const UV_Landing: React.FC = () => {
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="animate-fade-in">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-6 leading-tight">
               Indulge in Dublin's Finest
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mt-2">
+              <span className="block text-kake-chocolate-600 mt-2">
                 Artisan Desserts
               </span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-kake-chocolate-400 mb-8 max-w-2xl mx-auto leading-relaxed">
               Handcrafted treats made fresh daily across three Dublin locations. 
               From classic pastries to celebration cakes, we bring joy to every bite.
             </p>
             
             <a
               href="#locations"
-              className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              className="inline-block bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               Choose Your Location
             </a>
@@ -202,10 +202,10 @@ const UV_Landing: React.FC = () => {
       <section id="locations" className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Our Locations
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
               Choose your nearest Kake location to start ordering
             </p>
           </div>
@@ -272,8 +272,8 @@ const UV_Landing: React.FC = () => {
 
                     {/* Card Content */}
                     <div className="p-6">
-                      <p className="text-gray-600 mb-4 flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <p className="text-kake-chocolate-400 mb-4 flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -281,7 +281,7 @@ const UV_Landing: React.FC = () => {
                       </p>
 
                       {location && (
-                        <div className="space-y-2 text-sm text-gray-500">
+                        <div className="space-y-2 text-sm text-kake-chocolate-400">
                           <p className="flex items-start">
                             <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -297,7 +297,7 @@ const UV_Landing: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="mt-6 flex items-center justify-between text-purple-600 font-semibold group-hover:text-purple-700">
+                      <div className="mt-6 flex items-center justify-between text-kake-chocolate-500 font-semibold group-hover:text-kake-chocolate-600">
                         <span>Start Ordering</span>
                         <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -313,13 +313,13 @@ const UV_Landing: React.FC = () => {
       </section>
 
       {/* Corporate & Events Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-orange-50 to-pink-50">
+      <section className="py-16 lg:py-24 gradient-cream-soft">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Corporate & Event Orders
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
               Make your special occasions unforgettable with our bespoke dessert offerings
             </p>
           </div>
@@ -362,25 +362,25 @@ const UV_Landing: React.FC = () => {
 
                 {/* Content */}
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <h3 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+                  <h3 className="text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
                     {active_drop.product_name}
                   </h3>
                   
-                  <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+                  <p className="text-lg text-kake-chocolate-400 mb-6 leading-relaxed">
                     {active_drop.description}
                   </p>
 
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
+                  <div className="bg-kake-cream-100 border border-kake-cream-400 rounded-lg p-4 mb-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-purple-700 font-medium mb-1">Special Price</p>
-                        <p className="text-3xl font-bold text-purple-900">
+                        <p className="text-sm text-kake-chocolate-500 font-medium mb-1">Special Price</p>
+                        <p className="text-3xl font-bold text-kake-chocolate-600">
                           €{Number(active_drop.price).toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-purple-700 font-medium mb-1">Available Until</p>
-                        <p className="text-lg font-semibold text-purple-900">
+                        <p className="text-sm text-kake-chocolate-500 font-medium mb-1">Available Until</p>
+                        <p className="text-lg font-semibold text-kake-chocolate-600">
                           {new Date(active_drop.available_until).toLocaleDateString('en-IE', {
                             month: 'short',
                             day: 'numeric',
@@ -392,7 +392,7 @@ const UV_Landing: React.FC = () => {
 
                   <Link
                     to="/corporate-order"
-                    className="inline-flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    className="inline-flex items-center justify-center bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                   >
                     Pre-order Now
                     <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -406,26 +406,26 @@ const UV_Landing: React.FC = () => {
 
           {/* Generic Corporate Enquiry (when no active drop) */}
           {!drop_loading && !active_drop && (
-            <div className="bg-white rounded-xl shadow-lg p-8 lg:p-12 text-center border border-gray-100">
+            <div className="bg-white rounded-xl shadow-chocolate-lg p-8 lg:p-12 text-center border border-kake-cream-400">
               <div className="max-w-2xl mx-auto">
                 <div className="mb-6">
-                  <svg className="w-20 h-20 mx-auto text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-20 h-20 mx-auto text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
                   </svg>
                 </div>
                 
-                <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                <h3 className="text-3xl font-bold text-kake-chocolate-500 mb-4">
                   Corporate & Event Catering
                 </h3>
                 
-                <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                <p className="text-lg text-kake-chocolate-400 mb-8 leading-relaxed">
                   Elevate your corporate events, celebrations, and special occasions with our custom dessert solutions. 
                   From intimate meetings to large gatherings, we create memorable sweet moments.
                 </p>
 
                 <Link
                   to="/corporate-order"
-                  className="inline-flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="inline-flex items-center justify-center bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   Enquire About Corporate Orders
                   <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,10 +566,10 @@ const UV_Landing: React.FC = () => {
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Why Choose Kake?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
               Indulge in quality, freshness, and convenience
             </p>
           </div>
@@ -577,39 +577,39 @@ const UV_Landing: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             {/* Feature 1 */}
             <div className="text-center">
-              <div className="bg-purple-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Quality Ingredients</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Quality Ingredients</h3>
+              <p className="text-kake-chocolate-400 leading-relaxed">
                 We use only the finest ingredients to create our handcrafted desserts daily
               </p>
             </div>
 
             {/* Feature 2 */}
             <div className="text-center">
-              <div className="bg-pink-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Made Fresh Daily</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Made Fresh Daily</h3>
+              <p className="text-kake-chocolate-400 leading-relaxed">
                 Every order is prepared fresh to ensure maximum flavor and quality
               </p>
             </div>
 
             {/* Feature 3 */}
             <div className="text-center">
-              <div className="bg-orange-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Flexible Ordering</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Flexible Ordering</h3>
+              <p className="text-kake-chocolate-400 leading-relaxed">
                 Collection or delivery options available at all our Dublin locations
               </p>
             </div>
@@ -618,17 +618,17 @@ const UV_Landing: React.FC = () => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 lg:py-20 bg-gradient-to-br from-purple-600 to-pink-600">
+      <section className="py-16 lg:py-20 gradient-chocolate">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-kake-lightCream-100 mb-6">
             Ready to Order?
           </h2>
-          <p className="text-lg md:text-xl text-purple-100 mb-8 leading-relaxed">
+          <p className="text-lg md:text-xl text-kake-cream-200 mb-8 leading-relaxed">
             Choose your location and start building your perfect dessert order today
           </p>
           <a
             href="#locations"
-            className="inline-block bg-white text-purple-600 hover:bg-gray-50 font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            className="inline-block bg-kake-lightCream-100 text-kake-chocolate-500 hover:bg-kake-cream-200 font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
           >
             Browse Our Locations
           </a>

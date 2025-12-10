@@ -108,13 +108,13 @@ const GV_TopNav: React.FC = () => {
         <div className="flex items-center space-x-3">
           <Link
             to="/login"
-            className="text-kake-chocolate-700 hover:text-kake-caramel-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 drip-border-bottom"
+            className="text-kake-chocolate-500 hover:text-kake-chocolate-600 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200"
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="gradient-caramel text-white px-4 py-2 rounded-lg text-sm font-medium shadow-caramel hover:shadow-caramel-lg transition-all duration-200 active:scale-95"
+            className="bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 px-4 py-2 rounded-lg text-sm font-medium shadow-chocolate hover:shadow-chocolate-lg transition-all duration-200 active:scale-95"
           >
             Sign Up
           </Link>
@@ -372,14 +372,14 @@ const GV_TopNav: React.FC = () => {
         <div className="px-4 py-3 border-t border-gray-200 space-y-2">
           <Link
             to="/login"
-            className="block w-full text-center px-4 py-2 text-kake-chocolate-700 hover:bg-kake-cream-200 rounded-lg text-sm font-medium transition-all duration-200"
+            className="block w-full text-center px-4 py-2 text-kake-chocolate-500 hover:bg-kake-cream-200 rounded-lg text-sm font-medium transition-all duration-200"
             onClick={() => setMobileMenuOpen(false)}
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="block w-full text-center px-4 py-2 gradient-caramel text-white rounded-lg text-sm font-medium shadow-caramel hover:shadow-caramel-lg transition-all duration-200"
+            className="block w-full text-center px-4 py-2 bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 rounded-lg text-sm font-medium shadow-chocolate hover:shadow-chocolate-lg transition-all duration-200"
             onClick={() => setMobileMenuOpen(false)}
           >
             Sign Up

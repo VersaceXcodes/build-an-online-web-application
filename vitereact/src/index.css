@@ -3,11 +3,11 @@
 @tailwind utilities;
 
 :root {
-	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	font-family: 'Nunito', 'Quicksand', system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
 
-	color-scheme: light dark;
+	color-scheme: light;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -16,9 +16,9 @@
 }
 
 *::selection {
-	background-color: #f19a00;
-	color: white;
-	/* KAKE caramel selection */
+	background-color: #5C311E;
+	color: #F3D8C7;
+	/* KAKE chocolate brown selection with cream text */
 }
 
 ::-webkit-scrollbar {
@@ -29,21 +29,21 @@
 }
 
 ::-webkit-scrollbar-track {
-	background: #fff7df;
-	/* KAKE cream track */
+	background: #F3D8C7;
+	/* KAKE warm cream track */
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(241, 154, 0, 0.3);
-	/* KAKE caramel thumb */
+	background: rgba(92, 49, 30, 0.3);
+	/* KAKE chocolate brown thumb */
 	height: 50px;
 	/* Vertical scrollbar thumb height */
 	border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(241, 154, 0, 0.5);
-	/* Darker caramel on hover */
+	background: rgba(92, 49, 30, 0.5);
+	/* Darker chocolate brown on hover */
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
@@ -55,22 +55,22 @@
 	:root {
 		--radius: 0.5rem;
 		
-		/* KAKE Brand Color Variables */
-		--color-primary: 241 154 0; /* Caramel */
-		--color-primary-light: 251 228 192;
-		--color-primary-dark: 149 93 0;
+		/* KAKE Brand Color Variables - Artisan Theme */
+		--color-primary: 92 49 30; /* Dark Chocolate Brown */
+		--color-primary-light: 143 105 79;
+		--color-primary-dark: 45 24 15;
 		
-		--color-secondary: 255 234 175; /* Cream */
-		--color-secondary-light: 255 253 247;
-		--color-secondary-dark: 191 177 132;
+		--color-secondary: 243 216 199; /* Warm Cream */
+		--color-secondary-light: 254 249 245;
+		--color-secondary-dark: 224 194 171;
 		
-		--color-accent: 135 95 75; /* Chocolate */
-		--color-accent-light: 207 191 183;
-		--color-accent-dark: 67 48 37;
+		--color-accent: 241 154 0; /* Caramel accent */
+		--color-accent-light: 251 228 192;
+		--color-accent-dark: 149 93 0;
 		
-		--color-highlight: 238 46 95; /* Berry */
-		--color-highlight-light: 251 203 215;
-		--color-highlight-dark: 143 28 58;
+		--color-highlight: 255 234 175; /* Light Cream */
+		--color-highlight-light: 255 253 247;
+		--color-highlight-dark: 191 177 132;
 		
 		/* Semantic colors */
 		--color-success: 34 197 94; /* Green */
@@ -79,11 +79,11 @@
 		--color-info: 59 130 246; /* Blue */
 		
 		/* Neutral warm tones */
-		--color-background: 250 250 249;
+		--color-background: 243 216 199; /* Warm cream background */
 		--color-surface: 255 255 255;
-		--color-surface-elevated: 255 253 247;
-		--color-border: 231 229 228;
-		--color-text: 28 25 23;
+		--color-surface-elevated: 254 249 245;
+		--color-border: 224 194 171;
+		--color-text: 92 49 30; /* Dark chocolate brown text */
 		--color-text-secondary: 120 113 108;
 		--color-text-tertiary: 168 162 158;
 	}
@@ -91,24 +91,24 @@
 
 /* KAKE Custom Utility Classes */
 @layer utilities {
-	.gradient-caramel {
-		background: linear-gradient(135deg, #f9d49a 0%, #f19a00 100%);
+	.gradient-chocolate {
+		background: linear-gradient(135deg, #8f6a4f 0%, #5C311E 100%);
 	}
 	
-	.gradient-caramel-soft {
-		background: linear-gradient(135deg, #fef9f3 0%, #fbe4c0 100%);
+	.gradient-cream-soft {
+		background: linear-gradient(135deg, #fef9f5 0%, #F3D8C7 100%);
 	}
 	
 	.gradient-cream {
-		background: linear-gradient(135deg, #fffefb 0%, #ffeaaf 100%);
+		background: linear-gradient(135deg, #fef9f5 0%, #F3D8C7 100%);
 	}
 	
-	.shadow-caramel {
-		box-shadow: 0 4px 14px rgba(241, 154, 0, 0.15);
+	.shadow-chocolate {
+		box-shadow: 0 4px 14px rgba(92, 49, 30, 0.15);
 	}
 	
-	.shadow-caramel-lg {
-		box-shadow: 0 10px 25px rgba(241, 154, 0, 0.2);
+	.shadow-chocolate-lg {
+		box-shadow: 0 10px 25px rgba(92, 49, 30, 0.2);
 	}
 	
 	.shadow-soft {

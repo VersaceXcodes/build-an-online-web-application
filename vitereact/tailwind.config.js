@@ -10,59 +10,59 @@ export default {
 				sm: "calc(var(--radius) - 4px)",
 			},
 			colors: {
-				// KAKE Brand Colors - Dessert-inspired palette
+				// KAKE Brand Colors - Artisan Bakery Palette
 				kake: {
-					// Primary: Caramel tones (warm, inviting)
+					// Primary: Warm Cream background (soft, cozy)
+					cream: {
+						50: '#fef9f5',
+						100: '#fdf3eb',
+						200: '#fae7d7',
+						300: '#f7dbc3',
+						400: '#f5d0b0',
+						500: '#F3D8C7', // Main warm cream
+						600: '#e0c2ab',
+						700: '#c9a88c',
+						800: '#b18d6d',
+						900: '#8f7256',
+					},
+					// Secondary: Dark Chocolate Brown text/buttons (rich, warm)
+					chocolate: {
+						50: '#f5f0ed',
+						100: '#ebe1db',
+						200: '#d7c3b7',
+						300: '#c3a593',
+						400: '#8f6a4f',
+						500: '#5C311E', // Main dark chocolate brown
+						600: '#522c1b',
+						700: '#452517',
+						800: '#381e13',
+						900: '#2d180f',
+					},
+					// Accent: Light Cream for text on dark backgrounds
+					lightCream: {
+						50: '#fffefb',
+						100: '#fffdf7',
+						200: '#fffaeb',
+						300: '#fff7df',
+						400: '#fff1c7',
+						500: '#ffeaaf',
+						600: '#e6d49e',
+						700: '#bfb184',
+						800: '#998d6a',
+						900: '#7d7457',
+					},
+					// Highlight: Caramel accent (for subtle highlights)
 					caramel: {
 						50: '#fef9f3',
 						100: '#fdf2e6',
 						200: '#fbe4c0',
 						300: '#f9d49a',
 						400: '#f5b74d',
-						500: '#f19a00', // Main caramel
+						500: '#f19a00',
 						600: '#d98b00',
 						700: '#b57400',
 						800: '#915d00',
 						900: '#764c00',
-					},
-					// Secondary: Frosting cream (soft, light)
-					cream: {
-						50: '#fffefb',
-						100: '#fffdf7',
-						200: '#fffaeb',
-						300: '#fff7df',
-						400: '#fff1c7',
-						500: '#ffeaaf', // Main cream
-						600: '#e6d49e',
-						700: '#bfb184',
-						800: '#998d6a',
-						900: '#7d7457',
-					},
-					// Accent: Chocolate brown (rich, deep)
-					chocolate: {
-						50: '#f9f7f6',
-						100: '#f3efed',
-						200: '#e1d7d2',
-						300: '#cfbfb7',
-						400: '#ab8f81',
-						500: '#875f4b', // Main chocolate
-						600: '#7a5644',
-						700: '#664839',
-						800: '#523a2e',
-						900: '#433025',
-					},
-					// Highlight: Warm berry (for accents, success states)
-					berry: {
-						50: '#fef5f7',
-						100: '#fdeaef',
-						200: '#fbcbd7',
-						300: '#f8acbf',
-						400: '#f36d8f',
-						500: '#ee2e5f', // Warm berry
-						600: '#d62956',
-						700: '#b32348',
-						800: '#8f1c3a',
-						900: '#75172f',
 					},
 				},
 				// Neutral colors with warm undertones
