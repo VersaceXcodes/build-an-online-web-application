@@ -162,6 +162,8 @@ const UV_AdminFeedbackCustomer: React.FC = () => {
     notes: '',
   });
   const [filter_panel_open, set_filter_panel_open] = useState(false);
+  const [internal_note, set_internal_note] = useState('');
+  const [feedback_status, set_feedback_status] = useState<'pending_review' | 'reviewed' | 'requires_attention'>('pending_review');
 
   const limit = 20;
   const offset = (page - 1) * limit;
@@ -298,12 +300,16 @@ const UV_AdminFeedbackCustomer: React.FC = () => {
 
   const handleOpenDetail = (feedback: CustomerFeedback) => {
     set_selected_feedback(feedback);
+    set_feedback_status(feedback.reviewed_status);
+    set_internal_note('');
     set_detail_modal_open(true);
   };
 
   const handleCloseDetail = () => {
     set_detail_modal_open(false);
     set_selected_feedback(null);
+    set_internal_note('');
+    set_feedback_status('pending_review');
   };
 
   const handleOpenReview = (feedback: CustomerFeedback) => {
@@ -334,6 +340,21 @@ const UV_AdminFeedbackCustomer: React.FC = () => {
 
   const handleClearFilters = () => {
     setSearchParams({});
+  };
+
+  const handleSaveDetailChanges = () => {
+    if (!selected_feedback) return;
+
+    // Only save if status changed or internal note is provided
+    if (feedback_status !== selected_feedback.reviewed_status || internal_note.trim()) {
+      markReviewedMutation.mutate({
+        feedback_id: selected_feedback.feedback_id,
+        reviewed_status: feedback_status,
+        notes: internal_note.trim() || undefined,
+      });
+    } else {
+      handleCloseDetail();
+    }
   };
 
   // ============================================================================
@@ -915,6 +936,43 @@ const UV_AdminFeedbackCustomer: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Admin Actions Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Admin Actions</h3>
+                
+                {/* Change Status */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Change status
+                  </label>
+                  <select
+                    value={feedback_status}
+                    onChange={(e) =>
+                      set_feedback_status(e.target.value as 'pending_review' | 'reviewed' | 'requires_attention')
+                    }
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all"
+                  >
+                    <option value="pending_review">Pending Review</option>
+                    <option value="reviewed">Reviewed</option>
+                    <option value="requires_attention">Requires Attention</option>
+                  </select>
+                </div>
+
+                {/* Add Internal Note */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Add internal note
+                  </label>
+                  <textarea
+                    value={internal_note}
+                    onChange={(e) => set_internal_note(e.target.value)}
+                    rows={4}
+                    placeholder="Add any internal notes about this feedback..."
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all resize-none"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Modal Actions */}
@@ -941,18 +999,20 @@ const UV_AdminFeedbackCustomer: React.FC = () => {
               </button>
 
               <div className="flex items-center space-x-3">
-                {selected_feedback.reviewed_status !== 'reviewed' && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCloseDetail();
-                      handleOpenReview(selected_feedback);
-                    }}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
-                  >
-                    Mark as Reviewed
-                  </button>
-                )}
+                <button
+                  onClick={handleSaveDetailChanges}
+                  disabled={markReviewedMutation.isPending}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {markReviewedMutation.isPending ? (
+                    <span className="flex items-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Saving...</span>
+                    </span>
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
                 
                 <button
                   onClick={handleCloseDetail}
