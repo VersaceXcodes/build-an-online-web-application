@@ -180,6 +180,18 @@ const UV_AdminFeedbackStaff: React.FC = () => {
     enabled: !!selectedFeedbackId && !!authToken,
   });
   
+  // Update form when feedback details load
+  useEffect(() => {
+    if (selectedFeedback) {
+      setStatusUpdateForm({
+        status: selectedFeedback.status,
+        priority: selectedFeedback.priority,
+        assigned_to_user_id: selectedFeedback.assigned_to_user_id,
+        resolution_notes: selectedFeedback.resolution_notes,
+      });
+    }
+  }, [selectedFeedback]);
+  
   // Update feedback mutation
   const updateMutation = useMutation({
     mutationFn: (payload: UpdateStaffFeedbackPayload) => 
@@ -235,6 +247,17 @@ const UV_AdminFeedbackStaff: React.FC = () => {
   const handleViewDetails = (feedback_id: string) => {
     setSelectedFeedbackId(feedback_id);
     setDetailModalOpen(true);
+    
+    // Pre-populate the form with the feedback's current values
+    const feedback = feedbackList?.data.find(f => f.feedback_id === feedback_id);
+    if (feedback) {
+      setStatusUpdateForm({
+        status: feedback.status,
+        priority: feedback.priority,
+        assigned_to_user_id: feedback.assigned_to_user_id,
+        resolution_notes: feedback.resolution_notes,
+      });
+    }
   };
   
   const handleOpenStatusModal = (feedback: StaffFeedback) => {
@@ -737,6 +760,76 @@ const UV_AdminFeedbackStaff: React.FC = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Update Status Section */}
+              {selectedFeedback.status !== 'resolved' && selectedFeedback.status !== 'closed' && (
+                <div className="border-t border-gray-200 pt-6 mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Update Feedback</h3>
+                  
+                  <div className="space-y-4">
+                    {/* Status Dropdown */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Change Status
+                      </label>
+                      <select
+                        value={statusUpdateForm.status}
+                        onChange={(e) => setStatusUpdateForm(prev => ({ 
+                          ...prev, 
+                          status: e.target.value as StaffFeedback['status'] 
+                        }))}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                      >
+                        <option value="pending_review">Pending Review</option>
+                        <option value="under_review">Under Review</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                      </select>
+                    </div>
+                    
+                    {/* Priority Dropdown */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Priority Level
+                      </label>
+                      <select
+                        value={statusUpdateForm.priority}
+                        onChange={(e) => setStatusUpdateForm(prev => ({ 
+                          ...prev, 
+                          priority: e.target.value as StaffFeedback['priority'] 
+                        }))}
+                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-100"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </div>
+                    
+                    {/* Add Internal Note Field */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Add Internal Note
+                      </label>
+                      <textarea
+                        value={statusUpdateForm.resolution_notes || ''}
+                        onChange={(e) => setStatusUpdateForm(prev => ({ 
+                          ...prev, 
+                          resolution_notes: e.target.value || null 
+                        }))}
+                        rows={4}
+                        placeholder="Add notes about resolution, actions taken, or follow-up required..."
+                        className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 resize-none"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        These notes will be visible to the staff member who submitted the feedback
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Modal Footer Actions */}
@@ -755,24 +848,14 @@ const UV_AdminFeedbackStaff: React.FC = () => {
                 {selectedFeedback.status !== 'resolved' && selectedFeedback.status !== 'closed' && (
                   <>
                     <button
-                      onClick={() => {
-                        setResponseModalOpen(true);
-                      }}
-                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center space-x-2"
+                      onClick={handleUpdateStatus}
+                      disabled={updateMutation.isPending}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 flex items-center space-x-2"
                     >
-                      <Send className="w-4 h-4" />
-                      <span>Add Response</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => {
-                        setDetailModalOpen(false);
-                        handleOpenStatusModal(selectedFeedback);
-                      }}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center space-x-2"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      <span>Update Status</span>
+                      {updateMutation.isPending && (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      )}
+                      <span>{updateMutation.isPending ? 'Saving...' : 'Save Changes'}</span>
                     </button>
                   </>
                 )}
