@@ -553,10 +553,14 @@ const UV_CustomerDashboard: React.FC = () => {
   const getOrderStatusBadge = (status: string) => {
     const statusConfig: { [key: string]: { label: string; color: string } } = {
       pending_payment: { label: 'Pending Payment', color: 'bg-gray-100 text-gray-800' },
+      paid_awaiting_confirmation: { label: 'Awaiting Confirmation', color: 'bg-blue-50 text-blue-700' },
       payment_confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800' },
+      accepted_in_preparation: { label: 'In Preparation', color: 'bg-yellow-100 text-yellow-800' },
       preparing: { label: 'Preparing', color: 'bg-yellow-100 text-yellow-800' },
       ready_for_collection: { label: 'Ready', color: 'bg-green-100 text-green-800' },
       out_for_delivery: { label: 'Out for Delivery', color: 'bg-purple-100 text-purple-800' },
+      collected: { label: 'Collected', color: 'bg-green-100 text-green-800' },
+      delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800' },
       completed: { label: 'Completed', color: 'bg-green-100 text-green-800' },
       cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800' },
     };
@@ -1003,8 +1007,14 @@ const UV_CustomerDashboard: React.FC = () => {
                         className="rounded-lg border-gray-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-100"
                       >
                         <option value="">All Statuses</option>
+                        <option value="payment_confirmed">Confirmed</option>
+                        <option value="paid_awaiting_confirmation">Awaiting Confirmation</option>
+                        <option value="accepted_in_preparation">In Preparation</option>
+                        <option value="ready_for_collection">Ready</option>
+                        <option value="out_for_delivery">Out for Delivery</option>
+                        <option value="collected">Collected</option>
+                        <option value="delivered">Delivered</option>
                         <option value="completed">Completed</option>
-                        <option value="preparing">In Progress</option>
                         <option value="cancelled">Cancelled</option>
                       </select>
 
