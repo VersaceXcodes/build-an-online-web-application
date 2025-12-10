@@ -139,12 +139,27 @@ const RoleProtectedRoute: React.FC<{
 
 const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+  const [displayLocation, setDisplayLocation] = React.useState(location);
+  
+  // Handle page transitions
+  useEffect(() => {
+    if (location.pathname !== displayLocation.pathname) {
+      setIsTransitioning(true);
+      // Show transition for a brief moment
+      const timer = setTimeout(() => {
+        setDisplayLocation(location);
+        setIsTransitioning(false);
+      }, 150); // Short transition
+      return () => clearTimeout(timer);
+    }
+  }, [location, displayLocation]);
   
   // Determine if we should show footer based on route
   const showFooter = ![
     '/staff/', 
     '/admin/'
-  ].some(prefix => location.pathname.startsWith(prefix));
+  ].some(prefix => displayLocation.pathname.startsWith(prefix));
   
   // Determine if we should show cart panel based on route
   const showCartPanel = ![
@@ -155,7 +170,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     '/staff/',
     '/admin/',
     '/checkout'
-  ].some(path => location.pathname.startsWith(path));
+  ].some(path => displayLocation.pathname.startsWith(path));
   
   // Determine if we should show cookie banner (public routes only)
   const showCookieBanner = ![
@@ -165,7 +180,7 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     '/orders/',
     '/feedback/',
     '/checkout'
-  ].some(path => location.pathname.startsWith(path));
+  ].some(path => displayLocation.pathname.startsWith(path));
   
   const cookieConsentGiven = useAppStore(state => state.ui_state.cookie_consent_given);
   const isAuthenticated = useAppStore(state => state.authentication_state.authentication_status.is_authenticated);
@@ -175,8 +190,23 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Top Navigation - Always visible */}
       <GV_TopNav />
       
+      {/* Page transition overlay */}
+      {isTransitioning && (
+        <div 
+          className="fixed inset-0 bg-white/60 backdrop-blur-sm z-30 flex items-center justify-center transition-opacity duration-150"
+          role="status"
+          aria-live="polite"
+          aria-label="Loading page"
+        >
+          <div className="flex flex-col items-center space-y-3">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-3 border-purple-600"></div>
+            <p className="text-gray-700 text-sm font-medium">Loading...</p>
+          </div>
+        </div>
+      )}
+      
       {/* Main Content Area */}
-      <main className="min-h-screen">
+      <main className={`min-h-screen transition-opacity duration-150 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
         {children}
       </main>
       

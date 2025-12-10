@@ -13,6 +13,8 @@ const GV_TopNav: React.FC = () => {
   const cartItems = useAppStore(state => state.cart_state.items);
   const logoutUser = useAppStore(state => state.logout_user);
   const openCartPanel = useAppStore(state => state.open_cart_panel);
+  const showLoading = useAppStore(state => state.show_loading);
+  const hideLoading = useAppStore(state => state.hide_loading);
   
   // Local state
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,12 +71,15 @@ const GV_TopNav: React.FC = () => {
   
   const handleLogout = async () => {
     try {
-      await logoutUser();
+      showLoading('Logging out...');
       setAccountDropdownOpen(false);
       setMobileMenuOpen(false);
+      await logoutUser();
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
+    } finally {
+      hideLoading();
     }
   };
   

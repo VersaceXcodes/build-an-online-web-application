@@ -164,7 +164,7 @@ const UV_Landing: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 py-20 lg:py-32 overflow-hidden" role="region" aria-label="Hero section">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486427944299-d1955d23e34d?w=1600&q=80')] opacity-10 bg-cover bg-center"></div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -205,9 +205,16 @@ const UV_Landing: React.FC = () => {
 
           {/* Loading State */}
           {locations_loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8" role="status" aria-live="polite" aria-label="Loading locations">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-gray-100 rounded-xl h-96 animate-pulse"></div>
+                <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
+                  <div className="h-56 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                  <div className="p-6 space-y-3">
+                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -312,11 +319,20 @@ const UV_Landing: React.FC = () => {
 
           {/* Loading State for Drop */}
           {drop_loading && (
-            <div className="bg-white rounded-xl shadow-lg p-8 animate-pulse">
-              <div className="h-64 bg-gray-200 rounded-lg mb-6"></div>
-              <div className="h-8 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 animate-pulse" role="status" aria-live="polite" aria-label="Loading drop of the month">
+              <div className="grid md:grid-cols-2 gap-0">
+                <div className="h-80 md:h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                <div className="p-8 lg:p-12 space-y-4">
+                  <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                  <div className="h-20 bg-gray-200 rounded"></div>
+                  <div className="h-12 bg-gray-200 rounded w-48"></div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -421,10 +437,21 @@ const UV_Landing: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Loading State */}
             {event_loading && (
-              <div className="bg-white rounded-xl shadow-lg p-8 animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-lg mb-6"></div>
-                <div className="h-8 bg-gray-200 rounded w-2/3 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-full"></div>
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-orange-300 animate-pulse" role="status" aria-live="polite" aria-label="Loading event details">
+                <div className="bg-gradient-to-r from-orange-200 to-pink-200 px-6 py-3 h-12"></div>
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="h-64 md:h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                  <div className="p-8 lg:p-12 space-y-4">
+                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="space-y-3">
+                      <div className="h-6 bg-gray-200 rounded w-full"></div>
+                      <div className="h-6 bg-gray-200 rounded w-5/6"></div>
+                      <div className="h-6 bg-gray-200 rounded w-4/6"></div>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-12 bg-gray-200 rounded w-48"></div>
+                  </div>
+                </div>
               </div>
             )}
 

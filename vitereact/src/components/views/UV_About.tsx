@@ -417,9 +417,23 @@ const UV_About: React.FC = () => {
 
           {/* Loading State */}
           {locations_loading && (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-purple-600"></div>
-              <span className="ml-4 text-gray-600 text-lg">Loading locations...</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="status" aria-live="polite" aria-label="Loading locations">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden animate-pulse">
+                  <div className="bg-gradient-to-r from-purple-200 to-pink-200 p-6 h-28">
+                    <div className="h-6 bg-purple-300 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-purple-200 rounded w-1/2"></div>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-full"></div>
+                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
