@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 const UV_Login: React.FC = () => {
   // ============================================================================
@@ -175,6 +176,7 @@ const UV_Login: React.FC = () => {
             {/* Header */}
             <div className="px-8 pt-8 pb-6 bg-gradient-to-r from-blue-600 to-indigo-600">
               <div className="text-center">
+                <img src={kakeLogo} alt="Kake Logo" className="h-16 w-auto mx-auto mb-4" />
                 <h2 className="text-3xl font-bold text-white mb-2">
                   Welcome to Kake
                 </h2>

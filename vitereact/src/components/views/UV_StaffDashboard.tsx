@@ -18,6 +18,7 @@ import {
   Truck,
   ShoppingBag
 } from 'lucide-react';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -1216,7 +1217,7 @@ const UV_StaffDashboard: React.FC = () => {
           <div className="hidden print:block print:p-8">
             <div className="max-w-2xl mx-auto">
               <div className="text-center mb-6">
-                <h1 className="text-3xl font-bold">Kake</h1>
+                <img src={kakeLogo} alt="Kake Logo" className="h-16 w-auto mx-auto mb-2" />
                 <p className="text-xl font-semibold mt-2">{selectedOrderDetail.location_name}</p>
                 <p className="text-lg mt-1">ORDER TICKET</p>
               </div>

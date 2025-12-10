@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 // Global Shared Views
 import GV_TopNav from '@/components/views/GV_TopNav';
@@ -78,6 +79,7 @@ const queryClient = new QueryClient({
 const LoadingSpinner: React.FC = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
     <div className="text-center">
+      <img src={kakeLogo} alt="Kake Logo" className="h-20 w-auto mx-auto mb-6 animate-pulse" />
       <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-600 mx-auto mb-4"></div>
       <p className="text-gray-600 text-lg font-medium">Loading Kake...</p>
     </div>

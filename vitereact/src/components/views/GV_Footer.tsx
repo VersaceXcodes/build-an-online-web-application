@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
 import { Mail, Phone, Instagram, Facebook, Music } from 'lucide-react';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_Footer: React.FC = () => {
   // CRITICAL: Individual selectors - NO object destructuring
@@ -161,9 +162,12 @@ const GV_Footer: React.FC = () => {
           {/* Bottom Bar - Copyright */}
           <div className="border-t border-gray-800 mt-8 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-              <p className="text-sm text-gray-400">
-                © {currentYear} Kake. All rights reserved.
-              </p>
+              <div className="flex flex-col items-center md:items-start space-y-3">
+                <img src={kakeLogo} alt="Kake Logo" className="h-8 w-auto" />
+                <p className="text-sm text-gray-400">
+                  © {currentYear} Kake. All rights reserved.
+                </p>
+              </div>
               
               <div className="flex items-center space-x-6">
                 <Link 

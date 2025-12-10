@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
 import axios from 'axios';
 import { Eye, EyeOff, Check, X, Loader2 } from 'lucide-react';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -353,6 +354,7 @@ const UV_Register: React.FC = () => {
           <div className="bg-white shadow-xl shadow-gray-200/50 rounded-xl p-8 border border-gray-100">
             {/* Header */}
             <div className="text-center mb-8">
+              <img src={kakeLogo} alt="Kake Logo" className="h-16 w-auto mx-auto mb-4" />
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
                 Create Your Kake Account
               </h1>

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
 import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket } from 'lucide-react';
+import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_TopNav: React.FC = () => {
   // ============================================================================
@@ -598,7 +599,7 @@ const GV_TopNav: React.FC = () => {
             {/* Left: Logo */}
             <div className="flex-shrink-0">
               <Link to="/" className="flex items-center space-x-2">
-                <div className="text-2xl font-bold text-blue-600">Kake</div>
+                <img src={kakeLogo} alt="Kake Logo" className="h-10 w-auto" />
               </Link>
             </div>
             
