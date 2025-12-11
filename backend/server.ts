@@ -273,7 +273,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
     const resetToken = tokenResult.rows[0];
     if (resetToken.is_used) return res.status(400).json(createErrorResponse('Token already used', null, 'TOKEN_USED'));
     if (new Date(resetToken.expires_at) < new Date()) return res.status(400).json(createErrorResponse('Token expired', null, 'TOKEN_EXPIRED'));
-    await client.query('UPDATE users SET password_hash = $1, updated_at = $2 WHERE user_id = $3', [password, now, resetToken.user_id]);
+    const password_hash = await bcrypt.hash(password, 10);
+    await client.query('UPDATE users SET password_hash = $1, updated_at = $2 WHERE user_id = $3', [password_hash, now, resetToken.user_id]);
     await client.query('UPDATE password_reset_tokens SET is_used = true WHERE token_id = $1', [resetToken.token_id]);
     await client.query('DELETE FROM sessions WHERE user_id = $1', [resetToken.user_id]);
     client.release();
@@ -317,7 +318,8 @@ app.put('/api/users/me', authenticateToken, async (req: AuthRequest, res: Respon
     if (email && email !== req.user.email) {
       if (!current_password) return res.status(400).json(createErrorResponse('Current password required for email change', null, 'PASSWORD_REQUIRED'));
       const userResult = await client.query('SELECT password_hash FROM users WHERE user_id = $1', [req.user.user_id]);
-      if (userResult.rows[0].password_hash !== current_password) return res.status(400).json(createErrorResponse('Invalid password', null, 'INVALID_PASSWORD'));
+      const passwordMatch = await bcrypt.compare(current_password, userResult.rows[0].password_hash);
+      if (!passwordMatch) return res.status(400).json(createErrorResponse('Invalid password', null, 'INVALID_PASSWORD'));
       const emailCheck = await client.query('SELECT user_id FROM users WHERE email = $1 AND user_id != $2', [email, req.user.user_id]);
       if (emailCheck.rows.length > 0) return res.status(400).json(createErrorResponse('Email already exists', null, 'EMAIL_EXISTS'));
       updates.push(`email = $${idx++}`);
@@ -346,9 +348,11 @@ app.post('/api/users/me/change-password', authenticateToken, async (req: AuthReq
     const { current_password, new_password } = req.body;
     if (!current_password || !new_password) return res.status(400).json(createErrorResponse('Current and new password required', null, 'MISSING_FIELDS'));
     const userResult = await client.query('SELECT password_hash FROM users WHERE user_id = $1', [req.user.user_id]);
-    if (userResult.rows[0].password_hash !== current_password) return res.status(400).json(createErrorResponse('Invalid current password', null, 'INVALID_PASSWORD'));
+    const passwordMatch = await bcrypt.compare(current_password, userResult.rows[0].password_hash);
+    if (!passwordMatch) return res.status(400).json(createErrorResponse('Invalid current password', null, 'INVALID_PASSWORD'));
     const now = new Date().toISOString();
-    await client.query('UPDATE users SET password_hash = $1, updated_at = $2 WHERE user_id = $3', [new_password, now, req.user.user_id]);
+    const new_password_hash = await bcrypt.hash(new_password, 10);
+    await client.query('UPDATE users SET password_hash = $1, updated_at = $2 WHERE user_id = $3', [new_password_hash, now, req.user.user_id]);
     const token = req.headers['authorization'].split(' ')[1];
     await client.query('DELETE FROM sessions WHERE user_id = $1 AND token != $2', [req.user.user_id, token]);
     client.release();
