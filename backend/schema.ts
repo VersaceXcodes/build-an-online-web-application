@@ -198,6 +198,7 @@ export const productSchema = z.object({
   dietary_tags: z.string().nullable(),
   custom_tags: z.string().nullable(),
   is_featured: z.boolean(),
+  is_visible: z.boolean(),
   available_for_corporate: z.boolean(),
   available_from_date: z.string().nullable(),
   available_until_date: z.string().nullable(),
@@ -221,6 +222,7 @@ export const createProductInputSchema = z.object({
   dietary_tags: z.string().nullable(),
   custom_tags: z.string().nullable(),
   is_featured: z.boolean().default(false),
+  is_visible: z.boolean().default(true),
   available_for_corporate: z.boolean().default(true),
   available_from_date: z.string().nullable(),
   available_until_date: z.string().nullable()
@@ -242,6 +244,7 @@ export const updateProductInputSchema = z.object({
   dietary_tags: z.string().nullable().optional(),
   custom_tags: z.string().nullable().optional(),
   is_featured: z.boolean().optional(),
+  is_visible: z.boolean().optional(),
   available_for_corporate: z.boolean().optional(),
   available_from_date: z.string().nullable().optional(),
   available_until_date: z.string().nullable().optional(),

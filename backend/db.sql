@@ -108,6 +108,7 @@ CREATE TABLE products (
     dietary_tags TEXT,
     custom_tags TEXT,
     is_featured BOOLEAN NOT NULL DEFAULT false,
+    is_visible BOOLEAN NOT NULL DEFAULT true,
     available_for_corporate BOOLEAN NOT NULL DEFAULT true,
     available_from_date TEXT,
     available_until_date TEXT,

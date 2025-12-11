@@ -17,7 +17,9 @@ import {
   Tag,
   Package,
   Star,
-  ChevronDown
+  ChevronDown,
+  EyeOff,
+  Eye
 } from 'lucide-react';
 
 // ============================================================================
@@ -40,6 +42,7 @@ interface Product {
   dietary_tags: string | null;
   custom_tags: string | null;
   is_featured: boolean;
+  is_visible: boolean;
   available_for_corporate: boolean;
   available_from_date: string | null;
   available_until_date: string | null;
@@ -64,6 +67,7 @@ interface ProductFormData {
   dietary_tags: string[];
   custom_tags: string[];
   is_featured: boolean;
+  is_visible: boolean;
   available_for_corporate: boolean;
   available_from_date: string | null;
   available_until_date: string | null;
@@ -124,6 +128,7 @@ const UV_AdminProducts: React.FC = () => {
     dietary_tags: [],
     custom_tags: [],
     is_featured: false,
+    is_visible: true,
     available_for_corporate: true,
     available_from_date: null,
     available_until_date: null,
@@ -160,7 +165,8 @@ const UV_AdminProducts: React.FC = () => {
       offset: 0,
       sort_by: productFilters.sort_by,
       sort_order: productFilters.sort_order,
-      is_archived: 'false'
+      is_archived: 'false',
+      show_hidden: 'true'  // Admin can see hidden products
     };
 
     if (productFilters.search) params.query = productFilters.search;
@@ -196,6 +202,7 @@ const UV_AdminProducts: React.FC = () => {
       dietary_tags: data.dietary_tags.length > 0 ? JSON.stringify(data.dietary_tags) : null,
       custom_tags: data.custom_tags.length > 0 ? JSON.stringify(data.custom_tags) : null,
       is_featured: data.is_featured,
+      is_visible: data.is_visible,
       available_for_corporate: data.available_for_corporate,
       available_from_date: data.available_from_date,
       available_until_date: data.available_until_date,
@@ -232,6 +239,7 @@ const UV_AdminProducts: React.FC = () => {
       dietary_tags: data.dietary_tags.length > 0 ? JSON.stringify(data.dietary_tags) : null,
       custom_tags: data.custom_tags.length > 0 ? JSON.stringify(data.custom_tags) : null,
       is_featured: data.is_featured,
+      is_visible: data.is_visible,
       available_for_corporate: data.available_for_corporate,
       available_from_date: data.available_from_date,
       available_until_date: data.available_until_date,
@@ -349,6 +357,7 @@ const UV_AdminProducts: React.FC = () => {
       dietary_tags: [],
       custom_tags: [],
       is_featured: false,
+      is_visible: true,
       available_for_corporate: true,
       available_from_date: null,
       available_until_date: null,
@@ -408,6 +417,7 @@ const UV_AdminProducts: React.FC = () => {
         }
       })() : [],
       is_featured: product.is_featured,
+      is_visible: product.is_visible,
       available_for_corporate: product.available_for_corporate,
       available_from_date: product.available_from_date,
       available_until_date: product.available_until_date,
@@ -881,15 +891,21 @@ const UV_AdminProducts: React.FC = () => {
                         )}
                       </div>
 
-                      {/* Featured Badge */}
-                      {product.is_featured && (
-                        <div className="absolute bottom-3 left-3">
+                      {/* Featured & Visibility Badges */}
+                      <div className="absolute bottom-3 left-3 flex gap-2">
+                        {product.is_featured && (
                           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                             <Star className="w-3 h-3 mr-1 fill-current" />
                             Featured
                           </span>
-                        </div>
-                      )}
+                        )}
+                        {!product.is_visible && (
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <EyeOff className="w-3 h-3 mr-1" />
+                            Hidden
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Product Details */}
@@ -1368,6 +1384,21 @@ const UV_AdminProducts: React.FC = () => {
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">Options</h4>
                       <div className="space-y-3">
+                        <label className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={productFormData.is_visible}
+                            onChange={(e) => handleProductFormChange('is_visible', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <span className="ml-3 text-sm font-medium text-gray-900">
+                            Visible to Customers
+                          </span>
+                          <span className="ml-2 text-xs text-gray-500">
+                            (Unchecking will hide this product from customers)
+                          </span>
+                        </label>
+
                         <label className="flex items-center">
                           <input
                             type="checkbox"

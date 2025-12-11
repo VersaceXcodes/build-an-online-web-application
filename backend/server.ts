@@ -473,13 +473,19 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
 app.get('/api/products', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { query, location_name, category, availability_status, is_featured, min_price, max_price, dietary_tags, hide_out_of_stock, sort_by = 'created_at', sort_order = 'desc' } = req.query;
+    const { query, location_name, category, availability_status, is_featured, min_price, max_price, dietary_tags, hide_out_of_stock, show_hidden, sort_by = 'created_at', sort_order = 'desc' } = req.query;
     const limit = parseInt(String(req.query.limit || 20));
     const offset = parseInt(String(req.query.offset || 0));
     
     let sqlQuery = 'SELECT DISTINCT p.* FROM products p';
     const values = [];
     const conditions = ['p.is_archived = false'];
+    
+    // Only show visible products unless show_hidden=true (for admin)
+    if (String(show_hidden) !== 'true') {
+      conditions.push('p.is_visible = true');
+    }
+    
     let idx = 1;
     if (location_name) {
       sqlQuery += ' INNER JOIN product_locations pl ON p.product_id = pl.product_id';
@@ -515,7 +521,9 @@ app.get('/api/products', async (req, res) => {
 app.get('/api/products/:product_id', async (req, res) => {
   const client = await pool.connect();
   try {
-    const result = await client.query('SELECT * FROM products WHERE product_id = $1 AND is_archived = false', [req.params.product_id]);
+    const show_hidden = String(req.query.show_hidden) === 'true';
+    const visibilityCondition = show_hidden ? '' : ' AND is_visible = true';
+    const result = await client.query(`SELECT * FROM products WHERE product_id = $1 AND is_archived = false${visibilityCondition}`, [req.params.product_id]);
     client.release();
     if (result.rows.length === 0) return res.status(404).json(createErrorResponse('Product not found', null, 'PRODUCT_NOT_FOUND'));
     const p = result.rows[0];
@@ -564,10 +572,10 @@ app.get('/api/product-locations', async (req: Request, res: Response) => {
 app.post('/api/products', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
-    const { product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status = 'in_stock', stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured = false, available_for_corporate = true, available_from_date, available_until_date, location_assignments } = req.body;
+    const { product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status = 'in_stock', stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured = false, is_visible = true, available_for_corporate = true, available_from_date, available_until_date, location_assignments } = req.body;
     const product_id = generateId('prod');
     const now = new Date().toISOString();
-    await client.query('INSERT INTO products (product_id, product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status, stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured, available_for_corporate, available_from_date, available_until_date, is_archived, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)', [product_id, product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status, stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured, available_for_corporate, available_from_date, available_until_date, false, now, now]);
+    await client.query('INSERT INTO products (product_id, product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status, stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured, is_visible, available_for_corporate, available_from_date, available_until_date, is_archived, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)', [product_id, product_name, short_description, long_description, category, price, compare_at_price, primary_image_url, additional_images, availability_status, stock_quantity, low_stock_threshold, dietary_tags, custom_tags, is_featured, is_visible, available_for_corporate, available_from_date, available_until_date, false, now, now]);
     if (location_assignments && Array.isArray(location_assignments)) {
       for (const loc of location_assignments) {
         await client.query('INSERT INTO product_locations (assignment_id, product_id, location_name, assigned_at) VALUES ($1, $2, $3, $4)', [generateId('pl'), product_id, loc, now]);
@@ -589,7 +597,7 @@ app.put('/api/products/:product_id', authenticateToken, requireRole(['admin']), 
     const updates = [];
     const values = [];
     let idx = 1;
-    const fields = ['product_name', 'short_description', 'long_description', 'category', 'price', 'compare_at_price', 'primary_image_url', 'additional_images', 'availability_status', 'stock_quantity', 'low_stock_threshold', 'dietary_tags', 'custom_tags', 'is_featured', 'available_for_corporate', 'available_from_date', 'available_until_date', 'is_archived'];
+    const fields = ['product_name', 'short_description', 'long_description', 'category', 'price', 'compare_at_price', 'primary_image_url', 'additional_images', 'availability_status', 'stock_quantity', 'low_stock_threshold', 'dietary_tags', 'custom_tags', 'is_featured', 'is_visible', 'available_for_corporate', 'available_from_date', 'available_until_date', 'is_archived'];
     fields.forEach(field => {
       if (productFields[field] !== undefined) {
         updates.push(`${field} = $${idx++}`);
@@ -654,7 +662,7 @@ app.post('/api/orders', async (req, res) => {
     let subtotal = 0;
     const validatedItems = [];
     for (const item of items) {
-      const productResult = await client.query('SELECT product_id, product_name, price, availability_status FROM products WHERE product_id = $1 AND availability_status = $2 AND is_archived = false', [item.product_id, 'in_stock']);
+      const productResult = await client.query('SELECT product_id, product_name, price, availability_status FROM products WHERE product_id = $1 AND availability_status = $2 AND is_archived = false AND is_visible = true', [item.product_id, 'in_stock']);
       if (productResult.rows.length === 0) {
         await client.query('ROLLBACK');
         client.release();
