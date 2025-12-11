@@ -397,7 +397,7 @@ const UV_Menu: React.FC = () => {
                 Home
               </Link>
               <span>/</span>
-              <Link to={`/location/${current_location_name}`} className="hover:text-blue-600 transition-colors">
+              <Link to={`/location/${location_slug}`} className="hover:text-blue-600 transition-colors">
                 {current_location_name.charAt(0).toUpperCase() + current_location_name.slice(1)}
               </Link>
               <span>/</span>
@@ -740,7 +740,7 @@ const UV_Menu: React.FC = () => {
                         >
                           {/* Product Image */}
                           <Link
-                            to={`/location/${current_location_name}/product/${product.product_id}`}
+                            to={`/location/${location_slug}/product/${product.product_id}`}
                             className={`block ${view_mode === 'list' ? 'w-48 flex-shrink-0' : ''}`}
                           >
                             <div className="relative">
@@ -771,7 +771,7 @@ const UV_Menu: React.FC = () => {
                           <div className={`p-6 ${view_mode === 'list' ? 'flex-1 flex flex-col justify-between' : ''}`}>
                             <div>
                               <Link
-                                to={`/location/${current_location_name}/product/${product.product_id}`}
+                                to={`/location/${location_slug}/product/${product.product_id}`}
                                 className="block"
                               >
                                 <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors mb-2">
