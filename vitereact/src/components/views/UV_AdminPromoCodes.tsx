@@ -112,6 +112,15 @@ const createPromoCode = async (token: string, data: any): Promise<PromoCode> => 
   return response.data;
 };
 
+const deletePromoCode = async (token: string, codeId: string): Promise<void> => {
+  await axios.delete(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/promo-codes/${codeId}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -186,6 +195,17 @@ const UV_AdminPromoCodes: React.FC = () => {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (codeId: string) => deletePromoCode(authToken!, codeId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['promo-codes'] });
+      showToast('success', 'Promo code deleted successfully');
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to delete promo code');
+    },
+  });
+
   // ==================================
   // EVENT HANDLERS
   // ==================================
@@ -205,6 +225,14 @@ const UV_AdminPromoCodes: React.FC = () => {
       return;
     }
 
+    // Validate date range
+    const fromDate = new Date(newPromo.valid_from);
+    const untilDate = new Date(newPromo.valid_until);
+    if (untilDate < fromDate) {
+      showToast('error', 'Valid until date must be after valid from date');
+      return;
+    }
+
     const promoData: any = {
       code: newPromo.code.toUpperCase().trim(),
       discount_type: newPromo.discount_type,
@@ -220,6 +248,12 @@ const UV_AdminPromoCodes: React.FC = () => {
     };
 
     createMutation.mutate(promoData);
+  };
+
+  const handleDeletePromo = async (codeId: string, code: string) => {
+    if (window.confirm(`Are you sure you want to delete the promo code "${code}"?`)) {
+      deleteMutation.mutate(codeId);
+    }
   };
 
   const resetForm = () => {
@@ -418,7 +452,13 @@ const UV_AdminPromoCodes: React.FC = () => {
                         <Button variant="ghost" size="sm">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDeletePromo(promo.code_id, promo.code)}
+                          disabled={deleteMutation.isPending}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -532,22 +572,48 @@ const UV_AdminPromoCodes: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="valid_from">Valid From *</Label>
+                <Label htmlFor="valid_from">Valid From * (YYYY-MM-DD)</Label>
                 <Input
                   id="valid_from"
                   type="date"
                   value={newPromo.valid_from}
                   onChange={(e) => setNewPromo({ ...newPromo, valid_from: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    // Ensure the date picker opens properly
+                    const target = e.target as HTMLInputElement;
+                    if (target.showPicker) {
+                      try {
+                        target.showPicker();
+                      } catch (err) {
+                        // Fallback for browsers that don't support showPicker
+                      }
+                    }
+                  }}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="valid_until">Valid Until *</Label>
+                <Label htmlFor="valid_until">Valid Until * (YYYY-MM-DD)</Label>
                 <Input
                   id="valid_until"
                   type="date"
                   value={newPromo.valid_until}
                   onChange={(e) => setNewPromo({ ...newPromo, valid_until: e.target.value })}
+                  min={newPromo.valid_from || new Date().toISOString().split('T')[0]}
+                  className="cursor-pointer"
+                  onClick={(e) => {
+                    // Ensure the date picker opens properly
+                    const target = e.target as HTMLInputElement;
+                    if (target.showPicker) {
+                      try {
+                        target.showPicker();
+                      } catch (err) {
+                        // Fallback for browsers that don't support showPicker
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>

@@ -1806,6 +1806,28 @@ app.post('/api/promo-codes', authenticateToken, requireRole(['admin']), async (r
   }
 });
 
+app.delete('/api/promo-codes/:code_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { code_id } = req.params;
+    
+    // Check if promo code exists
+    const checkResult = await client.query('SELECT code_id FROM promo_codes WHERE code_id = $1', [code_id]);
+    if (checkResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Promo code not found', null, 'PROMO_NOT_FOUND'));
+    }
+    
+    // Delete the promo code
+    await client.query('DELETE FROM promo_codes WHERE code_id = $1', [code_id]);
+    client.release();
+    res.status(200).json({ message: 'Promo code deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete promo code', error, 'PROMO_DELETE_ERROR'));
+  }
+});
+
 app.get('/api/drop-of-the-month', async (req, res) => {
   const client = await pool.connect();
   try {
