@@ -188,7 +188,9 @@ const UV_AdminSettings: React.FC = () => {
     mutationFn: ({ location_id, locationData }: { location_id: string; locationData: Partial<Location> }) =>
       updateLocation(authToken!, location_id, locationData),
     onSuccess: () => {
+      // Invalidate both admin and public location queries to sync across all pages
       queryClient.invalidateQueries({ queryKey: ['locations-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['locations'] });
       showToast('success', 'Location updated successfully');
       setEditingLocationId(null);
       setEditingLocationData({});
