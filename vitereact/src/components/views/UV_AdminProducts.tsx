@@ -234,7 +234,8 @@ const UV_AdminProducts: React.FC = () => {
       is_featured: data.is_featured,
       available_for_corporate: data.available_for_corporate,
       available_from_date: data.available_from_date,
-      available_until_date: data.available_until_date
+      available_until_date: data.available_until_date,
+      location_assignments: data.location_assignments
     };
 
     const response = await axios.put(
@@ -289,6 +290,7 @@ const UV_AdminProducts: React.FC = () => {
     mutationFn: createProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-locations'] });
       setProductFormModalOpen(false);
       resetProductForm();
       showToast('success', 'Product created successfully');
@@ -303,6 +305,7 @@ const UV_AdminProducts: React.FC = () => {
     mutationFn: updateProduct,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['product-locations'] });
       setProductFormModalOpen(false);
       resetProductForm();
       showToast('success', 'Product updated successfully');
@@ -360,7 +363,23 @@ const UV_AdminProducts: React.FC = () => {
     setProductFormModalOpen(true);
   };
 
-  const openEditModal = (product: Product) => {
+  const openEditModal = async (product: Product) => {
+    // Fetch existing location assignments for this product
+    let locationAssignments: string[] = [];
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/product-locations`,
+        {
+          params: { product_id: product.product_id },
+          headers: { Authorization: `Bearer ${authToken}` }
+        }
+      );
+      locationAssignments = response.data.map((assignment: any) => assignment.location_name);
+    } catch (error) {
+      console.error('Failed to fetch location assignments:', error);
+      showToast('warning', 'Could not load location assignments');
+    }
+
     setProductFormData({
       product_id: product.product_id,
       product_name: product.product_name,
@@ -392,7 +411,7 @@ const UV_AdminProducts: React.FC = () => {
       available_for_corporate: product.available_for_corporate,
       available_from_date: product.available_from_date,
       available_until_date: product.available_until_date,
-      location_assignments: []
+      location_assignments: locationAssignments
     });
     setProductFormMode('edit');
     setProductFormModalOpen(true);
@@ -429,7 +448,7 @@ const UV_AdminProducts: React.FC = () => {
       errors.primary_image_url = 'Product image is required';
     }
 
-    if (productFormMode === 'create' && productFormData.location_assignments.length === 0) {
+    if (productFormData.location_assignments.length === 0) {
       errors.location_assignments = 'Please assign at least one location';
     }
 
@@ -1312,37 +1331,38 @@ const UV_AdminProducts: React.FC = () => {
                     </div>
 
                     {/* Location Assignments */}
-                    {productFormMode === 'create' && (
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                          Location Assignment <span className="text-red-500">*</span>
-                        </h4>
-                        <div className="space-y-2">
-                          {availableLocations.map((location) => (
-                            <label
-                              key={location.location_id}
-                              className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={productFormData.location_assignments.includes(location.location_name)}
-                                onChange={() => toggleLocationAssignment(location.location_name)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                              />
-                              <span className="ml-3 text-sm font-medium text-gray-900">
-                                {location.location_name}
-                              </span>
-                              <span className="ml-auto text-xs text-gray-500">
-                                {location.city}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                        {productFormErrors.location_assignments && (
-                          <p className="mt-2 text-sm text-red-600">{productFormErrors.location_assignments}</p>
-                        )}
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Location Assignment <span className="text-red-500">*</span>
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-3">
+                        Select which locations will display this product on their menu
+                      </p>
+                      <div className="space-y-2">
+                        {availableLocations.map((location) => (
+                          <label
+                            key={location.location_id}
+                            className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={productFormData.location_assignments.includes(location.location_name)}
+                              onChange={() => toggleLocationAssignment(location.location_name)}
+                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="ml-3 text-sm font-medium text-gray-900">
+                              {location.location_name}
+                            </span>
+                            <span className="ml-auto text-xs text-gray-500">
+                              {location.city}
+                            </span>
+                          </label>
+                        ))}
                       </div>
-                    )}
+                      {productFormErrors.location_assignments && (
+                        <p className="mt-2 text-sm text-red-600">{productFormErrors.location_assignments}</p>
+                      )}
+                    </div>
 
                     {/* Options */}
                     <div>

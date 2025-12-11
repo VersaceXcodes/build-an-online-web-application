@@ -530,14 +530,24 @@ app.get('/api/products/:product_id', async (req, res) => {
 app.get('/api/product-locations', async (req: Request, res: Response) => {
   const client = await pool.connect();
   try {
-    const { location_name, limit = 1000 } = req.query;
+    const { location_name, product_id, limit = 1000 } = req.query;
     
     let query = 'SELECT * FROM product_locations';
     const params: any[] = [];
+    const conditions: string[] = [];
     
     if (location_name) {
-      query += ' WHERE location_name = $1';
+      conditions.push(`location_name = $${params.length + 1}`);
       params.push(location_name);
+    }
+    
+    if (product_id) {
+      conditions.push(`product_id = $${params.length + 1}`);
+      params.push(product_id);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
     
     query += ` LIMIT ${parseInt(limit as string) || 1000}`;
@@ -575,25 +585,41 @@ app.post('/api/products', authenticateToken, requireRole(['admin']), async (req:
 app.put('/api/products/:product_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
+    const { location_assignments, ...productFields } = req.body;
     const updates = [];
     const values = [];
     let idx = 1;
     const fields = ['product_name', 'short_description', 'long_description', 'category', 'price', 'compare_at_price', 'primary_image_url', 'additional_images', 'availability_status', 'stock_quantity', 'low_stock_threshold', 'dietary_tags', 'custom_tags', 'is_featured', 'available_for_corporate', 'available_from_date', 'available_until_date', 'is_archived'];
     fields.forEach(field => {
-      if (req.body[field] !== undefined) {
+      if (productFields[field] !== undefined) {
         updates.push(`${field} = $${idx++}`);
-        values.push(req.body[field]);
+        values.push(productFields[field]);
       }
     });
-    if (updates.length === 0) {
+    if (updates.length === 0 && !location_assignments) {
       client.release();
       return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
     }
     const now = new Date().toISOString();
-    updates.push(`updated_at = $${idx++}`);
-    values.push(now);
-    values.push(req.params.product_id);
-    await client.query(`UPDATE products SET ${updates.join(', ')} WHERE product_id = $${idx}`, values);
+    
+    // Update product fields if any
+    if (updates.length > 0) {
+      updates.push(`updated_at = $${idx++}`);
+      values.push(now);
+      values.push(req.params.product_id);
+      await client.query(`UPDATE products SET ${updates.join(', ')} WHERE product_id = $${idx}`, values);
+    }
+    
+    // Update location assignments if provided
+    if (location_assignments && Array.isArray(location_assignments)) {
+      // Delete existing assignments
+      await client.query('DELETE FROM product_locations WHERE product_id = $1', [req.params.product_id]);
+      // Insert new assignments
+      for (const loc of location_assignments) {
+        await client.query('INSERT INTO product_locations (assignment_id, product_id, location_name, assigned_at) VALUES ($1, $2, $3, $4)', [generateId('pl'), req.params.product_id, loc, now]);
+      }
+    }
+    
     const result = await client.query('SELECT * FROM products WHERE product_id = $1', [req.params.product_id]);
     client.release();
     res.json(result.rows[0]);
