@@ -13,7 +13,8 @@ import {
   BarChart3,
   Users,
   Package,
-  Calendar
+  Calendar,
+  MessageSquare
 } from 'lucide-react';
 
 // ============================================================================
@@ -627,7 +628,7 @@ const UV_AdminDashboard: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
               <Link
                 to="/admin/orders"
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all"
@@ -650,6 +651,14 @@ const UV_AdminDashboard: React.FC = () => {
               >
                 <Users className="h-8 w-8 text-purple-600 mb-2" />
                 <span className="text-sm font-medium text-purple-900">Users</span>
+              </Link>
+
+              <Link
+                to="/admin/feedback-all"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg hover:from-pink-100 hover:to-pink-200 transition-all"
+              >
+                <MessageSquare className="h-8 w-8 text-pink-600 mb-2" />
+                <span className="text-sm font-medium text-pink-900">All Feedback</span>
               </Link>
 
               <Link

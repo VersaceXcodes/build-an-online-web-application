@@ -338,6 +338,15 @@ const GV_TopNav: React.FC = () => {
                 </Link>
                 
                 <Link
+                  to="/admin/feedback-all"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-3" />
+                  All Feedback
+                </Link>
+                
+                <Link
                   to="/admin/settings"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
                   onClick={() => setAccountDropdownOpen(false)}

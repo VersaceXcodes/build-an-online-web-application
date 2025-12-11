@@ -52,6 +52,7 @@ import UV_AdminUsers from '@/components/views/UV_AdminUsers';
 import UV_AdminTraining from '@/components/views/UV_AdminTraining';
 import UV_AdminFeedbackCustomer from '@/components/views/UV_AdminFeedbackCustomer';
 import UV_AdminFeedbackStaff from '@/components/views/UV_AdminFeedbackStaff';
+import UV_AdminFeedbackUnified from '@/components/views/UV_AdminFeedbackUnified';
 import UV_AdminInventoryAlerts from '@/components/views/UV_AdminInventoryAlerts';
 import UV_AdminSettings from '@/components/views/UV_AdminSettings';
 import UV_AdminReports from '@/components/views/UV_AdminReports';
@@ -563,6 +564,15 @@ export const AppRoutes: React.FC = () => {
                 element={
                   <RoleProtectedRoute allowedRoles={['admin']}>
                     <UV_AdminFeedbackStaff />
+                  </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/feedback-all" 
+                element={
+                  <RoleProtectedRoute allowedRoles={['admin']}>
+                    <UV_AdminFeedbackUnified />
                   </RoleProtectedRoute>
                 } 
               />
