@@ -10,33 +10,7 @@ export default {
 				sm: "calc(var(--radius) - 4px)",
 			},
 			colors: {
-				// Dark Mode Luxury Theme - Premium Dessert Brand
-				luxury: {
-					// Deep dark backgrounds
-					darkCharcoal: '#0a0a0a',
-					darkCocoa: '#121212',
-					// Liquid Gold accent
-					gold: {
-						50: '#fef9ed',
-						100: '#fdf3db',
-						200: '#fae7b7',
-						300: '#f7db93',
-						400: '#f5cf6f',
-						500: '#D4AF37', // Main Liquid Gold
-						600: '#b8962e',
-						700: '#9c7d26',
-						800: '#80641d',
-						900: '#644b15',
-					},
-					// Champagne/Vanilla text color
-					champagne: '#F5E6D3',
-					// Glassmorphism layers
-					glass: {
-						dark: 'rgba(18, 18, 18, 0.7)',
-						darker: 'rgba(10, 10, 10, 0.85)',
-					},
-				},
-				// KAKE Brand Colors - Artisan Bakery Palette (Legacy)
+				// KAKE Brand Colors - Artisan Bakery Palette
 				kake: {
 					// Primary: Warm Cream background (soft, cozy)
 					cream: {
@@ -110,12 +84,10 @@ export default {
 				sans: ['Inter', 'system-ui', 'sans-serif'],
 			},
 			boxShadow: {
-				'glow-gold': '0 0 15px rgba(212, 175, 55, 0.5)',
-				'glow-gold-lg': '0 0 25px rgba(212, 175, 55, 0.7)',
-				'glow-gold-sm': '0 0 10px rgba(212, 175, 55, 0.4)',
-			},
-			backdropBlur: {
-				'glass': '12px',
+				'caramel': '0 4px 14px rgba(241, 154, 0, 0.15)',
+				'caramel-lg': '0 10px 25px rgba(241, 154, 0, 0.2)',
+				'soft': '0 2px 8px rgba(120, 113, 108, 0.08)',
+				'soft-lg': '0 8px 20px rgba(120, 113, 108, 0.12)',
 			},
 			keyframes: {
 				"accordion-down": {

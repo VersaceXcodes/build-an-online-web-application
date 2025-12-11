@@ -5,22 +5,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-	"inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 min-h-[44px] md:min-h-[40px]",
+	"inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-kake-caramel-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95 min-h-[44px] md:min-h-[40px]",
 	{
 		variants: {
 			variant: {
 				default:
-					"gradient-gold text-luxury-darkCharcoal font-semibold shadow-glow-gold hover:shadow-glow-gold-lg hover:scale-105 border border-luxury-gold-500/30",
+					"gradient-caramel text-white font-semibold shadow-caramel hover:shadow-caramel-lg hover:scale-105 border border-kake-caramel-500/30 animate-drip",
 				destructive:
-					"bg-red-600 text-white shadow-glow-gold-sm hover:bg-red-700 hover:shadow-glow-gold border border-red-700/30",
+					"bg-red-600 text-white shadow-soft hover:bg-red-700 hover:shadow-soft-lg border border-red-700/30",
 				outline:
-					"border-2 border-luxury-gold-500 glass-luxury text-luxury-champagne hover:bg-luxury-gold-500/10 hover:shadow-glow-gold",
+					"border-2 border-kake-caramel-500 bg-white text-kake-chocolate-500 hover:bg-kake-caramel-500/10 hover:shadow-caramel",
 				secondary:
-					"glass-luxury text-luxury-champagne hover:glass-luxury-darker shadow-luxury hover:shadow-luxury-lg border border-luxury-gold-500/20",
+					"bg-kake-cream-400 text-kake-chocolate-500 hover:bg-kake-cream-500 shadow-soft hover:shadow-soft-lg border border-warm-200",
 				ghost:
-					"text-luxury-champagne hover:glass-luxury hover:text-luxury-gold-500",
+					"text-kake-chocolate-500 hover:bg-kake-cream-200 hover:text-kake-caramel-500",
 				link:
-					"text-luxury-gold-500 underline-offset-4 hover:underline hover:text-luxury-gold-400",
+					"text-kake-caramel-500 underline-offset-4 hover:underline hover:text-kake-caramel-600",
 			},
 			size: {
 				default: "h-10 px-4 py-2 min-h-[44px] md:min-h-[40px]",
