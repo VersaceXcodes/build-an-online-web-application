@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
 import kakeLogo from '@/assets/images/kake-logo.png';
@@ -87,6 +87,16 @@ const LoadingSpinner: React.FC = () => (
     </div>
   </div>
 );
+
+// ============================================================================
+// LEGACY ROUTE REDIRECT COMPONENT
+// ============================================================================
+
+const LegacyMenuRedirect: React.FC = () => {
+  const { location_name } = useParams<{ location_name: string }>();
+  // Redirect from /menu/:location to /location/:location
+  return <Navigate to={`/location/${location_name}`} replace />;
+};
 
 // ============================================================================
 // PROTECTED ROUTE WRAPPERS
@@ -584,6 +594,13 @@ export const AppRoutes: React.FC = () => {
                 } 
               />
               
+          {/* ========================================== */}
+          {/* LEGACY ROUTES - Redirect old/incorrect URLs */}
+          {/* ========================================== */}
+          
+          {/* Handle legacy /menu/:location routes */}
+          <Route path="/menu/:location_name" element={<LegacyMenuRedirect />} />
+          
           {/* ========================================== */}
           {/* FALLBACK ROUTE */}
           {/* ========================================== */}

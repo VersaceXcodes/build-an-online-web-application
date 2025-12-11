@@ -141,25 +141,32 @@ const UV_Landing: React.FC = () => {
   // Derived state
   const show_event_section = active_event?.is_visible || false;
 
+  // Helper function to convert location name to URL slug
+  // This MUST match the same logic in UV_LocationInternal and UV_Menu
+  const nameToSlug = (name: string): string => {
+    return name.toLowerCase().trim().replace(/\s+/g, '-');
+  };
+
   // Location card data with images - mapped to actual database locations
+  // IMPORTANT: slugs must match the database location_name converted via nameToSlug()
   const location_card_data = [
     {
       name: 'London Flagship',
-      slug: 'london-flagship',
+      slug: nameToSlug('London Flagship'), // Auto-generate slug to ensure consistency
       image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&q=80',
       description: 'Collection & Delivery available',
       imageAlt: 'London Flagship storefront - Collection and Delivery available',
     },
     {
       name: 'Manchester Store',
-      slug: 'manchester-store',
+      slug: nameToSlug('Manchester Store'), // Auto-generate slug to ensure consistency
       image: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=800&q=80',
       description: 'Collection & Delivery available',
       imageAlt: 'Manchester Store storefront - Collection and Delivery available',
     },
     {
       name: 'Birmingham Store',
-      slug: 'birmingham-store',
+      slug: nameToSlug('Birmingham Store'), // Auto-generate slug to ensure consistency
       image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',
       description: 'Order via Just Eat & Deliveroo',
       imageAlt: 'Birmingham Store storefront - Order via Just Eat and Deliveroo',
@@ -288,6 +295,13 @@ const UV_Landing: React.FC = () => {
                     <Link
                       to={`/location/${card.slug}`}
                       onClick={() => {
+                        console.log('Location card clicked:', {
+                          cardName: card.name,
+                          cardSlug: card.slug,
+                          locationFound: !!location,
+                          locationName: location?.location_name,
+                          navigatingTo: `/location/${card.slug}`
+                        });
                         if (location) {
                           setCurrentLocation(location.location_name);
                           setLocationDetails(location);
