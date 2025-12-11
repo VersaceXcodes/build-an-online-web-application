@@ -1,14 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { useAppStore } from '@/store/main';
 import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 import tiktokLogo from '@/assets/images/tiktok-logo.png';
 
+interface Location {
+  location_id: string;
+  location_name: string;
+  address_line1: string;
+  address_line2: string | null;
+  city: string;
+  postal_code: string;
+  phone_number: string;
+  email: string;
+  is_collection_enabled: boolean;
+  is_delivery_enabled: boolean;
+  delivery_radius_km: number | null;
+  delivery_fee: number | null;
+  free_delivery_threshold: number | null;
+  estimated_delivery_time_minutes: number | null;
+  estimated_preparation_time_minutes: number;
+  allow_scheduled_pickups: boolean;
+  just_eat_url: string | null;
+  deliveroo_url: string | null;
+  opening_hours: string;
+  created_at: string;
+  updated_at: string;
+}
+
+const fetchLocations = async (): Promise<Location[]> => {
+  const response = await axios.get<Location[]>(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations`
+  );
+  return response.data;
+};
+
 const GV_Footer: React.FC = () => {
   // CRITICAL: Individual selectors - NO object destructuring
   const companyEmail = useAppStore(state => state.system_config_state.company_email);
   const companyPhone = useAppStore(state => state.system_config_state.company_phone);
+
+  // Fetch locations dynamically
+  const { data: locations = [] } = useQuery({
+    queryKey: ['locations'],
+    queryFn: fetchLocations,
+    staleTime: 60000, // 1 minute
+    refetchOnWindowFocus: false,
+  });
+
+  // Helper function to convert location name to URL slug
+  const nameToSlug = (name: string): string => {
+    return name.toLowerCase().trim().replace(/\s+/g, '-');
+  };
 
   // Social media URLs (hardcoded for MVP - will be admin-configurable later)
   const social_media_urls = {
@@ -39,24 +85,18 @@ const GV_Footer: React.FC = () => {
               <div className="pt-4 mt-4 border-t border-gray-800">
                 <h4 className="text-white text-sm font-semibold mb-3">Our Locations</h4>
                 <div className="space-y-2">
-                  <Link 
-                    to="/location/london-flagship"
-                    className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    London Flagship
-                  </Link>
-                  <Link 
-                    to="/location/manchester-store"
-                    className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    Manchester Store
-                  </Link>
-                  <Link 
-                    to="/location/birmingham-store"
-                    className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
-                  >
-                    Birmingham Store
-                  </Link>
+                  {locations.map((location) => (
+                    <Link 
+                      key={location.location_id}
+                      to={`/location/${nameToSlug(location.location_name)}`}
+                      className="block text-gray-300 hover:text-white transition-colors duration-200 text-sm"
+                    >
+                      {location.location_name}
+                    </Link>
+                  ))}
+                  {locations.length === 0 && (
+                    <p className="text-gray-400 text-sm italic">Loading locations...</p>
+                  )}
                 </div>
               </div>
             </div>

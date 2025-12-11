@@ -147,31 +147,38 @@ const UV_Landing: React.FC = () => {
     return name.toLowerCase().trim().replace(/\s+/g, '-');
   };
 
-  // Location card data with images - mapped to actual database locations
-  // IMPORTANT: slugs must match the database location_name converted via nameToSlug()
-  const location_card_data = [
-    {
-      name: 'London Flagship',
-      slug: nameToSlug('London Flagship'), // Auto-generate slug to ensure consistency
-      image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&q=80',
-      description: 'Collection & Delivery available',
-      imageAlt: 'London Flagship storefront - Collection and Delivery available',
-    },
-    {
-      name: 'Manchester Store',
-      slug: nameToSlug('Manchester Store'), // Auto-generate slug to ensure consistency
-      image: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=800&q=80',
-      description: 'Collection & Delivery available',
-      imageAlt: 'Manchester Store storefront - Collection and Delivery available',
-    },
-    {
-      name: 'Birmingham Store',
-      slug: nameToSlug('Birmingham Store'), // Auto-generate slug to ensure consistency
-      image: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',
-      description: 'Order via Just Eat & Deliveroo',
-      imageAlt: 'Birmingham Store storefront - Order via Just Eat and Deliveroo',
-    },
+  // Helper function to get location description based on available services
+  const getLocationDescription = (location: Location): string => {
+    if (location.is_collection_enabled && location.is_delivery_enabled) {
+      return 'Collection & Delivery available';
+    } else if (location.is_collection_enabled) {
+      return 'Collection available';
+    } else if (location.is_delivery_enabled) {
+      return 'Delivery available';
+    } else if (location.just_eat_url || location.deliveroo_url) {
+      return 'Order via Just Eat & Deliveroo';
+    } else {
+      return 'Coming soon';
+    }
+  };
+
+  // Default images for location cards (cycle through these for variety)
+  const defaultLocationImages = [
+    'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=800&q=80',
+    'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=800&q=80',
+    'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&q=80',
   ];
+
+  // Dynamically generate location card data from database locations
+  // This ensures the UI always matches what's in the database
+  const location_card_data = locations.map((location, index) => ({
+    name: location.location_name,
+    slug: nameToSlug(location.location_name),
+    image: defaultLocationImages[index % defaultLocationImages.length],
+    description: getLocationDescription(location),
+    imageAlt: `${location.location_name} storefront - ${getLocationDescription(location)}`,
+    location: location, // Include the full location object for easy access
+  }));
 
   return (
     <>
@@ -274,95 +281,84 @@ const UV_Landing: React.FC = () => {
           {/* Location Cards */}
           {!locations_loading && !locations_error && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {location_card_data.map((card, index) => {
-                // Match location by name (exact match)
-                const location = locations.find(
-                  (loc) => loc.location_name === card.name
-                );
-
-                return (
-                  <motion.div
-                    key={card.slug}
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-50px" }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.15,
-                      ease: [0.25, 0.46, 0.45, 0.94],
+              {location_card_data.map((card, index) => (
+                <motion.div
+                  key={card.slug}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{
+                    duration: 0.5,
+                    delay: index * 0.15,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                >
+                  <Link
+                    to={`/location/${card.slug}`}
+                    onClick={() => {
+                      console.log('Location card clicked:', {
+                        cardName: card.name,
+                        cardSlug: card.slug,
+                        locationFound: true,
+                        locationName: card.location.location_name,
+                        navigatingTo: `/location/${card.slug}`
+                      });
+                      setCurrentLocation(card.location.location_name);
+                      setLocationDetails(card.location);
                     }}
+                    className="block group glass-luxury rounded-2xl shadow-luxury border border-luxury-gold-500/30 overflow-hidden hover:shadow-glow-gold-lg hover:border-luxury-gold-500 hover:scale-[1.02] transition-all duration-300 min-h-[44px]"
                   >
-                    <Link
-                      to={`/location/${card.slug}`}
-                      onClick={() => {
-                        console.log('Location card clicked:', {
-                          cardName: card.name,
-                          cardSlug: card.slug,
-                          locationFound: !!location,
-                          locationName: location?.location_name,
-                          navigatingTo: `/location/${card.slug}`
-                        });
-                        if (location) {
-                          setCurrentLocation(location.location_name);
-                          setLocationDetails(location);
-                        }
-                      }}
-                      className="block group glass-luxury rounded-2xl shadow-luxury border border-luxury-gold-500/30 overflow-hidden hover:shadow-glow-gold-lg hover:border-luxury-gold-500 hover:scale-[1.02] transition-all duration-300 min-h-[44px]"
-                    >
-                    {/* Card Image */}
-                    <div className="relative h-56 overflow-hidden">
-                      <img
-                        src={card.image}
-                        alt={card.imageAlt}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-luxury-darkCharcoal/90 to-transparent"></div>
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="font-serif text-2xl font-bold text-luxury-champagne mb-1 group-hover:text-luxury-gold-500 transition-colors duration-300">
-                          {card.name}
-                        </h3>
-                      </div>
+                  {/* Card Image */}
+                  <div className="relative h-56 overflow-hidden">
+                    <img
+                      src={card.image}
+                      alt={card.imageAlt}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-luxury-darkCharcoal/90 to-transparent"></div>
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <h3 className="font-serif text-2xl font-bold text-luxury-champagne mb-1 group-hover:text-luxury-gold-500 transition-colors duration-300">
+                        {card.name}
+                      </h3>
                     </div>
+                  </div>
 
-                    {/* Card Content */}
-                    <div className="p-6">
-                      <p className="text-luxury-champagne/80 mb-4 flex items-center font-sans">
-                        <svg className="w-5 h-5 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  {/* Card Content */}
+                  <div className="p-6">
+                    <p className="text-luxury-champagne/80 mb-4 flex items-center font-sans">
+                      <svg className="w-5 h-5 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {card.description}
+                    </p>
+
+                    <div className="space-y-2 text-sm text-luxury-champagne/70 font-sans">
+                      <p className="flex items-start">
+                        <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                         </svg>
-                        {card.description}
+                        {card.location.address_line1}, {card.location.city}
                       </p>
-
-                      {location && (
-                        <div className="space-y-2 text-sm text-luxury-champagne/70 font-sans">
-                          <p className="flex items-start">
-                            <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                            </svg>
-                            {location.address_line1}, {location.city}
-                          </p>
-                          <p className="flex items-center">
-                            <svg className="w-4 h-4 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                            </svg>
-                            {location.phone_number}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="mt-6 flex items-center justify-between text-luxury-gold-500 font-semibold font-sans group-hover:text-luxury-gold-400 min-h-[44px] md:min-h-[auto]">
-                        <span>Start Ordering</span>
-                        <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      <p className="flex items-center">
+                        <svg className="w-4 h-4 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
-                      </div>
+                        {card.location.phone_number}
+                      </p>
                     </div>
-                    </Link>
-                  </motion.div>
-                );
-              })}
+
+                    <div className="mt-6 flex items-center justify-between text-luxury-gold-500 font-semibold font-sans group-hover:text-luxury-gold-400 min-h-[44px] md:min-h-[auto]">
+                      <span>Start Ordering</span>
+                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
           )}
         </div>
