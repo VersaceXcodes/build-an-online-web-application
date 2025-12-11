@@ -169,7 +169,7 @@ const UV_Landing: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative gradient-cream-soft py-20 lg:py-32 overflow-hidden">
+      <section className="relative bg-luxury-darkCharcoal py-20 lg:py-32 overflow-hidden">
         {/* Watermark overlay with fade-in animation */}
         <div 
           className="absolute inset-0 opacity-0 animate-watermark-fade-in"
@@ -179,21 +179,22 @@ const UV_Landing: React.FC = () => {
             backgroundPosition: 'center center',
             backgroundSize: '80%',
             pointerEvents: 'none',
+            opacity: 0.05,
           }}
         />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
-            {/* Card Container with subtle background */}
-            <div className="bg-kake-cream-200/60 backdrop-blur-sm rounded-3xl p-8 md:p-12 lg:p-16 shadow-lg animate-fade-in">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-6 leading-tight text-center">
+            {/* Card Container with glassmorphism */}
+            <div className="glass-luxury backdrop-blur-glass rounded-3xl p-8 md:p-12 lg:p-16 shadow-luxury-lg animate-fade-in">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-luxury-champagne mb-6 leading-tight text-center">
                 Indulge in Dublin's Finest
-                <span className="block text-kake-chocolate-600 mt-2">
+                <span className="block text-luxury-gold-500 mt-2">
                   Artisan Desserts
                 </span>
               </h1>
               
-              <p className="text-lg md:text-xl text-kake-chocolate-400 mb-8 max-w-2xl mx-auto leading-relaxed text-center">
+              <p className="font-sans text-lg md:text-xl text-luxury-champagne/90 mb-8 max-w-2xl mx-auto leading-relaxed text-center">
                 Handcrafted treats made fresh daily across three Dublin locations. 
                 From classic pastries to celebration cakes, we bring joy to every bite.
               </p>
@@ -201,7 +202,7 @@ const UV_Landing: React.FC = () => {
               <div className="text-center">
                 <a
                   href="#locations"
-                  className="inline-block bg-kake-chocolate-500 hover:bg-[#6d3d26] text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="inline-block gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105"
                 >
                   Choose Your Location
                 </a>
@@ -211,30 +212,31 @@ const UV_Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Wave Divider - Mimics dripping icing */}
+      {/* Wave Divider - Liquid Gold drip effect */}
       <div className="relative -mt-1">
         <svg 
-          className="w-full h-12 md:h-16 lg:h-20 fill-kake-cream-200" 
+          className="w-full h-12 md:h-16 lg:h-20" 
           viewBox="0 0 1200 120" 
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           <path d="M0,0 C150,60 350,60 600,30 C850,0 1050,0 1200,30 L1200,120 L0,120 Z" 
-                opacity="0.5"/>
+                fill="#D4AF37" opacity="0.2"/>
           <path d="M0,20 C200,80 400,80 600,50 C800,20 1000,20 1200,50 L1200,120 L0,120 Z" 
-                opacity="0.3"/>
-          <path d="M0,40 C250,100 450,100 600,70 C750,40 950,40 1200,70 L1200,120 L0,120 Z"/>
+                fill="#D4AF37" opacity="0.15"/>
+          <path d="M0,40 C250,100 450,100 600,70 C750,40 950,40 1200,70 L1200,120 L0,120 Z"
+                fill="#121212"/>
         </svg>
       </div>
 
       {/* Location Selection Section */}
-      <section id="locations" className="py-16 lg:py-24 bg-white">
+      <section id="locations" className="py-16 lg:py-24 bg-luxury-darkCocoa">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-luxury-champagne mb-4">
               Our Locations
             </h2>
-            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
+            <p className="font-sans text-lg text-luxury-champagne/80 max-w-2xl mx-auto">
               Choose your nearest Kake location to start ordering
             </p>
           </div>
@@ -243,12 +245,12 @@ const UV_Landing: React.FC = () => {
           {locations_loading && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8" role="status" aria-live="polite" aria-label="Loading locations">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
-                  <div className="h-56 bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                <div key={i} className="glass-luxury rounded-xl shadow-luxury overflow-hidden animate-pulse">
+                  <div className="h-56 bg-gradient-to-br from-luxury-darkCocoa to-luxury-darkCharcoal"></div>
                   <div className="p-6 space-y-3">
-                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-6 bg-luxury-gold-500/20 rounded w-3/4"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-full"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-2/3"></div>
                   </div>
                 </div>
               ))}
@@ -257,8 +259,8 @@ const UV_Landing: React.FC = () => {
 
           {/* Error State */}
           {locations_error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-              <p className="text-red-700 font-medium">Unable to load locations. Please refresh the page.</p>
+            <div className="glass-luxury border-2 border-red-500/50 rounded-xl p-6 text-center shadow-glow-gold-sm">
+              <p className="text-red-400 font-medium">Unable to load locations. Please refresh the page.</p>
             </div>
           )}
 
@@ -291,19 +293,19 @@ const UV_Landing: React.FC = () => {
                           setLocationDetails(location);
                         }
                       }}
-                      className="block group bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-kake-cream-300 overflow-hidden hover:shadow-[0_8px_30px_rgba(139,69,19,0.15)] hover:scale-[1.02] transition-all duration-300"
+                      className="block group glass-luxury rounded-2xl shadow-luxury border border-luxury-gold-500/30 overflow-hidden hover:shadow-glow-gold-lg hover:border-luxury-gold-500 hover:scale-[1.02] transition-all duration-300 min-h-[44px]"
                     >
                     {/* Card Image */}
                     <div className="relative h-56 overflow-hidden">
                       <img
                         src={card.image}
                         alt={card.imageAlt}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         loading="lazy"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute inset-0 bg-gradient-to-t from-luxury-darkCharcoal/90 to-transparent"></div>
                       <div className="absolute bottom-4 left-4 right-4">
-                        <h3 className="text-2xl font-bold text-white mb-1">
+                        <h3 className="font-serif text-2xl font-bold text-luxury-champagne mb-1 group-hover:text-luxury-gold-500 transition-colors duration-300">
                           {card.name}
                         </h3>
                       </div>
@@ -311,8 +313,8 @@ const UV_Landing: React.FC = () => {
 
                     {/* Card Content */}
                     <div className="p-6">
-                      <p className="text-kake-chocolate-400 mb-4 flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <p className="text-luxury-champagne/80 mb-4 flex items-center font-sans">
+                        <svg className="w-5 h-5 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
@@ -320,15 +322,15 @@ const UV_Landing: React.FC = () => {
                       </p>
 
                       {location && (
-                        <div className="space-y-2 text-sm text-kake-chocolate-400">
+                        <div className="space-y-2 text-sm text-luxury-champagne/70 font-sans">
                           <p className="flex items-start">
-                            <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                             </svg>
                             {location.address_line1}, {location.city}
                           </p>
                           <p className="flex items-center">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 mr-2 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                             </svg>
                             {location.phone_number}
@@ -336,7 +338,7 @@ const UV_Landing: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="mt-6 flex items-center justify-between text-kake-chocolate-500 font-semibold group-hover:text-kake-chocolate-600">
+                      <div className="mt-6 flex items-center justify-between text-luxury-gold-500 font-semibold font-sans group-hover:text-luxury-gold-400 min-h-[44px] md:min-h-[auto]">
                         <span>Start Ordering</span>
                         <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -353,31 +355,31 @@ const UV_Landing: React.FC = () => {
       </section>
 
       {/* Corporate & Events Section */}
-      <section className="py-16 lg:py-24 gradient-cream-soft">
+      <section className="py-16 lg:py-24 bg-luxury-darkCharcoal">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-luxury-champagne mb-4">
               Corporate & Event Orders
             </h2>
-            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
+            <p className="font-sans text-lg text-luxury-champagne/80 max-w-2xl mx-auto">
               Make your special occasions unforgettable with our bespoke dessert offerings
             </p>
           </div>
 
           {/* Loading State for Drop */}
           {drop_loading && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 animate-pulse" role="status" aria-live="polite" aria-label="Loading drop of the month">
+            <div className="glass-luxury rounded-xl shadow-luxury overflow-hidden animate-pulse" role="status" aria-live="polite" aria-label="Loading drop of the month">
               <div className="grid md:grid-cols-2 gap-0">
-                <div className="h-80 md:h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                <div className="h-80 md:h-full bg-gradient-to-br from-luxury-darkCocoa to-luxury-darkCharcoal"></div>
                 <div className="p-8 lg:p-12 space-y-4">
-                  <div className="h-10 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-10 bg-luxury-gold-500/20 rounded w-3/4"></div>
                   <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-full"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-5/6"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-2/3"></div>
                   </div>
-                  <div className="h-20 bg-gray-200 rounded"></div>
-                  <div className="h-12 bg-gray-200 rounded w-48"></div>
+                  <div className="h-20 bg-luxury-gold-500/10 rounded"></div>
+                  <div className="h-12 bg-luxury-gold-500/20 rounded w-48"></div>
                 </div>
               </div>
             </div>
@@ -385,7 +387,7 @@ const UV_Landing: React.FC = () => {
 
           {/* Drop of the Month Featured Display */}
           {!drop_loading && active_drop && (
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <div className="glass-luxury rounded-xl shadow-luxury-lg overflow-hidden border border-luxury-gold-500/30 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Image */}
                 <div className="relative h-80 md:h-full">
@@ -395,32 +397,32 @@ const UV_Landing: React.FC = () => {
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 left-4 bg-orange-500 text-white px-4 py-2 rounded-lg font-bold shadow-lg">
+                  <div className="absolute top-4 left-4 gradient-gold text-luxury-darkCharcoal px-4 py-2 rounded-lg font-bold shadow-glow-gold font-sans">
                     Drop of the Month
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <h3 className="text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
+                  <h3 className="font-serif text-3xl lg:text-4xl font-bold text-luxury-champagne mb-4">
                     {active_drop.product_name}
                   </h3>
                   
-                  <p className="text-lg text-kake-chocolate-400 mb-6 leading-relaxed">
+                  <p className="font-sans text-lg text-luxury-champagne/80 mb-6 leading-relaxed">
                     {active_drop.description}
                   </p>
 
-                  <div className="bg-kake-cream-100 border border-kake-cream-400 rounded-lg p-4 mb-6">
+                  <div className="glass-luxury-darker border border-luxury-gold-500/30 rounded-lg p-4 mb-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-kake-chocolate-500 font-medium mb-1">Special Price</p>
-                        <p className="text-3xl font-bold text-kake-chocolate-600">
+                        <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Special Price</p>
+                        <p className="font-serif text-3xl font-bold text-luxury-champagne">
                           €{Number(active_drop.price).toFixed(2)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-kake-chocolate-500 font-medium mb-1">Available Until</p>
-                        <p className="text-lg font-semibold text-kake-chocolate-600">
+                        <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Available Until</p>
+                        <p className="font-sans text-lg font-semibold text-luxury-champagne">
                           {new Date(active_drop.available_until).toLocaleDateString('en-IE', {
                             month: 'short',
                             day: 'numeric',
@@ -432,7 +434,7 @@ const UV_Landing: React.FC = () => {
 
                   <Link
                     to="/corporate-order"
-                    className="inline-flex items-center justify-center bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
                   >
                     Pre-order Now
                     <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -446,26 +448,26 @@ const UV_Landing: React.FC = () => {
 
           {/* Generic Corporate Enquiry (when no active drop) */}
           {!drop_loading && !active_drop && (
-            <div className="bg-white rounded-xl shadow-chocolate-lg p-8 lg:p-12 text-center border border-kake-cream-400">
+            <div className="glass-luxury rounded-xl shadow-luxury-lg p-8 lg:p-12 text-center border border-luxury-gold-500/30 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
               <div className="max-w-2xl mx-auto">
                 <div className="mb-6">
-                  <svg className="w-20 h-20 mx-auto text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-20 h-20 mx-auto text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
                   </svg>
                 </div>
                 
-                <h3 className="text-3xl font-bold text-kake-chocolate-500 mb-4">
+                <h3 className="font-serif text-3xl font-bold text-luxury-champagne mb-4">
                   Corporate & Event Catering
                 </h3>
                 
-                <p className="text-lg text-kake-chocolate-400 mb-8 leading-relaxed">
+                <p className="font-sans text-lg text-luxury-champagne/80 mb-8 leading-relaxed">
                   Elevate your corporate events, celebrations, and special occasions with our custom dessert solutions. 
                   From intimate meetings to large gatherings, we create memorable sweet moments.
                 </p>
 
                 <Link
                   to="/corporate-order"
-                  className="inline-flex items-center justify-center bg-kake-chocolate-500 hover:bg-kake-chocolate-600 text-kake-lightCream-100 font-semibold px-8 py-4 rounded-xl shadow-chocolate-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
                 >
                   Enquire About Corporate Orders
                   <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,22 +482,22 @@ const UV_Landing: React.FC = () => {
 
       {/* Stall/Pop-up Event Section (Conditionally Rendered) */}
       {show_event_section && active_event && (
-        <section className="py-16 lg:py-24 bg-gradient-to-br from-yellow-50 to-orange-50">
+        <section className="py-16 lg:py-24 bg-luxury-darkCocoa">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Loading State */}
             {event_loading && (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-orange-300 animate-pulse" role="status" aria-live="polite" aria-label="Loading event details">
-                <div className="bg-gradient-to-r from-orange-200 to-pink-200 px-6 py-3 h-12"></div>
+              <div className="glass-luxury rounded-xl shadow-luxury overflow-hidden border-2 border-luxury-gold-500/30 animate-pulse" role="status" aria-live="polite" aria-label="Loading event details">
+                <div className="gradient-gold px-6 py-3 h-12"></div>
                 <div className="grid md:grid-cols-2 gap-0">
-                  <div className="h-64 md:h-full bg-gradient-to-br from-gray-200 to-gray-300"></div>
+                  <div className="h-64 md:h-full bg-gradient-to-br from-luxury-darkCocoa to-luxury-darkCharcoal"></div>
                   <div className="p-8 lg:p-12 space-y-4">
-                    <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-8 bg-luxury-gold-500/20 rounded w-3/4"></div>
                     <div className="space-y-3">
-                      <div className="h-6 bg-gray-200 rounded w-full"></div>
-                      <div className="h-6 bg-gray-200 rounded w-5/6"></div>
-                      <div className="h-6 bg-gray-200 rounded w-4/6"></div>
+                      <div className="h-6 bg-luxury-gold-500/10 rounded w-full"></div>
+                      <div className="h-6 bg-luxury-gold-500/10 rounded w-5/6"></div>
+                      <div className="h-6 bg-luxury-gold-500/10 rounded w-4/6"></div>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded w-full"></div>
+                    <div className="h-4 bg-luxury-gold-500/10 rounded w-full"></div>
                     <div className="h-12 bg-gray-200 rounded w-48"></div>
                   </div>
                 </div>
@@ -504,10 +506,10 @@ const UV_Landing: React.FC = () => {
 
             {/* Event Content */}
             {!event_loading && (
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-orange-300">
-                <div className="bg-gradient-to-r from-orange-500 to-pink-500 px-6 py-3">
-                  <p className="text-white font-bold text-lg text-center animate-pulse">
-                    🎉 Special Event Alert!
+              <div className="glass-luxury rounded-xl shadow-luxury-lg overflow-hidden border-2 border-luxury-gold-500/50 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
+                <div className="gradient-gold px-6 py-3">
+                  <p className="text-luxury-darkCharcoal font-bold text-lg text-center font-sans">
+                    Special Event Alert!
                   </p>
                 </div>
 
@@ -526,20 +528,20 @@ const UV_Landing: React.FC = () => {
 
                   {/* Event Details */}
                   <div className={`p-8 lg:p-12 ${!active_event.event_image_url ? 'md:col-span-2' : ''}`}>
-                    <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                    <h3 className="font-serif text-3xl font-bold text-luxury-champagne mb-4">
                       {active_event.event_name}
                     </h3>
 
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center text-gray-700">
-                        <svg className="w-5 h-5 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="space-y-3 mb-6 font-sans">
+                      <div className="flex items-center text-luxury-champagne/80">
+                        <svg className="w-5 h-5 mr-3 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         </svg>
                         <span className="font-medium">{active_event.venue_location}</span>
                       </div>
 
-                      <div className="flex items-center text-gray-700">
-                        <svg className="w-5 h-5 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center text-luxury-champagne/80">
+                        <svg className="w-5 h-5 mr-3 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         <span className="font-medium">
@@ -552,8 +554,8 @@ const UV_Landing: React.FC = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center text-gray-700">
-                        <svg className="w-5 h-5 mr-3 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="flex items-center text-luxury-champagne/80">
+                        <svg className="w-5 h-5 mr-3 text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span className="font-medium">{active_event.event_time}</span>
@@ -561,7 +563,7 @@ const UV_Landing: React.FC = () => {
                     </div>
 
                     {active_event.description && (
-                      <p className="text-gray-700 mb-6 leading-relaxed">
+                      <p className="font-sans text-luxury-champagne/80 mb-6 leading-relaxed">
                         {active_event.description}
                       </p>
                     )}
@@ -574,7 +576,7 @@ const UV_Landing: React.FC = () => {
                             href={active_event.cta_button_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
                           >
                             {active_event.cta_button_text}
                             <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -584,7 +586,7 @@ const UV_Landing: React.FC = () => {
                         ) : (
                           <Link
                             to={active_event.cta_button_url}
-                            className="inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
                           >
                             {active_event.cta_button_text}
                             <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

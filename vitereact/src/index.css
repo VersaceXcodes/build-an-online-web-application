@@ -3,11 +3,13 @@
 @tailwind utilities;
 
 :root {
-	font-family: 'Nunito', 'Quicksand', system-ui, Avenir, Helvetica, Arial, sans-serif;
+	font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;
 	font-weight: 400;
 
-	color-scheme: light;
+	color-scheme: dark;
+	background-color: #0a0a0a;
+	color: #F5E6D3;
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -15,10 +17,16 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+body {
+	background-color: #0a0a0a;
+	color: #F5E6D3;
+	min-height: 100vh;
+}
+
 *::selection {
-	background-color: #5C311E;
-	color: #F3D8C7;
-	/* KAKE chocolate brown selection with cream text */
+	background-color: #D4AF37;
+	color: #0a0a0a;
+	/* Liquid Gold selection with dark background */
 }
 
 ::-webkit-scrollbar {
@@ -29,21 +37,21 @@
 }
 
 ::-webkit-scrollbar-track {
-	background: #F3D8C7;
-	/* KAKE warm cream track */
+	background: #121212;
+	/* Dark cocoa track */
 }
 
 ::-webkit-scrollbar-thumb {
-	background: rgba(92, 49, 30, 0.3);
-	/* KAKE chocolate brown thumb */
+	background: rgba(212, 175, 55, 0.3);
+	/* Liquid Gold thumb */
 	height: 50px;
 	/* Vertical scrollbar thumb height */
 	border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: rgba(92, 49, 30, 0.5);
-	/* Darker chocolate brown on hover */
+	background: rgba(212, 175, 55, 0.6);
+	/* Brighter Gold on hover */
 }
 
 ::-webkit-scrollbar-thumb:horizontal {
@@ -55,20 +63,20 @@
 	:root {
 		--radius: 0.5rem;
 		
-		/* KAKE Brand Color Variables - Artisan Theme */
-		--color-primary: 92 49 30; /* Dark Chocolate Brown */
-		--color-primary-light: 143 105 79;
-		--color-primary-dark: 45 24 15;
+		/* Dark Mode Luxury Theme Variables */
+		--color-primary: 212 175 55; /* Liquid Gold */
+		--color-primary-light: 247 219 147;
+		--color-primary-dark: 128 100 29;
 		
-		--color-secondary: 243 216 199; /* Warm Cream */
+		--color-secondary: 245 230 211; /* Champagne */
 		--color-secondary-light: 254 249 245;
 		--color-secondary-dark: 224 194 171;
 		
-		--color-accent: 241 154 0; /* Caramel accent */
+		--color-accent: 212 175 55; /* Liquid Gold accent */
 		--color-accent-light: 251 228 192;
 		--color-accent-dark: 149 93 0;
 		
-		--color-highlight: 255 234 175; /* Light Cream */
+		--color-highlight: 245 230 211; /* Champagne */
 		--color-highlight-light: 255 253 247;
 		--color-highlight-dark: 191 177 132;
 		
@@ -78,19 +86,66 @@
 		--color-error: 239 68 68; /* Red */
 		--color-info: 59 130 246; /* Blue */
 		
-		/* Neutral warm tones */
-		--color-background: 243 216 199; /* Warm cream background */
-		--color-surface: 255 255 255;
-		--color-surface-elevated: 254 249 245;
-		--color-border: 224 194 171;
-		--color-text: 92 49 30; /* Dark chocolate brown text */
-		--color-text-secondary: 120 113 108;
+		/* Dark luxury tones */
+		--color-background: 10 10 10; /* Deep charcoal background */
+		--color-surface: 18 18 18; /* Dark cocoa surface */
+		--color-surface-elevated: 28 28 28;
+		--color-border: 212 175 55; /* Gold border */
+		--color-text: 245 230 211; /* Champagne text */
+		--color-text-secondary: 200 185 165;
 		--color-text-tertiary: 168 162 158;
 	}
 }
 
-/* KAKE Custom Utility Classes */
+/* Dark Mode Luxury Custom Utility Classes */
 @layer utilities {
+	/* Glassmorphism card style */
+	.glass-luxury {
+		background: rgba(18, 18, 18, 0.7);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(212, 175, 55, 0.3);
+	}
+	
+	.glass-luxury-darker {
+		background: rgba(10, 10, 10, 0.85);
+		backdrop-filter: blur(12px);
+		border: 1px solid rgba(212, 175, 55, 0.2);
+	}
+	
+	/* Gold glow effects */
+	.glow-gold {
+		box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+	}
+	
+	.glow-gold-lg {
+		box-shadow: 0 0 25px rgba(212, 175, 55, 0.7);
+	}
+	
+	.glow-gold-sm {
+		box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+	}
+	
+	/* Mobile-friendly subtle glow */
+	@media (max-width: 768px) {
+		.glow-gold {
+			box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+		}
+		
+		.glow-gold-lg {
+			box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+		}
+	}
+	
+	/* Gradient backgrounds */
+	.gradient-gold {
+		background: linear-gradient(135deg, #D4AF37 0%, #b8962e 100%);
+	}
+	
+	.gradient-dark {
+		background: linear-gradient(135deg, #121212 0%, #0a0a0a 100%);
+	}
+	
+	/* Legacy gradients */
 	.gradient-chocolate {
 		background: linear-gradient(135deg, #8f6a4f 0%, #5C311E 100%);
 	}
@@ -103,6 +158,16 @@
 		background: linear-gradient(135deg, #fef9f5 0%, #F3D8C7 100%);
 	}
 	
+	/* Luxury shadows */
+	.shadow-luxury {
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+	}
+	
+	.shadow-luxury-lg {
+		box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7);
+	}
+	
+	/* Legacy shadows */
 	.shadow-chocolate {
 		box-shadow: 0 4px 14px rgba(92, 49, 30, 0.15);
 	}
@@ -123,6 +188,7 @@
 		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	}
 	
+	/* Gold border bottom on hover */
 	.drip-border-bottom {
 		position: relative;
 	}
@@ -134,7 +200,7 @@
 		left: 0;
 		width: 100%;
 		height: 2px;
-		background: linear-gradient(90deg, transparent, #f19a00, transparent);
+		background: linear-gradient(90deg, transparent, #D4AF37, transparent);
 		opacity: 0;
 		transition: opacity 0.3s ease;
 	}

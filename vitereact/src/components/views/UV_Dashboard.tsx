@@ -15,24 +15,24 @@ const UV_Dashboard: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-luxury-darkCharcoal">
         {/* Navigation */}
-        <nav className="bg-white shadow">
+        <nav className="glass-luxury shadow-luxury border-b border-luxury-gold-500/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
               <div className="flex items-center">
-                <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+                <h1 className="font-serif text-xl font-semibold text-luxury-champagne">Dashboard</h1>
               </div>
               <div className="flex items-center space-x-4">
                 <Link 
                   to="/profile"
-                  className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-luxury-champagne hover:text-luxury-gold-500 px-3 py-2 rounded-md text-sm font-medium font-sans transition-all duration-300 min-h-[44px] flex items-center"
                 >
                   Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors"
+                  className="bg-red-600/80 text-white px-4 py-2 rounded-md text-sm font-medium font-sans hover:bg-red-700 transition-all duration-300 shadow-glow-gold-sm hover:shadow-glow-gold min-h-[44px]"
                 >
                   Sign out
                 </button>
@@ -44,20 +44,20 @@ const UV_Dashboard: React.FC = () => {
         {/* Main content */}
         <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
           <div className="px-4 py-6 sm:px-0">
-            <div className="border-4 border-dashed border-gray-200 rounded-lg p-8">
+            <div className="glass-luxury border border-luxury-gold-500/30 rounded-lg p-8 shadow-glow-gold-lg">
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                <h2 className="font-serif text-2xl font-bold text-luxury-champagne mb-4">
                   Welcome back, {currentUser?.first_name} {currentUser?.last_name}!
                 </h2>
-                <p className="text-gray-600 mb-4">
+                <p className="font-sans text-luxury-champagne/80 mb-4">
                   This is your protected dashboard. You can only see this because you're authenticated.
                 </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                  <p className="text-blue-700 text-sm">
-                    <strong>Email:</strong> {currentUser?.email}
+                <div className="glass-luxury-darker border border-luxury-gold-500/20 rounded-md p-4">
+                  <p className="text-luxury-champagne/90 text-sm font-sans">
+                    <strong className="text-luxury-gold-500">Email:</strong> {currentUser?.email}
                   </p>
-                  <p className="text-blue-700 text-sm mt-1">
-                    <strong>User ID:</strong> {currentUser?.user_id}
+                  <p className="text-luxury-champagne/90 text-sm mt-1 font-sans">
+                    <strong className="text-luxury-gold-500">User ID:</strong> {currentUser?.user_id}
                   </p>
                 </div>
               </div>
