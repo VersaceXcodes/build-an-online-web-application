@@ -36,6 +36,7 @@ import UV_CustomerDashboard from '@/components/views/UV_CustomerDashboard';
 import UV_OrderTracking from '@/components/views/UV_OrderTracking';
 import UV_FeedbackForm from '@/components/views/UV_FeedbackForm';
 import UV_Favorites from '@/components/views/UV_Favorites';
+import UV_UnifiedFeedbackSubmit from '@/components/views/UV_UnifiedFeedbackSubmit';
 
 // Unique Views - Staff Protected
 import UV_StaffDashboard from '@/components/views/UV_StaffDashboard';
@@ -406,6 +407,15 @@ export const AppRoutes: React.FC = () => {
               <Route 
                 path="/feedback/order/:order_id" 
                 element={<UV_FeedbackForm />} 
+              />
+              
+              <Route 
+                path="/feedback/submit" 
+                element={
+                  <ProtectedRoute>
+                    <UV_UnifiedFeedbackSubmit />
+                  </ProtectedRoute>
+                } 
               />
               
               {/* ========================================== */}

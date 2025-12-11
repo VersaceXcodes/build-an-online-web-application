@@ -1508,66 +1508,90 @@ const UV_CustomerDashboard: React.FC = () => {
 
               {/* Feedback Tab */}
               {activeTab === 'feedback' && (
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                  <div className="px-6 py-4 border-b border-gray-200">
-                    <h2 className="text-xl font-semibold text-gray-900">My Feedback</h2>
+                <div className="space-y-6">
+                  {/* Submit Feedback to Management Button */}
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl shadow-lg border border-purple-100 p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Have feedback for management?</h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Share your suggestions, compliments, or concerns directly with our management team. 
+                          Your feedback helps us improve our service.
+                        </p>
+                      </div>
+                      <Link
+                        to="/feedback/submit"
+                        className="ml-4 inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 transition-colors shadow-lg hover:shadow-xl"
+                      >
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        Submit Feedback
+                      </Link>
+                    </div>
                   </div>
 
-                  {feedbackLoading ? (
-                    <div className="p-6 space-y-4">
-                      {[1, 2].map((i) => (
-                        <div key={i} className="animate-pulse">
-                          <div className="h-32 bg-gray-200 rounded-lg"></div>
-                        </div>
-                      ))}
+                  {/* Order Feedback Section */}
+                  <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <div className="px-6 py-4 border-b border-gray-200">
+                      <h2 className="text-xl font-semibold text-gray-900">My Order Feedback</h2>
+                      <p className="text-sm text-gray-600 mt-1">Feedback submitted for previous orders</p>
                     </div>
-                  ) : submittedFeedback.length === 0 ? (
-                    <div className="p-12 text-center">
-                      <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No feedback submitted yet</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-200">
-                      {submittedFeedback.map((feedback: CustomerFeedback) => (
-                        <div key={feedback.feedback_id} className="p-6">
-                          <div className="flex items-center justify-between mb-3">
-                            <div>
-                              <p className="text-sm font-semibold text-gray-900">
-                                Order {feedback.order_number}
-                              </p>
-                              <p className="text-xs text-gray-600">{formatDate(feedback.created_at)}</p>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              {getRatingStars(feedback.overall_rating)}
-                            </div>
-                          </div>
 
-                          <div className="space-y-2">
-                            <div className="flex items-center space-x-4 text-sm">
-                              <div className="flex items-center">
-                                <span className="text-gray-600 mr-2">Product:</span>
-                                <div className="flex items-center space-x-1">
-                                  {getRatingStars(feedback.product_rating)}
-                                </div>
+                    {feedbackLoading ? (
+                      <div className="p-6 space-y-4">
+                        {[1, 2].map((i) => (
+                          <div key={i} className="animate-pulse">
+                            <div className="h-32 bg-gray-200 rounded-lg"></div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : submittedFeedback.length === 0 ? (
+                      <div className="p-12 text-center">
+                        <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">No order feedback submitted yet</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-gray-200">
+                        {submittedFeedback.map((feedback: CustomerFeedback) => (
+                          <div key={feedback.feedback_id} className="p-6">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <p className="text-sm font-semibold text-gray-900">
+                                  Order {feedback.order_number}
+                                </p>
+                                <p className="text-xs text-gray-600">{formatDate(feedback.created_at)}</p>
                               </div>
-                              <div className="flex items-center">
-                                <span className="text-gray-600 mr-2">Service:</span>
-                                <div className="flex items-center space-x-1">
-                                  {getRatingStars(feedback.fulfillment_rating)}
-                                </div>
+                              <div className="flex items-center space-x-1">
+                                {getRatingStars(feedback.overall_rating)}
                               </div>
                             </div>
 
-                            {feedback.overall_comment && (
-                              <div className="mt-3 p-4 bg-gray-50 rounded-lg">
-                                <p className="text-sm text-gray-700">{feedback.overall_comment}</p>
+                            <div className="space-y-2">
+                              <div className="flex items-center space-x-4 text-sm">
+                                <div className="flex items-center">
+                                  <span className="text-gray-600 mr-2">Product:</span>
+                                  <div className="flex items-center space-x-1">
+                                    {getRatingStars(feedback.product_rating)}
+                                  </div>
+                                </div>
+                                <div className="flex items-center">
+                                  <span className="text-gray-600 mr-2">Service:</span>
+                                  <div className="flex items-center space-x-1">
+                                    {getRatingStars(feedback.fulfillment_rating)}
+                                  </div>
+                                </div>
                               </div>
-                            )}
+
+                              {feedback.overall_comment && (
+                                <div className="mt-3 p-4 bg-gray-50 rounded-lg">
+                                  <p className="text-sm text-gray-700">{feedback.overall_comment}</p>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_TopNav: React.FC = () => {
@@ -253,6 +253,15 @@ const GV_TopNav: React.FC = () => {
                   <BookOpen className="w-4 h-4 mr-3" />
                   Training
                 </Link>
+                
+                <Link
+                  to="/feedback/submit"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-3" />
+                  Submit Feedback
+                </Link>
               </div>
               
               <div className="border-t border-gray-100 pt-2">
@@ -307,34 +316,7 @@ const GV_TopNav: React.FC = () => {
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <BarChart3 className="w-4 h-4 mr-3" />
-                  Dashboard
-                </Link>
-                
-                <Link
-                  to="/admin/orders"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
-                  onClick={() => setAccountDropdownOpen(false)}
-                >
-                  <Package className="w-4 h-4 mr-3" />
-                  Orders
-                </Link>
-                
-                <Link
-                  to="/admin/products"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
-                  onClick={() => setAccountDropdownOpen(false)}
-                >
-                  <Package className="w-4 h-4 mr-3" />
-                  Products
-                </Link>
-                
-                <Link
-                  to="/admin/promo_codes"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
-                  onClick={() => setAccountDropdownOpen(false)}
-                >
-                  <Ticket className="w-4 h-4 mr-3" />
-                  Promo Codes
+                  Admin Dashboard
                 </Link>
                 
                 <Link
@@ -344,6 +326,15 @@ const GV_TopNav: React.FC = () => {
                 >
                   <Settings className="w-4 h-4 mr-3" />
                   Settings
+                </Link>
+                
+                <Link
+                  to="/feedback/submit"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <MessageSquare className="w-4 h-4 mr-3" />
+                  Submit Feedback
                 </Link>
               </div>
               
