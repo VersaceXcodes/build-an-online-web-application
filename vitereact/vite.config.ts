@@ -16,6 +16,13 @@ export default defineConfig({
 					next();
 				});
 			},
+			configurePreviewServer(server) {
+				server.middlewares.use((_req, res, next) => {
+					res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+					res.setHeader("Cross-Origin-Embedder-Policy", "credentialless");
+					next();
+				});
+			},
 		},
 		// pre transform ; to replace/inject <GenUi*> to allow editing ui - COMMENTED OUT
 		/*
@@ -36,6 +43,11 @@ export default defineConfig({
 	server: {
 		host: true,
 		allowedHosts: true,
+	},
+	preview: {
+		host: true,
+		port: 4173,
+		strictPort: false,
 	},
 	resolve: {
 		alias: {
