@@ -100,25 +100,40 @@ const UV_LocationInternal: React.FC = () => {
   const { 
     data: locations, 
     isLoading, 
-    error 
+    error,
+    isError
   } = useQuery({
     queryKey: ['locations'],
     queryFn: fetchLocations,
     staleTime: 60000, // Cache for 1 minute
-    retry: 1,
+    retry: 2,
+    retryDelay: 1000,
   });
   
   // Helper function to convert location name to URL slug
   const nameToSlug = (name: string): string => {
-    return name.toLowerCase().replace(/\s+/g, '-');
+    return name.toLowerCase().trim().replace(/\s+/g, '-');
   };
 
   // Find matching location from fetched data by comparing URL slug
   const location_details = useMemo(() => {
     if (!locations || !location_name) return null;
-    return locations.find(
-      loc => nameToSlug(loc.location_name) === location_name.toLowerCase()
-    ) || null;
+    
+    // Normalize the URL parameter
+    const normalizedUrlSlug = location_name.toLowerCase().trim();
+    
+    // Find location by converting location_name to slug and comparing
+    const matchedLocation = locations.find(
+      loc => nameToSlug(loc.location_name) === normalizedUrlSlug
+    );
+    
+    // Debug log
+    if (!matchedLocation) {
+      console.log('Location not found. URL slug:', normalizedUrlSlug);
+      console.log('Available locations:', locations.map(l => ({ name: l.location_name, slug: nameToSlug(l.location_name) })));
+    }
+    
+    return matchedLocation || null;
   }, [locations, location_name]);
   
   // Parse opening hours
@@ -195,7 +210,8 @@ const UV_LocationInternal: React.FC = () => {
   // ERROR STATE
   // ============================================================================
   
-  if (error || !location_details) {
+  // Show error if query failed OR if loading complete but no location found
+  if (isError || (!isLoading && locations && !location_details)) {
     return (
       <>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -209,9 +225,21 @@ const UV_LocationInternal: React.FC = () => {
                 Location Not Found
               </h2>
               
-              <p className="text-gray-600 mb-6">
-                Sorry, we couldn't find the location you're looking for.
+              <p className="text-gray-600 mb-2">
+                Sorry, we couldn't find the location "{location_name}".
               </p>
+              
+              {error && (
+                <p className="text-sm text-red-600 mb-6">
+                  Error: {error instanceof Error ? error.message : 'Unknown error'}
+                </p>
+              )}
+              
+              {!error && (
+                <p className="text-sm text-gray-500 mb-6">
+                  This location may not exist or may be temporarily unavailable.
+                </p>
+              )}
               
               <Link
                 to="/"
