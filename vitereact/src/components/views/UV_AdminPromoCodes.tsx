@@ -155,6 +155,7 @@ const UV_AdminPromoCodes: React.FC = () => {
   // ==================================
 
   const {
+    data: promoData,
     isLoading,
     error,
   } = useQuery({

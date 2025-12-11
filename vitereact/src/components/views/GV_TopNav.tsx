@@ -320,6 +320,24 @@ const GV_TopNav: React.FC = () => {
                 </Link>
                 
                 <Link
+                  to="/admin/products"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Package className="w-4 h-4 mr-3" />
+                  Products
+                </Link>
+                
+                <Link
+                  to="/admin/promo_codes"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Ticket className="w-4 h-4 mr-3" />
+                  Promo Codes
+                </Link>
+                
+                <Link
                   to="/admin/settings"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
                   onClick={() => setAccountDropdownOpen(false)}
