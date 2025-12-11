@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
 import kakeLogo from '@/assets/images/kake-logo.png';
-import { motion, AnimatePresence } from 'framer-motion';
 
 // Global Shared Views
 import GV_TopNav from '@/components/views/GV_TopNav';
@@ -14,6 +13,7 @@ import GV_NotificationToast from '@/components/views/GV_NotificationToast';
 import GV_ConfirmationModal from '@/components/views/GV_ConfirmationModal';
 import GV_CookieBanner from '@/components/views/GV_CookieBanner';
 import GV_SessionExpiryWarning from '@/components/views/GV_SessionExpiryWarning';
+import GV_PageTransition from '@/components/views/GV_PageTransition';
 
 // Unique Views - Public
 import UV_Landing from '@/components/views/UV_Landing';
@@ -174,48 +174,17 @@ const LayoutWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const cookieConsentGiven = useAppStore(state => state.ui_state.cookie_consent_given);
   const isAuthenticated = useAppStore(state => state.authentication_state.authentication_status.is_authenticated);
   
-  // Page transition variants - Fade and Slide Up effect
-  const pageVariants = {
-    initial: {
-      opacity: 0,
-      y: 20,
-    },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.4,
-        ease: [0.25, 0.46, 0.45, 0.94], // Smooth easing
-      },
-    },
-    exit: {
-      opacity: 0,
-      y: -20,
-      transition: {
-        duration: 0.3,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      },
-    },
-  };
-  
   return (
     <>
       {/* Top Navigation - Always visible */}
       <GV_TopNav />
       
-      {/* Main Content Area with Page Transitions */}
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.main
-          key={location.pathname}
-          variants={pageVariants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          className="min-h-screen"
-        >
+      {/* Page Transition Component with Branded Logo Animation */}
+      <GV_PageTransition>
+        <main className="min-h-screen">
           {children}
-        </motion.main>
-      </AnimatePresence>
+        </main>
+      </GV_PageTransition>
       
       {/* Footer - Conditional based on route */}
       {showFooter && <GV_Footer />}
