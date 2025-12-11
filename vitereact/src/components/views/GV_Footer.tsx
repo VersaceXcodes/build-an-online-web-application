@@ -58,7 +58,7 @@ const GV_Footer: React.FC = () => {
 
   // Social media URLs (hardcoded for MVP - will be admin-configurable later)
   const social_media_urls = {
-    instagram: 'https://instagram.com/kake',
+    instagram: 'https://www.instagram.com/kakedesserts/?igsh=MXNyc2lhOTI1ZWliMQ%3D%3D',
     facebook: 'https://facebook.com/kake',
     tiktok: 'https://www.tiktok.com/@kakedesserts?lang=en'
   };
