@@ -165,4 +165,126 @@ body {
 	.drip-border-bottom:hover::after {
 		opacity: 1;
 	}
+	
+	/* Glassmorphism effects using existing chocolate color */
+	.glass-chocolate {
+		background: rgba(92, 49, 30, 0.7);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+	}
+	
+	.glass-chocolate-light {
+		background: rgba(92, 49, 30, 0.5);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+	}
+	
+	.glass-cream {
+		background: rgba(254, 249, 245, 0.85);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+	}
+	
+	.glass-cream-strong {
+		background: rgba(254, 249, 245, 0.95);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+	}
+	
+	/* Mobile-first touch target sizes */
+	.touch-target {
+		min-height: 44px;
+		min-width: 44px;
+	}
+	
+	/* Scale animation on tap/click */
+	.tap-scale {
+		transition: transform 0.15s ease-in-out;
+	}
+	
+	.tap-scale:active {
+		transform: scale(0.95);
+	}
+	
+	/* Glow animation on interaction */
+	.glow-on-hover {
+		transition: box-shadow 0.3s ease, transform 0.3s ease;
+	}
+	
+	.glow-on-hover:hover {
+		box-shadow: 0 0 20px rgba(241, 154, 0, 0.4), 0 0 40px rgba(241, 154, 0, 0.2);
+		transform: translateY(-2px);
+	}
+	
+	.glow-on-hover:active {
+		transform: translateY(0) scale(0.98);
+	}
+	
+	/* Pulsating animation for splash screen */
+	@keyframes pulse-glow {
+		0%, 100% {
+			transform: scale(1);
+			opacity: 1;
+		}
+		50% {
+			transform: scale(1.05);
+			opacity: 0.9;
+		}
+	}
+	
+	.pulse-glow {
+		animation: pulse-glow 2s ease-in-out infinite;
+	}
+	
+	/* Enhanced fade in animation */
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+	
+	.animate-fade-in {
+		animation: fade-in 0.5s ease-out;
+	}
+	
+	/* Slide up animation for mobile menu */
+	@keyframes slide-up {
+		from {
+			transform: translateY(100%);
+			opacity: 0;
+		}
+		to {
+			transform: translateY(0);
+			opacity: 1;
+		}
+	}
+	
+	.animate-slide-up {
+		animation: slide-up 0.3s ease-out;
+	}
+	
+	/* Mobile-first spacing utilities */
+	.container-mobile {
+		padding-left: 1rem;
+		padding-right: 1rem;
+	}
+	
+	@media (min-width: 640px) {
+		.container-mobile {
+			padding-left: 1.5rem;
+			padding-right: 1.5rem;
+		}
+	}
+	
+	@media (min-width: 1024px) {
+		.container-mobile {
+			padding-left: 2rem;
+			padding-right: 2rem;
+		}
+	}
 }

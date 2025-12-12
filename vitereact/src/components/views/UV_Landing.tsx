@@ -182,8 +182,8 @@ const UV_Landing: React.FC = () => {
 
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative bg-kake-cream-50 py-20 lg:py-32 overflow-hidden">
+      {/* Hero Section - Mobile-First with Enhanced Spacing */}
+      <section className="relative bg-kake-cream-50 py-12 sm:py-16 md:py-24 lg:py-32 overflow-hidden">
         {/* Watermark overlay with fade-in animation */}
         <div 
           className="absolute inset-0 opacity-0 animate-watermark-fade-in"
@@ -197,31 +197,38 @@ const UV_Landing: React.FC = () => {
           }}
         />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="relative container-mobile max-w-7xl mx-auto">
           <div className="max-w-4xl mx-auto">
-            {/* Card Container with glassmorphism */}
-            <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 md:p-12 lg:p-16 shadow-soft-lg animate-fade-in">
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-6 leading-tight text-center">
+            {/* Card Container with glassmorphism and enhanced spacing */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
+              className="glass-cream rounded-3xl p-6 sm:p-8 md:p-12 lg:p-16 shadow-soft-lg"
+            >
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-kake-chocolate-500 mb-4 sm:mb-6 lg:mb-8 leading-tight text-center">
                 Indulge in Dublin's Finest
-                <span className="block text-kake-caramel-500 mt-2">
+                <span className="block text-kake-caramel-500 mt-2 sm:mt-3">
                   Artisan Desserts
                 </span>
               </h1>
               
-              <p className="font-sans text-lg md:text-xl text-kake-chocolate-500/90 mb-8 max-w-2xl mx-auto leading-relaxed text-center">
+              <p className="font-sans text-base sm:text-lg md:text-xl text-kake-chocolate-500/90 mb-6 sm:mb-8 lg:mb-10 max-w-2xl mx-auto leading-relaxed text-center px-2">
                 Handcrafted treats made fresh daily across three Dublin locations. 
                 From classic pastries to celebration cakes, we bring joy to every bite.
               </p>
               
               <div className="text-center">
-                <a
+                <motion.a
                   href="#locations"
-                  className="inline-block gradient-caramel text-white font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 transform hover:scale-105"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-block gradient-caramel text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 touch-target rounded-2xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 glow-on-hover font-sans text-base sm:text-lg"
                 >
                   Choose Your Location
-                </a>
+                </motion.a>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
@@ -243,25 +250,37 @@ const UV_Landing: React.FC = () => {
         </svg>
       </div>
 
-      {/* Location Selection Section */}
-      <section id="locations" className="py-16 lg:py-24 bg-kake-cream-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
+      {/* Location Selection Section - Mobile-First Grid */}
+      <section id="locations" className="py-12 sm:py-16 md:py-20 lg:py-24 bg-kake-cream-100">
+        <div className="container-mobile max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-kake-chocolate-500 mb-3 sm:mb-4"
+            >
               Our Locations
-            </h2>
-            <p className="font-sans text-lg text-kake-chocolate-500/80 max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-sans text-base sm:text-lg md:text-xl text-kake-chocolate-500/80 max-w-2xl mx-auto px-4"
+            >
               Choose your nearest Kake location to start ordering
-            </p>
+            </motion.p>
           </div>
 
-          {/* Loading State */}
+          {/* Loading State - Mobile-First Grid (1 column mobile, 2 tablet, 3 desktop) */}
           {locations_loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8" role="status" aria-live="polite" aria-label="Loading locations">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8" role="status" aria-live="polite" aria-label="Loading locations">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white/80 rounded-xl shadow-soft overflow-hidden animate-pulse">
-                  <div className="h-56 bg-gradient-to-br from-kake-cream-200 to-kake-cream-300"></div>
-                  <div className="p-6 space-y-3">
+                <div key={i} className="glass-cream rounded-2xl shadow-soft overflow-hidden animate-pulse">
+                  <div className="h-48 sm:h-56 bg-gradient-to-br from-kake-cream-200 to-kake-cream-300"></div>
+                  <div className="p-5 sm:p-6 space-y-3">
                     <div className="h-6 bg-kake-caramel-500/20 rounded w-3/4"></div>
                     <div className="h-4 bg-kake-caramel-500/10 rounded w-full"></div>
                     <div className="h-4 bg-kake-caramel-500/10 rounded w-2/3"></div>
@@ -273,23 +292,23 @@ const UV_Landing: React.FC = () => {
 
           {/* Error State */}
           {locations_error && (
-            <div className="bg-white/80 border-2 border-red-500/50 rounded-xl p-6 text-center shadow-caramel">
-              <p className="text-red-400 font-medium">Unable to load locations. Please refresh the page.</p>
+            <div className="glass-cream border-2 border-red-500/50 rounded-2xl p-6 sm:p-8 text-center shadow-caramel">
+              <p className="text-red-500 font-medium text-base sm:text-lg">Unable to load locations. Please refresh the page.</p>
             </div>
           )}
 
-          {/* Location Cards */}
+          {/* Location Cards - Mobile-First Grid with Micro-Interactions */}
           {!locations_loading && !locations_error && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {location_card_data.map((card, index) => (
                 <motion.div
                   key={card.slug}
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-50px" }}
+                  viewport={{ once: true, margin: "-30px" }}
                   transition={{
                     duration: 0.5,
-                    delay: index * 0.15,
+                    delay: index * 0.1,
                     ease: [0.25, 0.46, 0.45, 0.94],
                   }}
                 >
@@ -306,10 +325,10 @@ const UV_Landing: React.FC = () => {
                       setCurrentLocation(card.location.location_name);
                       setLocationDetails(card.location);
                     }}
-                    className="block group bg-white/80 rounded-2xl shadow-soft border border-kake-caramel-500/30 overflow-hidden hover:shadow-caramel-lg hover:border-kake-caramel-500 hover:scale-[1.02] transition-all duration-300 min-h-[44px]"
+                    className="block group glass-cream rounded-2xl shadow-soft border border-kake-caramel-500/20 overflow-hidden hover:shadow-caramel-lg hover:border-kake-caramel-500 transition-all duration-300 tap-scale glow-on-hover"
                   >
                   {/* Card Image */}
-                  <div className="relative h-56 overflow-hidden">
+                  <div className="relative h-48 sm:h-56 overflow-hidden">
                     <img
                       src={card.image}
                       alt={card.imageAlt}
@@ -324,17 +343,17 @@ const UV_Landing: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Card Content */}
-                  <div className="p-6">
-                    <p className="text-kake-chocolate-500/80 mb-4 flex items-center font-sans">
-                      <svg className="w-5 h-5 mr-2 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {/* Card Content - Enhanced Spacing */}
+                  <div className="p-5 sm:p-6 lg:p-7">
+                    <p className="text-kake-chocolate-500/80 mb-4 sm:mb-5 flex items-center font-sans text-sm sm:text-base">
+                      <svg className="w-5 h-5 mr-2 flex-shrink-0 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       {card.description}
                     </p>
 
-                    <div className="space-y-2 text-sm text-kake-chocolate-500/70 font-sans">
+                    <div className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-kake-chocolate-500/70 font-sans mb-5 sm:mb-6">
                       <p className="flex items-start">
                         <svg className="w-4 h-4 mt-0.5 mr-2 flex-shrink-0 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -342,16 +361,16 @@ const UV_Landing: React.FC = () => {
                         {card.location.address_line1}, {card.location.city}
                       </p>
                       <p className="flex items-center">
-                        <svg className="w-4 h-4 mr-2 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 mr-2 flex-shrink-0 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                         {card.location.phone_number}
                       </p>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between text-kake-caramel-500 font-semibold font-sans group-hover:text-kake-caramel-400 min-h-[44px] md:min-h-[auto]">
+                    <div className="flex items-center justify-between text-kake-caramel-500 font-semibold font-sans group-hover:text-kake-caramel-400 touch-target text-sm sm:text-base">
                       <span>Start Ordering</span>
-                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </div>
@@ -364,16 +383,28 @@ const UV_Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Corporate & Events Section */}
-      <section className="py-16 lg:py-24 bg-kake-cream-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
+      {/* Corporate & Events Section - Enhanced Spacing */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-kake-cream-50">
+        <div className="container-mobile max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-kake-chocolate-500 mb-3 sm:mb-4"
+            >
               Corporate & Event Orders
-            </h2>
-            <p className="font-sans text-lg text-kake-chocolate-500/80 max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-sans text-base sm:text-lg md:text-xl text-kake-chocolate-500/80 max-w-2xl mx-auto px-4"
+            >
               Make your special occasions unforgettable with our bespoke dessert offerings
-            </p>
+            </motion.p>
           </div>
 
           {/* Loading State for Drop */}
@@ -395,34 +426,40 @@ const UV_Landing: React.FC = () => {
             </div>
           )}
 
-          {/* Drop of the Month Featured Display */}
+          {/* Drop of the Month Featured Display - Mobile-First */}
           {!drop_loading && active_drop && (
-            <div className="bg-white/80 rounded-xl shadow-soft-lg overflow-hidden border border-kake-caramel-500/30 hover:border-kake-caramel-500 hover:shadow-caramel-lg transition-all duration-300">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="glass-cream rounded-2xl shadow-soft-lg overflow-hidden border border-kake-caramel-500/20 hover:border-kake-caramel-500 hover:shadow-caramel-lg transition-all duration-300"
+            >
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Image */}
-                <div className="relative h-80 md:h-full">
+                <div className="relative h-64 sm:h-80 md:h-full">
                   <img
                     src={active_drop.product_image_url}
                     alt={active_drop.product_name}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute top-4 left-4 gradient-caramel text-white px-4 py-2 rounded-lg font-bold shadow-caramel font-sans">
+                  <div className="absolute top-3 sm:top-4 left-3 sm:left-4 gradient-caramel text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-bold shadow-caramel font-sans text-xs sm:text-sm">
                     Drop of the Month
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <h3 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
+                {/* Content - Enhanced Spacing */}
+                <div className="p-6 sm:p-8 lg:p-12 flex flex-col justify-center">
+                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-3 sm:mb-4">
                     {active_drop.product_name}
                   </h3>
                   
-                  <p className="font-sans text-lg text-kake-chocolate-500/80 mb-6 leading-relaxed">
+                  <p className="font-sans text-base sm:text-lg text-kake-chocolate-500/80 mb-5 sm:mb-6 leading-relaxed">
                     {active_drop.description}
                   </p>
 
-                  <div className="bg-white/90 border border-kake-caramel-500/30 rounded-lg p-4 mb-6">
+                  <div className="glass-cream border border-kake-caramel-500/20 rounded-xl p-4 sm:p-5 mb-5 sm:mb-6">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-sans text-sm text-kake-caramel-500 font-medium mb-1">Special Price</p>
@@ -442,23 +479,31 @@ const UV_Landing: React.FC = () => {
                     </div>
                   </div>
 
-                  <Link
-                    to="/corporate-order"
-                    className="inline-flex items-center justify-center gradient-caramel text-white font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 transform hover:scale-105 font-sans"
-                  >
-                    Pre-order Now
-                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link
+                      to="/corporate-order"
+                      className="inline-flex items-center justify-center gradient-caramel text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 touch-target rounded-2xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 glow-on-hover font-sans text-base sm:text-lg w-full sm:w-auto"
+                    >
+                      Pre-order Now
+                      <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </Link>
+                  </motion.div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Generic Corporate Enquiry (when no active drop) */}
+          {/* Generic Corporate Enquiry (when no active drop) - Mobile-First */}
           {!drop_loading && !active_drop && (
-            <div className="bg-white/80 rounded-xl shadow-soft-lg p-8 lg:p-12 text-center border border-kake-caramel-500/30 hover:border-kake-caramel-500 hover:shadow-caramel-lg transition-all duration-300">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="glass-cream rounded-2xl shadow-soft-lg p-6 sm:p-8 lg:p-12 text-center border border-kake-caramel-500/20 hover:border-kake-caramel-500 hover:shadow-caramel-lg transition-all duration-300"
+            >
               <div className="max-w-2xl mx-auto">
                 <div className="mb-6">
                   <svg className="w-20 h-20 mx-auto text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -466,26 +511,28 @@ const UV_Landing: React.FC = () => {
                   </svg>
                 </div>
                 
-                <h3 className="font-serif text-3xl font-bold text-kake-chocolate-500 mb-4">
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold text-kake-chocolate-500 mb-3 sm:mb-4">
                   Corporate & Event Catering
                 </h3>
                 
-                <p className="font-sans text-lg text-kake-chocolate-500/80 mb-8 leading-relaxed">
+                <p className="font-sans text-base sm:text-lg text-kake-chocolate-500/80 mb-6 sm:mb-8 leading-relaxed px-2">
                   Elevate your corporate events, celebrations, and special occasions with our custom dessert solutions. 
                   From intimate meetings to large gatherings, we create memorable sweet moments.
                 </p>
 
-                <Link
-                  to="/corporate-order"
-                  className="inline-flex items-center justify-center gradient-caramel text-white font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 transform hover:scale-105 font-sans"
-                >
-                  Enquire About Corporate Orders
-                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Link
+                    to="/corporate-order"
+                    className="inline-flex items-center justify-center gradient-caramel text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 touch-target rounded-2xl shadow-caramel hover:shadow-caramel-lg transition-all duration-300 glow-on-hover font-sans text-base sm:text-lg"
+                  >
+                    Enquire About Corporate Orders
+                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </Link>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           )}
         </div>
       </section>
@@ -614,76 +661,120 @@ const UV_Landing: React.FC = () => {
         </section>
       )}
 
-      {/* Why Choose Kake Section */}
-      <section className="py-16 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-kake-chocolate-500 mb-4">
+      {/* Why Choose Kake Section - Mobile-First */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white">
+        <div className="container-mobile max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-10 md:mb-12 lg:mb-16">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="font-serif text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-kake-chocolate-500 mb-3 sm:mb-4"
+            >
               Why Choose Kake?
-            </h2>
-            <p className="text-lg text-kake-chocolate-400 max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-sans text-base sm:text-lg md:text-xl text-kake-chocolate-500/80 max-w-2xl mx-auto px-4"
+            >
               Indulge in quality, freshness, and convenience
-            </p>
+            </motion.p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
             {/* Feature 1 */}
-            <div className="text-center">
-              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0 }}
+              className="text-center p-4 sm:p-6"
+            >
+              <div className="bg-kake-cream-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Quality Ingredients</h3>
-              <p className="text-kake-chocolate-400 leading-relaxed">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-kake-chocolate-500 mb-2 sm:mb-3">Quality Ingredients</h3>
+              <p className="font-sans text-sm sm:text-base text-kake-chocolate-500/70 leading-relaxed">
                 We use only the finest ingredients to create our handcrafted desserts daily
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 2 */}
-            <div className="text-center">
-              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-center p-4 sm:p-6"
+            >
+              <div className="bg-kake-cream-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Made Fresh Daily</h3>
-              <p className="text-kake-chocolate-400 leading-relaxed">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-kake-chocolate-500 mb-2 sm:mb-3">Made Fresh Daily</h3>
+              <p className="font-sans text-sm sm:text-base text-kake-chocolate-500/70 leading-relaxed">
                 Every order is prepared fresh to ensure maximum flavor and quality
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 3 */}
-            <div className="text-center">
-              <div className="bg-kake-cream-200 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-10 h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-center p-4 sm:p-6"
+            >
+              <div className="bg-kake-cream-200 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-4 sm:mb-5">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10 text-kake-chocolate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-kake-chocolate-500 mb-2">Flexible Ordering</h3>
-              <p className="text-kake-chocolate-400 leading-relaxed">
+              <h3 className="font-serif text-lg sm:text-xl font-bold text-kake-chocolate-500 mb-2 sm:mb-3">Flexible Ordering</h3>
+              <p className="font-sans text-sm sm:text-base text-kake-chocolate-500/70 leading-relaxed">
                 Collection or delivery options available at all our Dublin locations
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-16 lg:py-20 gradient-chocolate">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-kake-lightCream-100 mb-6">
+      {/* Final CTA Section - Mobile-First */}
+      <section className="py-12 sm:py-16 lg:py-20 gradient-chocolate">
+        <div className="container-mobile max-w-4xl mx-auto text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-kake-lightCream-100 mb-4 sm:mb-6"
+          >
             Ready to Order?
-          </h2>
-          <p className="text-lg md:text-xl text-kake-cream-200 mb-8 leading-relaxed">
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="font-sans text-base sm:text-lg md:text-xl text-kake-cream-200 mb-6 sm:mb-8 leading-relaxed px-4"
+          >
             Choose your location and start building your perfect dessert order today
-          </p>
-          <a
+          </motion.p>
+          <motion.a
             href="#locations"
-            className="inline-block bg-kake-lightCream-100 text-kake-chocolate-500 hover:bg-kake-cream-200 font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="inline-block bg-kake-lightCream-100 text-kake-chocolate-500 hover:bg-kake-cream-200 font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 touch-target glow-on-hover font-sans text-base sm:text-lg"
           >
             Browse Our Locations
-          </a>
+          </motion.a>
         </div>
       </section>
     </>

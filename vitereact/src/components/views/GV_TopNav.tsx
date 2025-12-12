@@ -105,16 +105,16 @@ const GV_TopNav: React.FC = () => {
   const renderDesktopAccountSection = () => {
     if (!isAuthenticated || !currentUser) {
       return (
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
           <Link
             to="/login"
-            className="text-kake-chocolate-500 hover:text-kake-caramel-500 px-4 py-2 rounded-lg text-sm font-medium font-sans transition-all duration-300 min-h-[44px] md:min-h-[40px] flex items-center"
+            className="text-kake-chocolate-500 hover:text-kake-caramel-500 px-4 py-2 rounded-xl text-sm font-medium font-sans transition-all duration-300 hover:bg-white/60 touch-target tap-scale"
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="gradient-caramel text-white px-4 py-2 rounded-lg text-sm font-medium font-sans shadow-caramel hover:shadow-caramel-lg transition-all duration-300 active:scale-95 min-h-[44px] md:min-h-[40px] flex items-center"
+            className="gradient-caramel text-white px-4 py-2 rounded-xl text-sm font-medium font-sans shadow-caramel hover:shadow-caramel-lg transition-all duration-300 touch-target tap-scale glow-on-hover"
           >
             Sign Up
           </Link>
@@ -128,11 +128,11 @@ const GV_TopNav: React.FC = () => {
         <div className="relative" ref={accountDropdownRef}>
             <button
               onClick={handleToggleAccountDropdown}
-              className="flex items-center space-x-2 text-kake-chocolate-500 hover:text-kake-caramel-500 px-3 py-2 rounded-lg text-sm font-medium font-sans transition-all duration-300 min-h-[44px] md:min-h-[40px]"
+              className="flex items-center space-x-2 text-kake-chocolate-500 hover:text-kake-caramel-500 px-3 py-2 rounded-xl text-sm font-medium font-sans transition-all duration-300 hover:bg-white/60 touch-target tap-scale"
               aria-expanded={accountDropdownOpen}
               aria-haspopup="true"
             >
-              <div className="w-8 h-8 gradient-caramel rounded-full flex items-center justify-center shadow-caramel">
+              <div className="w-9 h-9 md:w-8 md:h-8 gradient-caramel rounded-full flex items-center justify-center shadow-caramel glow-on-hover">
                 <span className="text-white font-semibold text-sm font-sans">
                   {currentUser.first_name.charAt(0).toUpperCase()}
                 </span>
@@ -141,7 +141,7 @@ const GV_TopNav: React.FC = () => {
             </button>
           
           {accountDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white/95 rounded-xl shadow-caramel-lg border border-kake-caramel-500/30 py-2 z-50 animate-cream-fade-in backdrop-blur-sm">
+            <div className="absolute right-0 mt-2 w-64 glass-cream-strong rounded-2xl shadow-caramel-lg border border-kake-caramel-500/30 py-2 z-50 animate-fade-in">
               <div className="px-4 py-3 border-b border-kake-caramel-500/20">
                 <p className="text-sm font-semibold text-kake-chocolate-500 font-sans">
                   {currentUser.first_name} {currentUser.last_name}
@@ -152,7 +152,7 @@ const GV_TopNav: React.FC = () => {
               <div className="py-2">
                 <Link
                   to="/account"
-                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
+                  className="flex items-center px-4 py-3 text-sm text-kake-chocolate-700 hover:bg-white/70 hover:text-kake-caramel-600 transition-all duration-200 rounded-xl mx-2 touch-target"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <User className="w-4 h-4 mr-3" />
@@ -161,7 +161,7 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/favorites"
-                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
+                  className="flex items-center px-4 py-3 text-sm text-kake-chocolate-700 hover:bg-white/70 hover:text-kake-caramel-600 transition-all duration-200 rounded-xl mx-2 touch-target"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Heart className="w-4 h-4 mr-3" />
@@ -170,7 +170,7 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/account?tab=orders"
-                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
+                  className="flex items-center px-4 py-3 text-sm text-kake-chocolate-700 hover:bg-white/70 hover:text-kake-caramel-600 transition-all duration-200 rounded-xl mx-2 touch-target"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Package className="w-4 h-4 mr-3" />
@@ -179,7 +179,7 @@ const GV_TopNav: React.FC = () => {
                 
                 <Link
                   to="/account?tab=loyalty_points"
-                  className="flex items-center px-4 py-2 text-sm text-kake-chocolate-700 hover:bg-kake-cream-200 hover:text-kake-caramel-600 transition-all duration-200 rounded-md mx-2"
+                  className="flex items-center px-4 py-3 text-sm text-kake-chocolate-700 hover:bg-white/70 hover:text-kake-caramel-600 transition-all duration-200 rounded-xl mx-2 touch-target"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <Award className="w-4 h-4 mr-3" />
@@ -190,10 +190,10 @@ const GV_TopNav: React.FC = () => {
                 </Link>
               </div>
               
-              <div className="border-t border-kake-cream-300 pt-2">
+              <div className="border-t border-kake-caramel-500/20 pt-2 mt-2">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full px-4 py-2 text-sm text-kake-berry-600 hover:bg-kake-berry-50 transition-all duration-200 rounded-md mx-2"
+                  className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-all duration-200 rounded-xl mx-2 touch-target"
                 >
                   <LogOut className="w-4 h-4 mr-3" />
                   Logout
@@ -387,17 +387,17 @@ const GV_TopNav: React.FC = () => {
   const renderMobileAccountSection = () => {
     if (!isAuthenticated || !currentUser) {
       return (
-        <div className="px-4 py-3 border-t border-kake-caramel-500/30 space-y-2">
+        <div className="px-4 py-4 border-t border-kake-caramel-500/20 space-y-3 mt-2">
           <Link
             to="/login"
-            className="block w-full text-center px-4 py-2 text-kake-chocolate-500 hover:bg-white/90 rounded-lg text-sm font-medium font-sans transition-all duration-300 min-h-[44px] flex items-center justify-center"
+            className="block w-full text-center px-4 py-3 text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 rounded-xl text-base font-medium font-sans transition-all duration-300 touch-target tap-scale"
             onClick={() => setMobileMenuOpen(false)}
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="block w-full text-center px-4 py-2 gradient-caramel text-white rounded-lg text-sm font-medium font-sans shadow-caramel hover:shadow-caramel-lg transition-all duration-300 min-h-[44px] flex items-center justify-center"
+            className="block w-full text-center px-4 py-3 gradient-caramel text-white rounded-xl text-base font-medium font-sans shadow-caramel hover:shadow-caramel-lg transition-all duration-300 touch-target tap-scale glow-on-hover"
             onClick={() => setMobileMenuOpen(false)}
           >
             Sign Up
@@ -409,66 +409,66 @@ const GV_TopNav: React.FC = () => {
     // Customer mobile menu
     if (currentUser.user_type === 'customer') {
       return (
-        <div className="px-4 py-3 border-t border-kake-caramel-500/30">
-          <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-kake-caramel-500/20">
-            <div className="w-10 h-10 gradient-caramel rounded-full flex items-center justify-center shadow-caramel">
-              <span className="text-white font-semibold font-sans">
+        <div className="px-4 py-4 border-t border-kake-caramel-500/20 mt-2">
+          <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-kake-caramel-500/20">
+            <div className="w-12 h-12 gradient-caramel rounded-full flex items-center justify-center shadow-caramel">
+              <span className="text-white font-semibold text-lg font-sans">
                 {currentUser.first_name.charAt(0).toUpperCase()}
               </span>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-kake-chocolate-500 font-sans">
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-semibold text-kake-chocolate-500 font-sans truncate">
                 {currentUser.first_name} {currentUser.last_name}
               </p>
-              <p className="text-xs text-kake-chocolate-500/70 truncate font-sans">{currentUser.email}</p>
+              <p className="text-sm text-kake-chocolate-500/70 truncate font-sans">{currentUser.email}</p>
             </div>
           </div>
           
-          <div className="space-y-1">
+          <div className="space-y-2">
             <Link
               to="/account"
-                className="flex items-center px-3 py-2 text-sm text-kake-chocolate-500/80 hover:bg-white/90 hover:text-kake-caramel-500 rounded-md transition-all duration-300 font-sans min-h-[44px]"
+                className="flex items-center px-4 py-3 text-base text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl transition-all duration-300 font-sans touch-target tap-scale"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <User className="w-4 h-4 mr-3" />
+              <User className="w-5 h-5 mr-3" />
               My Account
             </Link>
             
             <Link
               to="/favorites"
-                className="flex items-center px-3 py-2 text-sm text-kake-chocolate-500/80 hover:bg-white/90 hover:text-kake-caramel-500 rounded-md transition-all duration-300 font-sans min-h-[44px]"
+                className="flex items-center px-4 py-3 text-base text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl transition-all duration-300 font-sans touch-target tap-scale"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Heart className="w-4 h-4 mr-3" />
+              <Heart className="w-5 h-5 mr-3" />
               Favorites
             </Link>
             
             <Link
               to="/account?tab=orders"
-                className="flex items-center px-3 py-2 text-sm text-kake-chocolate-500/80 hover:bg-white/90 hover:text-kake-caramel-500 rounded-md transition-all duration-300 font-sans min-h-[44px]"
+                className="flex items-center px-4 py-3 text-base text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl transition-all duration-300 font-sans touch-target tap-scale"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Package className="w-4 h-4 mr-3" />
+              <Package className="w-5 h-5 mr-3" />
               My Orders
             </Link>
             
             <Link
               to="/account?tab=loyalty_points"
-                className="flex items-center px-3 py-2 text-sm text-kake-chocolate-500/80 hover:bg-white/90 hover:text-kake-caramel-500 rounded-md transition-all duration-300 font-sans min-h-[44px]"
+                className="flex items-center px-4 py-3 text-base text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl transition-all duration-300 font-sans touch-target tap-scale"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Award className="w-4 h-4 mr-3" />
+              <Award className="w-5 h-5 mr-3" />
               Loyalty Points
-                <span className="ml-auto text-xs font-semibold text-white gradient-caramel px-2 py-1 rounded-full font-sans shadow-caramel">
+                <span className="ml-auto text-xs font-semibold text-white gradient-caramel px-2.5 py-1 rounded-full font-sans shadow-caramel">
                   {currentUser.loyalty_points_balance}
                 </span>
             </Link>
             
             <button
               onClick={handleLogout}
-                className="flex items-center w-full px-3 py-2 text-sm text-red-400 hover:bg-white/90 hover:text-red-300 rounded-md transition-all duration-300 font-sans min-h-[44px]"
+                className="flex items-center w-full px-4 py-3 text-base text-red-600 hover:bg-red-50 active:bg-red-100 rounded-xl transition-all duration-300 font-sans touch-target tap-scale"
             >
-              <LogOut className="w-4 h-4 mr-3" />
+              <LogOut className="w-5 h-5 mr-3" />
               Logout
             </button>
           </div>
@@ -610,22 +610,22 @@ const GV_TopNav: React.FC = () => {
   
   return (
     <>
-      {/* Fixed Navigation Bar with Dark Luxury Glass-morphism */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-luxury border-b border-kake-caramel-500/30 z-40">
+      {/* Fixed Navigation Bar with Glassmorphism */}
+      <nav className="fixed top-0 left-0 right-0 glass-cream-strong shadow-soft-lg border-b border-kake-caramel-500/20 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-16 md:h-18">
             {/* Left: Logo */}
             <div className="flex-shrink-0">
-              <Link to="/" className="flex items-center space-x-2">
-                <img src={kakeLogo} alt="Kake Logo" className="h-10 w-auto" />
+              <Link to="/" className="flex items-center space-x-2 tap-scale touch-target">
+                <img src={kakeLogo} alt="Kake Logo" className="h-10 md:h-12 w-auto transition-transform duration-300 hover:scale-105" />
               </Link>
             </div>
             
-            {/* Center: Desktop Navigation Links */}
-            <div className="hidden md:flex items-center space-x-6">
+            {/* Center: Desktop Navigation Links with Enhanced Interactions */}
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-4">
               <Link
                 to="/"
-                className="flex items-center text-kake-chocolate-500 hover:text-kake-caramel-500 px-3 py-2 rounded-lg text-sm font-medium font-sans transition-all duration-300 drip-border-bottom"
+                className="flex items-center text-kake-chocolate-500 hover:text-kake-caramel-500 px-4 py-2 rounded-xl text-sm font-medium font-sans transition-all duration-300 hover:bg-white/60 touch-target tap-scale"
               >
                 <Home className="w-4 h-4 mr-2" />
                 Home
@@ -633,7 +633,7 @@ const GV_TopNav: React.FC = () => {
               
               <Link
                 to="/about"
-                className="flex items-center text-kake-chocolate-500 hover:text-kake-caramel-500 px-3 py-2 rounded-lg text-sm font-medium font-sans transition-all duration-300 drip-border-bottom"
+                className="flex items-center text-kake-chocolate-500 hover:text-kake-caramel-500 px-4 py-2 rounded-xl text-sm font-medium font-sans transition-all duration-300 hover:bg-white/60 touch-target tap-scale"
               >
                 <Info className="w-4 h-4 mr-2" />
                 About
@@ -641,16 +641,16 @@ const GV_TopNav: React.FC = () => {
             </div>
             
             {/* Right: Cart & Account Section */}
-            <div className="flex items-center space-x-4">
-              {/* Cart Icon with Badge (hidden in checkout) */}
+            <div className="flex items-center space-x-2 md:space-x-3">
+              {/* Cart Icon with Badge - Mobile Optimized */}
               <button
                 onClick={handleCartClick}
-                className="relative p-2 text-kake-chocolate-500 hover:text-kake-caramel-500 rounded-full hover:bg-white/90 transition-all duration-300 min-w-[44px] min-h-[44px] md:min-w-[auto] md:min-h-[auto]"
+                className="relative p-2 md:p-3 text-kake-chocolate-500 hover:text-kake-caramel-500 rounded-full hover:bg-white/80 transition-all duration-300 touch-target tap-scale glow-on-hover"
                 aria-label={`Shopping cart with ${cartItemCount} items`}
               >
-                <ShoppingCart className="w-6 h-6" />
+                <ShoppingCart className="w-6 h-6 md:w-5 md:h-5" />
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 gradient-caramel text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-soft-bounce shadow-caramel font-sans">
+                  <span className="absolute -top-0.5 -right-0.5 md:-top-1 md:-right-1 gradient-caramel text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-soft-bounce shadow-caramel font-sans">
                     {cartItemCount > 9 ? '9+' : cartItemCount}
                   </span>
                 )}
@@ -661,10 +661,10 @@ const GV_TopNav: React.FC = () => {
                 {renderDesktopAccountSection()}
               </div>
               
-              {/* Mobile: Hamburger Menu Button */}
+              {/* Mobile: Hamburger Menu Button - Enhanced */}
               <button
                 onClick={handleToggleMobileMenu}
-                className="md:hidden p-2 text-kake-chocolate-500 hover:text-kake-caramel-500 rounded-md hover:bg-white/90 transition-all duration-300 min-w-[44px] min-h-[44px]"
+                className="md:hidden p-3 text-kake-chocolate-500 hover:text-kake-caramel-500 rounded-full hover:bg-white/80 transition-all duration-300 touch-target tap-scale"
                 aria-expanded={mobileMenuOpen}
                 aria-label="Toggle mobile menu"
               >
@@ -678,25 +678,25 @@ const GV_TopNav: React.FC = () => {
           </div>
         </div>
         
-        {/* Mobile Navigation Panel */}
+        {/* Mobile Navigation Panel - Glassmorphism with Slide Animation */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white/95 backdrop-blur-sm border-t border-kake-caramel-500/30 shadow-caramel-lg animate-cream-fade-in">
-            <div className="px-4 py-3 space-y-1">
+          <div className="md:hidden glass-cream-strong border-t border-kake-caramel-500/20 shadow-soft-lg animate-slide-up">
+            <div className="container-mobile py-4 space-y-2">
               <Link
                 to="/"
-                className="flex items-center px-3 py-2 text-kake-chocolate-500 hover:bg-white/90 hover:text-kake-caramel-500 rounded-lg text-sm font-medium font-sans transition-all duration-300 min-h-[44px]"
+                className="flex items-center px-4 py-3 text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl text-base font-medium font-sans transition-all duration-300 touch-target tap-scale"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Home className="w-4 h-4 mr-3" />
+                <Home className="w-5 h-5 mr-3" />
                 Home
               </Link>
               
               <Link
                 to="/about"
-                className="flex items-center px-3 py-2 text-kake-chocolate-500 hover:bg-white/90 hover:text-kake-caramel-500 rounded-lg text-sm font-medium font-sans transition-all duration-300 min-h-[44px]"
+                className="flex items-center px-4 py-3 text-kake-chocolate-500 hover:bg-white/70 active:bg-white/90 hover:text-kake-caramel-500 rounded-xl text-base font-medium font-sans transition-all duration-300 touch-target tap-scale"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Info className="w-4 h-4 mr-3" />
+                <Info className="w-5 h-5 mr-3" />
                 About
               </Link>
             </div>

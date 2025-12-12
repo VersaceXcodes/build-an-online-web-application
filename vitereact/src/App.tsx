@@ -14,6 +14,7 @@ import GV_ConfirmationModal from '@/components/views/GV_ConfirmationModal';
 import GV_CookieBanner from '@/components/views/GV_CookieBanner';
 import GV_SessionExpiryWarning from '@/components/views/GV_SessionExpiryWarning';
 import GV_PageTransition from '@/components/views/GV_PageTransition';
+import GV_SplashScreen from '@/components/views/GV_SplashScreen';
 
 // Unique Views - Public
 import UV_Landing from '@/components/views/UV_Landing';
@@ -232,6 +233,8 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const fetchLocations = useAppStore(state => state.fetch_locations);
   const systemConfigLoaded = useAppStore(state => state.system_config_state.loaded);
   const [initError, setInitError] = React.useState<Error | null>(null);
+  const [showSplash, setShowSplash] = React.useState(true);
+  const [appReady, setAppReady] = React.useState(false);
   
   useEffect(() => {
     // Initialize app on mount
@@ -257,9 +260,11 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
         console.log('Locations fetched');
         
         console.log('App initialization complete');
+        setAppReady(true);
       } catch (error) {
         console.error('App initialization error:', error);
         setInitError(error instanceof Error ? error : new Error(String(error)));
+        setAppReady(true); // Show error state
       }
     };
     
@@ -267,27 +272,37 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
+  // Show splash screen on first load
+  if (showSplash) {
+    return (
+      <GV_SplashScreen 
+        onComplete={() => setShowSplash(false)} 
+        duration={2000} 
+      />
+    );
+  }
+  
   // Show error if initialization failed
   if (initError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-600 mb-4">Initialization Error</h2>
-          <p className="text-gray-700 mb-4">
+        <div className="max-w-md w-full glass-cream shadow-caramel-lg rounded-2xl p-6">
+          <h2 className="font-serif text-xl font-bold text-red-600 mb-4">Initialization Error</h2>
+          <p className="font-sans text-kake-chocolate-500 mb-4">
             The application failed to initialize properly. Please refresh the page to try again.
           </p>
           <details className="text-sm">
-            <summary className="cursor-pointer font-semibold text-gray-600 mb-2">
+            <summary className="cursor-pointer font-semibold text-kake-chocolate-500/70 mb-2 font-sans">
               Technical Details
             </summary>
-            <pre className="bg-gray-100 p-3 rounded overflow-auto text-xs">
+            <pre className="bg-white/60 p-3 rounded overflow-auto text-xs font-mono">
               {initError.message}
               {initError.stack && `\n\n${initError.stack}`}
             </pre>
           </details>
           <button
             onClick={() => window.location.reload()}
-            className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700"
+            className="mt-4 w-full gradient-caramel text-white py-3 px-4 rounded-xl hover:shadow-caramel-lg transition-all duration-300 font-sans font-semibold touch-target"
           >
             Refresh Page
           </button>
@@ -296,8 +311,8 @@ const AppInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) =
     );
   }
   
-  // Show loading spinner during initial auth check
-  if (isLoading) {
+  // Show loading spinner during initial auth check (after splash)
+  if (!appReady || isLoading) {
     return <LoadingSpinner />;
   }
   
