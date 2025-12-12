@@ -409,12 +409,12 @@ const UV_ProductDetail: React.FC = () => {
   if (productLoading) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen bg-kake-cream-50 py-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center">
-                <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600 text-lg">Loading product details...</p>
+                <Loader2 className="w-12 h-12 text-kake-caramel-500 animate-spin mx-auto mb-4" />
+                <p className="text-kake-chocolate-500 text-lg">Loading product details...</p>
               </div>
             </div>
           </div>
@@ -426,14 +426,14 @@ const UV_ProductDetail: React.FC = () => {
   if (!product) {
     return (
       <>
-        <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="min-h-screen bg-kake-cream-50 py-8 flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Product Not Found</h2>
-            <p className="text-gray-600 mb-6">The product you're looking for doesn't exist.</p>
+            <h2 className="text-2xl font-bold text-kake-chocolate-500 mb-2">Product Not Found</h2>
+            <p className="text-kake-chocolate-500/80 mb-6">The product you're looking for doesn't exist.</p>
             <Link
               to={`/location/${location_name}/menu`}
-              className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-6 py-3 gradient-caramel text-white rounded-xl hover:shadow-caramel-lg transition-all"
             >
               Back to Menu
             </Link>
@@ -459,33 +459,33 @@ const UV_ProductDetail: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 pb-20 lg:pb-8">
+      <div className="min-h-screen bg-kake-cream-50 pb-20 lg:pb-8">
         {/* Breadcrumb Navigation */}
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-white/80 backdrop-blur-sm border-b border-kake-caramel-500/20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <nav className="flex items-center space-x-2 text-sm">
               <Link 
                 to="/" 
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-kake-chocolate-500/70 hover:text-kake-chocolate-500 transition-colors"
               >
                 Home
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-kake-chocolate-500/40" />
               <Link 
                 to={`/location/${location_name}`}
-                className="text-gray-500 hover:text-gray-700 transition-colors capitalize"
+                className="text-kake-chocolate-500/70 hover:text-kake-chocolate-500 transition-colors capitalize"
               >
                 {location_name}
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-kake-chocolate-500/40" />
               <Link 
                 to={`/location/${location_name}/menu`}
-                className="text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-kake-chocolate-500/70 hover:text-kake-chocolate-500 transition-colors"
               >
                 Menu
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-              <span className="text-gray-900 font-medium truncate max-w-xs">
+              <ChevronRight className="w-4 h-4 text-kake-chocolate-500/40" />
+              <span className="text-kake-chocolate-500 font-medium truncate max-w-xs">
                 {product.product_name}
               </span>
             </nav>
@@ -501,7 +501,7 @@ const UV_ProductDetail: React.FC = () => {
             {/* ============================================================ */}
             <div className="space-y-4">
               {/* Main Image */}
-              <div className="relative bg-white rounded-xl shadow-lg overflow-hidden aspect-square">
+              <div className="relative bg-white rounded-xl shadow-soft-lg overflow-hidden aspect-square">
                 <img
                   src={allImages[selectedImageIndex]}
                   alt={product.product_name}
@@ -514,24 +514,24 @@ const UV_ProductDetail: React.FC = () => {
                   <>
                     <button
                       onClick={handlePreviousImage}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-soft transition-all"
                       aria-label="Previous image"
                     >
-                      <ChevronLeft className="w-6 h-6 text-gray-900" />
+                      <ChevronLeft className="w-6 h-6 text-kake-chocolate-500" />
                     </button>
                     <button
                       onClick={handleNextImage}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-lg transition-all"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-2 shadow-soft transition-all"
                       aria-label="Next image"
                     >
-                      <ChevronRight className="w-6 h-6 text-gray-900" />
+                      <ChevronRight className="w-6 h-6 text-kake-chocolate-500" />
                     </button>
                   </>
                 )}
 
                 {/* Featured Badge */}
                 {product.is_featured && (
-                  <div className="absolute top-4 left-4 bg-yellow-500 text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
+                  <div className="absolute top-4 left-4 gradient-caramel text-white px-3 py-1 rounded-full text-sm font-semibold shadow-caramel">
                     ⭐ Featured
                   </div>
                 )}
@@ -553,8 +553,8 @@ const UV_ProductDetail: React.FC = () => {
                       onClick={() => handleImageSelect(index)}
                       className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                         selectedImageIndex === index
-                          ? 'border-blue-600 ring-2 ring-blue-100'
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-kake-caramel-500 ring-2 ring-kake-caramel-500/20'
+                          : 'border-kake-cream-300 hover:border-kake-cream-400'
                       }`}
                     >
                       <img
@@ -573,13 +573,24 @@ const UV_ProductDetail: React.FC = () => {
             {/* PRODUCT INFORMATION */}
             {/* ============================================================ */}
             <div className="space-y-6">
-              {/* Product Name and Favorite */}
+              {/* Product Name, Price and Favorite */}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight mb-2">
+                  <h1 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 leading-tight mb-3">
                     {product.product_name}
                   </h1>
-                  <p className="text-lg text-gray-600 leading-relaxed">
+                  {/* Price grouped with title */}
+                  <div className="flex items-baseline gap-3 mb-3">
+                    <span className="font-serif text-4xl font-bold text-kake-chocolate-500">
+                      €{product.price.toFixed(2)}
+                    </span>
+                    {hasDiscount && (
+                      <span className="text-2xl font-medium text-kake-chocolate-500/50 line-through">
+                        €{product.compare_at_price!.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-lg text-kake-chocolate-500/80 leading-relaxed">
                     {product.short_description}
                   </p>
                 </div>
@@ -589,27 +600,15 @@ const UV_ProductDetail: React.FC = () => {
                   <button
                     onClick={handleToggleFavorite}
                     disabled={favoriteLoading}
-                    className="flex-shrink-0 p-3 rounded-full border-2 border-gray-300 hover:border-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
+                    className="flex-shrink-0 p-3 rounded-full border-2 border-kake-cream-300 hover:border-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
                     aria-label={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
                   >
                     <Heart
                       className={`w-6 h-6 transition-colors ${
-                        isFavorited ? 'fill-red-500 text-red-500' : 'text-gray-400'
+                        isFavorited ? 'fill-red-500 text-red-500' : 'text-kake-chocolate-500/40'
                       }`}
                     />
                   </button>
-                )}
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-3">
-                <span className="text-4xl font-bold text-gray-900">
-                  €{product.price.toFixed(2)}
-                </span>
-                {hasDiscount && (
-                  <span className="text-2xl font-medium text-gray-500 line-through">
-                    €{product.compare_at_price!.toFixed(2)}
-                  </span>
                 )}
               </div>
 
@@ -619,7 +618,7 @@ const UV_ProductDetail: React.FC = () => {
                   {dietaryTagsArray.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 border-2 border-kake-caramel-500/30 text-kake-chocolate-500 bg-kake-cream-100 rounded-full text-sm font-medium hover:border-kake-caramel-500 transition-colors"
                     >
                       <span>{dietaryIcons[tag.toLowerCase()] || '✓'}</span>
                       <span className="capitalize">{tag.replace('_', ' ')}</span>
@@ -631,8 +630,8 @@ const UV_ProductDetail: React.FC = () => {
               {/* Long Description */}
               {product.long_description && (
                 <div className="prose prose-blue max-w-none">
-                  <div className="p-6 bg-white rounded-xl shadow-md border border-gray-100">
-                    <p className="text-gray-700 leading-relaxed">
+                  <div className="p-6 bg-white rounded-xl shadow-soft border border-kake-caramel-500/20">
+                    <p className="text-kake-chocolate-500/80 leading-relaxed">
                       {product.long_description}
                     </p>
                   </div>
@@ -659,7 +658,7 @@ const UV_ProductDetail: React.FC = () => {
 
               {/* Corporate Badge */}
               {product.available_for_corporate && (
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-100 text-purple-800 rounded-lg text-sm font-medium">
+                <div className="inline-flex items-center gap-2 px-4 py-2 border-2 border-kake-caramel-500/30 bg-kake-cream-100 text-kake-chocolate-500 rounded-lg text-sm font-medium">
                   <span>🎉</span>
                   <span>Great for corporate orders</span>
                 </div>
@@ -667,35 +666,35 @@ const UV_ProductDetail: React.FC = () => {
 
               {/* Quantity Selector */}
               <div className="space-y-3">
-                <label className="block text-sm font-semibold text-gray-900">
+                <label className="block text-sm font-semibold text-kake-chocolate-500">
                   Quantity
                 </label>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+                  <div className="flex items-center border-2 border-kake-cream-300 rounded-lg overflow-hidden">
                     <button
                       onClick={() => handleQuantityChange(-1)}
                       disabled={selectedQuantity <= 1 || isOutOfStock}
-                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-4 py-3 bg-kake-cream-100 hover:bg-kake-cream-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       aria-label="Decrease quantity"
                     >
-                      <Minus className="w-5 h-5 text-gray-700" />
+                      <Minus className="w-5 h-5 text-kake-chocolate-500" />
                     </button>
-                    <span className="px-6 py-3 text-xl font-bold text-gray-900 min-w-[60px] text-center">
+                    <span className="px-6 py-3 text-xl font-bold text-kake-chocolate-500 min-w-[60px] text-center">
                       {selectedQuantity}
                     </span>
                     <button
                       onClick={() => handleQuantityChange(1)}
                       disabled={isOutOfStock}
-                      className="px-4 py-3 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="px-4 py-3 bg-kake-cream-100 hover:bg-kake-cream-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       aria-label="Increase quantity"
                     >
-                      <Plus className="w-5 h-5 text-gray-700" />
+                      <Plus className="w-5 h-5 text-kake-chocolate-500" />
                     </button>
                   </div>
                   
                   {!isOutOfStock && (
-                    <span className="text-gray-600 text-sm">
-                      Total: <span className="font-bold text-gray-900">€{(product.price * selectedQuantity).toFixed(2)}</span>
+                    <span className="text-kake-chocolate-500/70 text-sm">
+                      Total: <span className="font-bold text-kake-chocolate-500">€{(product.price * selectedQuantity).toFixed(2)}</span>
                     </span>
                   )}
                 </div>
@@ -706,10 +705,10 @@ const UV_ProductDetail: React.FC = () => {
                 <button
                   onClick={handleAddToCart}
                   disabled={isOutOfStock}
-                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 ${
+                  className={`w-full py-4 px-6 rounded-xl font-bold text-lg shadow-caramel transition-all duration-200 ${
                     isOutOfStock
                       ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-xl hover:scale-105'
+                      : 'gradient-caramel text-white hover:shadow-caramel-lg hover:scale-105 glow-on-hover'
                   }`}
                 >
                   {isOutOfStock ? (
@@ -724,16 +723,16 @@ const UV_ProductDetail: React.FC = () => {
               </div>
 
               {/* Additional Info */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-kake-caramel-500/20">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Category</p>
-                  <p className="font-semibold text-gray-900 capitalize">
+                  <p className="text-sm text-kake-chocolate-500/70 mb-1">Category</p>
+                  <p className="font-semibold text-kake-chocolate-500 capitalize">
                     {product.category}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Ready In</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className="text-sm text-kake-chocolate-500/70 mb-1">Ready In</p>
+                  <p className="font-semibold text-kake-chocolate-500">
                     20-30 minutes
                   </p>
                 </div>
@@ -746,13 +745,13 @@ const UV_ProductDetail: React.FC = () => {
           {/* ============================================================ */}
           {relatedProducts.length > 0 && (
             <div className="mt-16">
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6">
+              <h2 className="font-serif text-2xl lg:text-3xl font-bold text-kake-chocolate-500 mb-6">
                 You Might Also Like
               </h2>
               
               {relatedLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                  <Loader2 className="w-8 h-8 text-kake-caramel-500 animate-spin" />
                 </div>
               ) : (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -760,7 +759,7 @@ const UV_ProductDetail: React.FC = () => {
                     <Link
                       key={relatedProduct.product_id}
                       to={`/location/${location_name}/product/${relatedProduct.product_id}`}
-                      className="group bg-white rounded-xl shadow-lg hover:shadow-xl overflow-hidden transition-all duration-200 hover:scale-105"
+                      className="group bg-white rounded-xl shadow-soft border border-kake-caramel-500/20 hover:shadow-soft-lg hover:border-kake-caramel-500 overflow-hidden transition-all duration-200 hover:scale-105"
                     >
                       <div className="aspect-square overflow-hidden">
                         <img
@@ -771,13 +770,13 @@ const UV_ProductDetail: React.FC = () => {
                         />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-semibold text-gray-900 mb-1 line-clamp-1">
+                        <h3 className="font-semibold text-kake-chocolate-500 mb-1 line-clamp-1">
                           {relatedProduct.product_name}
                         </h3>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        <p className="text-sm text-kake-chocolate-500/70 mb-2 line-clamp-2">
                           {relatedProduct.short_description}
                         </p>
-                        <p className="text-lg font-bold text-blue-600">
+                        <p className="font-serif text-lg font-bold text-kake-caramel-500">
                           €{relatedProduct.price.toFixed(2)}
                         </p>
                       </div>
@@ -792,29 +791,29 @@ const UV_ProductDetail: React.FC = () => {
         {/* ============================================================ */}
         {/* STICKY MOBILE ADD TO CART BAR */}
         {/* ============================================================ */}
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-2xl z-40">
+        <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t-2 border-kake-caramel-500/20 shadow-2xl z-40">
           <div className="px-4 py-4">
             <div className="flex items-center gap-3">
               {/* Quantity Controls (Compact) */}
-              <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+              <div className="flex items-center border-2 border-kake-cream-300 rounded-lg overflow-hidden">
                 <button
                   onClick={() => handleQuantityChange(-1)}
                   disabled={selectedQuantity <= 1 || isOutOfStock}
-                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-2 bg-kake-cream-100 hover:bg-kake-cream-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   aria-label="Decrease quantity"
                 >
-                  <Minus className="w-4 h-4 text-gray-700" />
+                  <Minus className="w-4 h-4 text-kake-chocolate-500" />
                 </button>
-                <span className="px-4 py-2 text-lg font-bold text-gray-900 min-w-[50px] text-center">
+                <span className="px-4 py-2 text-lg font-bold text-kake-chocolate-500 min-w-[50px] text-center">
                   {selectedQuantity}
                 </span>
                 <button
                   onClick={() => handleQuantityChange(1)}
                   disabled={isOutOfStock}
-                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-3 py-2 bg-kake-cream-100 hover:bg-kake-cream-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   aria-label="Increase quantity"
                 >
-                  <Plus className="w-4 h-4 text-gray-700" />
+                  <Plus className="w-4 h-4 text-kake-chocolate-500" />
                 </button>
               </div>
 
@@ -822,10 +821,10 @@ const UV_ProductDetail: React.FC = () => {
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock}
-                className={`flex-1 py-3 px-6 rounded-lg font-bold text-base shadow-lg transition-all ${
+                className={`flex-1 py-3 px-6 rounded-xl font-bold text-base shadow-caramel transition-all ${
                   isOutOfStock
                     ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
+                    : 'gradient-caramel text-white hover:shadow-caramel-lg active:scale-95'
                 }`}
               >
                 {isOutOfStock ? (
