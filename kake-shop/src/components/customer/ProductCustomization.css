@@ -1,0 +1,227 @@
+.product-customization {
+  margin: var(--space-xl) 0;
+  padding: var(--space-lg) 0;
+}
+
+.customization-loading {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--color-light-brown);
+  font-style: italic;
+}
+
+.customization-group {
+  margin-bottom: var(--space-xl);
+}
+
+.customization-group:last-child {
+  margin-bottom: 0;
+}
+
+.customization-group-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--color-chocolate);
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.selection-limit {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--color-light-brown);
+  font-style: italic;
+}
+
+.customization-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-md);
+}
+
+/* Tapable Cards - The "Kake" Vibe */
+.customization-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: var(--touch-target);
+  padding: var(--space-md) var(--space-lg);
+  
+  /* Default State: Cream background, Light Brown border */
+  background-color: var(--color-cream);
+  border: 2px solid var(--color-light-brown);
+  border-radius: var(--radius-lg);
+  
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  /* Remove default button styles */
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  text-align: left;
+  box-shadow: var(--shadow-sm);
+}
+
+.customization-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-chocolate);
+}
+
+.customization-option:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Selected State: Gold/Amber background, Deep Chocolate border, with Checkmark */
+.customization-option.selected {
+  background-color: var(--color-amber);
+  border-color: var(--color-chocolate);
+  border-width: 3px;
+  box-shadow: var(--shadow-md);
+}
+
+.customization-option.selected:hover:not(:disabled) {
+  background-color: var(--color-gold);
+}
+
+.customization-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.option-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+}
+
+.option-name {
+  font-weight: 500;
+  color: var(--color-chocolate);
+  flex: 1;
+}
+
+.option-price {
+  font-weight: 600;
+  color: var(--color-chocolate);
+  white-space: nowrap;
+  font-size: 0.9375rem;
+}
+
+.option-price.discount {
+  color: #2D7A3E;
+}
+
+.option-checkmark {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-chocolate);
+  color: var(--color-amber);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: checkmarkPop 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Mobile Responsive Design */
+@media (max-width: 768px) {
+  .product-customization {
+    margin: var(--space-lg) 0;
+    padding: var(--space-md) 0;
+  }
+
+  .customization-group {
+    margin-bottom: var(--space-lg);
+  }
+
+  .customization-group-title {
+    font-size: 1.375rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .customization-options {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .customization-option {
+    min-height: 64px; /* Larger touch target on mobile */
+    padding: var(--space-md);
+  }
+
+  .option-checkmark {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Scrollable Container for long lists */
+@media (max-width: 768px) {
+  .customization-group:has(.customization-options:nth-child(n+6)) .customization-options {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: var(--space-xs);
+    
+    /* Custom scrollbar for mobile */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-light-brown) var(--color-cream);
+  }
+
+  .customization-group:has(.customization-options:nth-child(n+6)) .customization-options::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .customization-group:has(.customization-options:nth-child(n+6)) .customization-options::-webkit-scrollbar-track {
+    background: var(--color-cream);
+    border-radius: 3px;
+  }
+
+  .customization-group:has(.customization-options:nth-child(n+6)) .customization-options::-webkit-scrollbar-thumb {
+    background: var(--color-light-brown);
+    border-radius: 3px;
+  }
+}
+
+/* Ensure proper touch targets on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .customization-option {
+    min-height: var(--touch-target);
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  /* Increase tap target spacing */
+  .customization-options {
+    gap: var(--space-md);
+  }
+}
+
+/* High contrast focus states for accessibility */
+.customization-option:focus-visible {
+  outline: 3px solid var(--color-chocolate);
+  outline-offset: 2px;
+}
