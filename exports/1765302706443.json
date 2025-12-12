@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302706443,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_ForgotPassword",
+      "version": "latest"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_ForgotPassword.tsx",
+      "type": "text",
+      "size": 14500,
+      "dependencies": false
+    }
+  ]
+}

@@ -1,0 +1,1425 @@
+asyncapi: 2.6.0
+info:
+  title: Kake Realtime Events API
+  version: 1.0.0
+  description: >
+    Realtime event-driven API for Kake dessert ordering web application.
+
+    Handles order updates, notifications, inventory alerts, and live dashboard
+    updates.
+  contact:
+    name: Kake Development Team
+    email: dev@kake.ie
+servers:
+  development:
+    url: ws://localhost:3000/ws
+    protocol: ws
+    description: Development WebSocket server
+channels:
+  orders/status/{order_id}:
+    description: Real-time order status updates for specific orders
+    parameters:
+      order_id:
+        description: Unique order identifier
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to order status changes
+      message:
+        $ref: "#/components/messages/OrderStatusUpdate"
+    publish:
+      summary: Publish order status change
+      message:
+        $ref: "#/components/messages/OrderStatusUpdate"
+  orders/staff/{location_name}:
+    description: Real-time order queue updates for staff at specific locations
+    parameters:
+      location_name:
+        description: Location name (blanchardstown, tallaght, glasnevin)
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to new orders and updates at location
+      message:
+        oneOf:
+          - $ref: "#/components/messages/NewOrderNotification"
+          - $ref: "#/components/messages/OrderStatusUpdate"
+          - $ref: "#/components/messages/LateOrderAlert"
+  orders/customer/{user_id}:
+    description: Real-time order updates for specific customer
+    parameters:
+      user_id:
+        description: Customer user ID
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to customer's order updates
+      message:
+        $ref: "#/components/messages/OrderStatusUpdate"
+  cart/sync/{user_id}:
+    description: Real-time cart synchronization across devices for logged-in users
+    parameters:
+      user_id:
+        description: User ID for cart synchronization
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to cart changes
+      message:
+        $ref: "#/components/messages/CartSyncUpdate"
+    publish:
+      summary: Publish cart changes
+      message:
+        $ref: "#/components/messages/CartSyncUpdate"
+  notifications/{user_id}:
+    description: Real-time notifications for users
+    parameters:
+      user_id:
+        description: User ID receiving notifications
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to user notifications
+      message:
+        oneOf:
+          - $ref: "#/components/messages/OrderNotification"
+          - $ref: "#/components/messages/LoyaltyPointsNotification"
+          - $ref: "#/components/messages/GeneralNotification"
+          - $ref: "#/components/messages/TrainingNotification"
+  inventory/alerts/{location_name}:
+    description: Real-time inventory alerts for specific locations
+    parameters:
+      location_name:
+        description: Location name
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to inventory alerts
+      message:
+        oneOf:
+          - $ref: "#/components/messages/NewInventoryAlert"
+          - $ref: "#/components/messages/InventoryAlertUpdate"
+    publish:
+      summary: Submit new inventory alert
+      message:
+        $ref: "#/components/messages/NewInventoryAlert"
+  inventory/alerts/admin:
+    description: Real-time inventory alerts across all locations for admins
+    subscribe:
+      summary: Subscribe to all inventory alerts
+      message:
+        oneOf:
+          - $ref: "#/components/messages/NewInventoryAlert"
+          - $ref: "#/components/messages/InventoryAlertUpdate"
+  feedback/staff/{feedback_id}:
+    description: Real-time updates on staff feedback items
+    parameters:
+      feedback_id:
+        description: Staff feedback ID
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to feedback status updates
+      message:
+        $ref: "#/components/messages/StaffFeedbackUpdate"
+  feedback/staff/admin:
+    description: Real-time staff feedback submissions for admins
+    subscribe:
+      summary: Subscribe to new staff feedback
+      message:
+        oneOf:
+          - $ref: "#/components/messages/NewStaffFeedback"
+          - $ref: "#/components/messages/StaffFeedbackUpdate"
+  feedback/customer/admin:
+    description: Real-time customer feedback submissions for admins
+    subscribe:
+      summary: Subscribe to new customer feedback
+      message:
+        $ref: "#/components/messages/NewCustomerFeedback"
+  analytics/dashboard/admin:
+    description: Real-time analytics dashboard updates for admins
+    subscribe:
+      summary: Subscribe to dashboard metric updates
+      message:
+        oneOf:
+          - $ref: "#/components/messages/DashboardMetricsUpdate"
+          - $ref: "#/components/messages/RealtimeOrderMetrics"
+  analytics/dashboard/{location_name}:
+    description: Real-time analytics for specific location
+    parameters:
+      location_name:
+        description: Location name
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to location-specific metrics
+      message:
+        $ref: "#/components/messages/LocationMetricsUpdate"
+  loyalty/points/{user_id}:
+    description: Real-time loyalty points balance updates
+    parameters:
+      user_id:
+        description: Customer user ID
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to points balance changes
+      message:
+        $ref: "#/components/messages/LoyaltyPointsUpdate"
+  training/progress/{user_id}:
+    description: Real-time training course progress updates for staff
+    parameters:
+      user_id:
+        description: Staff user ID
+        schema:
+          type: string
+    subscribe:
+      summary: Subscribe to training progress updates
+      message:
+        oneOf:
+          - $ref: "#/components/messages/CourseProgressUpdate"
+          - $ref: "#/components/messages/LessonCompletionUpdate"
+  training/courses/admin:
+    description: Real-time course enrollment and progress for admins
+    subscribe:
+      summary: Subscribe to all staff training activity
+      message:
+        oneOf:
+          - $ref: "#/components/messages/CourseEnrollmentNotification"
+          - $ref: "#/components/messages/CourseCompletionNotification"
+  system/status:
+    description: System-wide status updates and maintenance notifications
+    subscribe:
+      summary: Subscribe to system status changes
+      message:
+        $ref: "#/components/messages/SystemStatusUpdate"
+components:
+  messages:
+    OrderStatusUpdate:
+      name: OrderStatusUpdate
+      title: Order Status Update
+      summary: Order status has changed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/OrderStatusUpdatePayload"
+    NewOrderNotification:
+      name: NewOrderNotification
+      title: New Order Notification
+      summary: New order received for location
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/NewOrderPayload"
+    LateOrderAlert:
+      name: LateOrderAlert
+      title: Late Order Alert
+      summary: Order has exceeded time threshold
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/LateOrderAlertPayload"
+    CartSyncUpdate:
+      name: CartSyncUpdate
+      title: Cart Synchronization Update
+      summary: Cart contents updated across devices
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/CartSyncPayload"
+    OrderNotification:
+      name: OrderNotification
+      title: Order-related Notification
+      summary: Notification about order events
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/OrderNotificationPayload"
+    LoyaltyPointsNotification:
+      name: LoyaltyPointsNotification
+      title: Loyalty Points Notification
+      summary: Notification about loyalty points changes
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/LoyaltyPointsNotificationPayload"
+    GeneralNotification:
+      name: GeneralNotification
+      title: General Notification
+      summary: General system notification
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/GeneralNotificationPayload"
+    TrainingNotification:
+      name: TrainingNotification
+      title: Training Notification
+      summary: Notification about training courses and requirements
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/TrainingNotificationPayload"
+    NewInventoryAlert:
+      name: NewInventoryAlert
+      title: New Inventory Alert
+      summary: New inventory alert submitted
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/InventoryAlertPayload"
+    InventoryAlertUpdate:
+      name: InventoryAlertUpdate
+      title: Inventory Alert Update
+      summary: Inventory alert status updated
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/InventoryAlertUpdatePayload"
+    StaffFeedbackUpdate:
+      name: StaffFeedbackUpdate
+      title: Staff Feedback Status Update
+      summary: Staff feedback item status changed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/StaffFeedbackUpdatePayload"
+    NewStaffFeedback:
+      name: NewStaffFeedback
+      title: New Staff Feedback
+      summary: New staff feedback submitted
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/StaffFeedbackPayload"
+    NewCustomerFeedback:
+      name: NewCustomerFeedback
+      title: New Customer Feedback
+      summary: New customer feedback submitted
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/CustomerFeedbackPayload"
+    DashboardMetricsUpdate:
+      name: DashboardMetricsUpdate
+      title: Dashboard Metrics Update
+      summary: Admin dashboard metrics updated
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/DashboardMetricsPayload"
+    RealtimeOrderMetrics:
+      name: RealtimeOrderMetrics
+      title: Real-time Order Metrics
+      summary: Live order count and status metrics
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/RealtimeOrderMetricsPayload"
+    LocationMetricsUpdate:
+      name: LocationMetricsUpdate
+      title: Location Metrics Update
+      summary: Location-specific metrics updated
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/LocationMetricsPayload"
+    LoyaltyPointsUpdate:
+      name: LoyaltyPointsUpdate
+      title: Loyalty Points Balance Update
+      summary: User loyalty points balance changed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/LoyaltyPointsUpdatePayload"
+    CourseProgressUpdate:
+      name: CourseProgressUpdate
+      title: Course Progress Update
+      summary: Training course progress changed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/CourseProgressPayload"
+    LessonCompletionUpdate:
+      name: LessonCompletionUpdate
+      title: Lesson Completion Update
+      summary: Lesson marked as completed
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/LessonCompletionPayload"
+    CourseEnrollmentNotification:
+      name: CourseEnrollmentNotification
+      title: Course Enrollment Notification
+      summary: Staff member enrolled in course
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/CourseEnrollmentPayload"
+    CourseCompletionNotification:
+      name: CourseCompletionNotification
+      title: Course Completion Notification
+      summary: Staff member completed course
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/CourseCompletionPayload"
+    SystemStatusUpdate:
+      name: SystemStatusUpdate
+      title: System Status Update
+      summary: System-wide status change
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/SystemStatusPayload"
+  schemas:
+    OrderStatusUpdatePayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - order_id
+        - order_number
+        - previous_status
+        - new_status
+        - location_name
+        - fulfillment_method
+      properties:
+        event_type:
+          type: string
+          enum:
+            - order_status_changed
+        timestamp:
+          type: string
+          format: date-time
+        order_id:
+          type: string
+        order_number:
+          type: string
+        previous_status:
+          type: string
+          nullable: true
+        new_status:
+          type: string
+          enum:
+            - pending_payment
+            - payment_confirmed
+            - preparing
+            - ready_for_collection
+            - out_for_delivery
+            - in_progress
+            - completed
+            - cancelled
+        location_name:
+          type: string
+        fulfillment_method:
+          type: string
+          enum:
+            - delivery
+            - collection
+        customer_name:
+          type: string
+        customer_phone:
+          type: string
+        estimated_ready_time:
+          type: string
+          format: date-time
+          nullable: true
+        collection_code:
+          type: string
+          nullable: true
+        changed_by_user_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        total_amount:
+          type: number
+        item_count:
+          type: integer
+    NewOrderPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - order_id
+        - order_number
+        - location_name
+        - order_type
+        - fulfillment_method
+        - order_status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - new_order
+        timestamp:
+          type: string
+          format: date-time
+        order_id:
+          type: string
+        order_number:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        customer_email:
+          type: string
+        customer_name:
+          type: string
+        customer_phone:
+          type: string
+        location_name:
+          type: string
+        order_type:
+          type: string
+          enum:
+            - standard
+            - corporate
+            - celebration
+        fulfillment_method:
+          type: string
+          enum:
+            - delivery
+            - collection
+        order_status:
+          type: string
+        scheduled_for:
+          type: string
+          format: date-time
+          nullable: true
+        special_instructions:
+          type: string
+          nullable: true
+        total_amount:
+          type: number
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - product_name
+              - quantity
+              - price_at_purchase
+            properties:
+              product_id:
+                type: string
+              product_name:
+                type: string
+              quantity:
+                type: integer
+              price_at_purchase:
+                type: number
+              product_specific_notes:
+                type: string
+                nullable: true
+    LateOrderAlertPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - order_id
+        - order_number
+        - location_name
+        - order_status
+        - minutes_in_status
+        - threshold_minutes
+        - alert_level
+      properties:
+        event_type:
+          type: string
+          enum:
+            - late_order_alert
+        timestamp:
+          type: string
+          format: date-time
+        order_id:
+          type: string
+        order_number:
+          type: string
+        location_name:
+          type: string
+        order_status:
+          type: string
+        minutes_in_status:
+          type: integer
+        threshold_minutes:
+          type: integer
+        alert_level:
+          type: string
+          enum:
+            - warning
+            - urgent
+            - critical
+        customer_name:
+          type: string
+        fulfillment_method:
+          type: string
+        total_amount:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+    CartSyncPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - cart_items
+        - selected_location
+        - totals
+      properties:
+        event_type:
+          type: string
+          enum:
+            - cart_sync
+        timestamp:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        cart_items:
+          type: array
+          items:
+            type: object
+            required:
+              - product_id
+              - product_name
+              - price
+              - quantity
+              - subtotal
+            properties:
+              product_id:
+                type: string
+              product_name:
+                type: string
+              price:
+                type: number
+              quantity:
+                type: integer
+              subtotal:
+                type: number
+              primary_image_url:
+                type: string
+        selected_location:
+          type: string
+          nullable: true
+        fulfillment_method:
+          type: string
+          enum:
+            - delivery
+            - collection
+          nullable: true
+        totals:
+          type: object
+          required:
+            - subtotal
+            - delivery_fee
+            - discount
+            - total
+          properties:
+            subtotal:
+              type: number
+            delivery_fee:
+              type: number
+            discount:
+              type: number
+            total:
+              type: number
+        applied_discounts:
+          type: object
+          properties:
+            loyalty_points_used:
+              type: integer
+            promo_code:
+              type: string
+              nullable: true
+    OrderNotificationPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - notification_id
+        - user_id
+        - notification_type
+        - title
+        - message
+      properties:
+        event_type:
+          type: string
+          enum:
+            - order_notification
+        timestamp:
+          type: string
+          format: date-time
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        notification_type:
+          type: string
+          enum:
+            - order_confirmed
+            - order_preparing
+            - order_ready
+            - order_out_for_delivery
+            - order_delivered
+            - order_collected
+            - order_cancelled
+        title:
+          type: string
+        message:
+          type: string
+        order_id:
+          type: string
+        order_number:
+          type: string
+        action_url:
+          type: string
+          nullable: true
+        is_read:
+          type: boolean
+          default: false
+    LoyaltyPointsNotificationPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - notification_id
+        - user_id
+        - notification_type
+        - title
+        - message
+      properties:
+        event_type:
+          type: string
+          enum:
+            - loyalty_notification
+        timestamp:
+          type: string
+          format: date-time
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        notification_type:
+          type: string
+          enum:
+            - points_earned
+            - points_redeemed
+            - points_milestone
+            - points_expiring_soon
+        title:
+          type: string
+        message:
+          type: string
+        points_change:
+          type: integer
+        new_balance:
+          type: integer
+        order_id:
+          type: string
+          nullable: true
+        is_read:
+          type: boolean
+          default: false
+    GeneralNotificationPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - notification_id
+        - user_id
+        - notification_type
+        - title
+        - message
+      properties:
+        event_type:
+          type: string
+          enum:
+            - general_notification
+        timestamp:
+          type: string
+          format: date-time
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        notification_type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        related_entity_type:
+          type: string
+          nullable: true
+        related_entity_id:
+          type: string
+          nullable: true
+        action_url:
+          type: string
+          nullable: true
+        is_read:
+          type: boolean
+          default: false
+    TrainingNotificationPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - notification_id
+        - user_id
+        - notification_type
+        - title
+        - message
+      properties:
+        event_type:
+          type: string
+          enum:
+            - training_notification
+        timestamp:
+          type: string
+          format: date-time
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        notification_type:
+          type: string
+          enum:
+            - new_required_course
+            - course_deadline_approaching
+            - course_completed
+            - new_course_available
+        title:
+          type: string
+        message:
+          type: string
+        course_id:
+          type: string
+          nullable: true
+        course_title:
+          type: string
+          nullable: true
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+        is_read:
+          type: boolean
+          default: false
+    InventoryAlertPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - alert_id
+        - reference_number
+        - location_name
+        - item_name
+        - alert_type
+        - priority
+        - status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - new_inventory_alert
+        timestamp:
+          type: string
+          format: date-time
+        alert_id:
+          type: string
+        reference_number:
+          type: string
+        submitted_by_user_id:
+          type: string
+        submitted_by_name:
+          type: string
+        location_name:
+          type: string
+        item_name:
+          type: string
+        alert_type:
+          type: string
+          enum:
+            - low_stock
+            - out_of_stock
+            - quality_issue
+            - expiring_soon
+        current_quantity:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+        status:
+          type: string
+          enum:
+            - pending
+            - acknowledged
+            - in_progress
+            - resolved
+        created_at:
+          type: string
+          format: date-time
+    InventoryAlertUpdatePayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - alert_id
+        - reference_number
+        - previous_status
+        - new_status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - inventory_alert_updated
+        timestamp:
+          type: string
+          format: date-time
+        alert_id:
+          type: string
+        reference_number:
+          type: string
+        location_name:
+          type: string
+        item_name:
+          type: string
+        previous_status:
+          type: string
+        new_status:
+          type: string
+          enum:
+            - pending
+            - acknowledged
+            - in_progress
+            - resolved
+        acknowledged_by_user_id:
+          type: string
+          nullable: true
+        acknowledged_by_name:
+          type: string
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+        resolved_by_user_id:
+          type: string
+          nullable: true
+        resolved_by_name:
+          type: string
+          nullable: true
+        resolved_at:
+          type: string
+          format: date-time
+          nullable: true
+    StaffFeedbackUpdatePayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - feedback_id
+        - reference_number
+        - previous_status
+        - new_status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - staff_feedback_updated
+        timestamp:
+          type: string
+          format: date-time
+        feedback_id:
+          type: string
+        reference_number:
+          type: string
+        previous_status:
+          type: string
+          nullable: true
+        new_status:
+          type: string
+          enum:
+            - pending_review
+            - under_review
+            - in_progress
+            - resolved
+            - closed
+        assigned_to_user_id:
+          type: string
+          nullable: true
+        assigned_to_name:
+          type: string
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+        response_text:
+          type: string
+          nullable: true
+        responded_by_user_id:
+          type: string
+          nullable: true
+        responded_by_name:
+          type: string
+          nullable: true
+    StaffFeedbackPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - feedback_id
+        - reference_number
+        - location_name
+        - feedback_type
+        - title
+        - priority
+        - status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - new_staff_feedback
+        timestamp:
+          type: string
+          format: date-time
+        feedback_id:
+          type: string
+        reference_number:
+          type: string
+        submitted_by_user_id:
+          type: string
+        submitted_by_name:
+          type: string
+          nullable: true
+        location_name:
+          type: string
+        feedback_type:
+          type: string
+          enum:
+            - suggestion
+            - complaint
+            - safety_concern
+            - equipment_issue
+            - process_improvement
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+        status:
+          type: string
+          enum:
+            - pending_review
+            - under_review
+            - in_progress
+            - resolved
+            - closed
+        is_anonymous:
+          type: boolean
+        attachment_urls:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CustomerFeedbackPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - feedback_id
+        - order_id
+        - overall_rating
+        - product_rating
+        - fulfillment_rating
+      properties:
+        event_type:
+          type: string
+          enum:
+            - new_customer_feedback
+        timestamp:
+          type: string
+          format: date-time
+        feedback_id:
+          type: string
+        order_id:
+          type: string
+        order_number:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        customer_name:
+          type: string
+          nullable: true
+        location_name:
+          type: string
+        overall_rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        product_rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        fulfillment_rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        product_comment:
+          type: string
+          nullable: true
+        fulfillment_comment:
+          type: string
+          nullable: true
+        overall_comment:
+          type: string
+          nullable: true
+        quick_tags:
+          type: string
+          nullable: true
+        allow_contact:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+    DashboardMetricsPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - metrics_type
+        - data
+      properties:
+        event_type:
+          type: string
+          enum:
+            - dashboard_metrics_update
+        timestamp:
+          type: string
+          format: date-time
+        metrics_type:
+          type: string
+          enum:
+            - daily_summary
+            - weekly_summary
+            - monthly_summary
+        data:
+          type: object
+          properties:
+            total_orders:
+              type: integer
+            total_revenue:
+              type: number
+            average_order_value:
+              type: number
+            orders_by_location:
+              type: object
+              additionalProperties:
+                type: integer
+            orders_by_status:
+              type: object
+              additionalProperties:
+                type: integer
+            top_products:
+              type: array
+              items:
+                type: object
+                properties:
+                  product_id:
+                    type: string
+                  product_name:
+                    type: string
+                  quantity_sold:
+                    type: integer
+                  revenue:
+                    type: number
+            customer_satisfaction:
+              type: object
+              properties:
+                average_rating:
+                  type: number
+                total_feedback:
+                  type: integer
+            comparison_vs_previous:
+              type: object
+              properties:
+                orders_change_percent:
+                  type: number
+                revenue_change_percent:
+                  type: number
+    RealtimeOrderMetricsPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - active_orders
+        - orders_by_status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - realtime_order_metrics
+        timestamp:
+          type: string
+          format: date-time
+        active_orders:
+          type: integer
+        orders_by_status:
+          type: object
+          properties:
+            awaiting_confirmation:
+              type: integer
+            preparing:
+              type: integer
+            ready_for_collection:
+              type: integer
+            out_for_delivery:
+              type: integer
+        late_orders_count:
+          type: integer
+        orders_today:
+          type: integer
+        revenue_today:
+          type: number
+    LocationMetricsPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - location_name
+        - metrics
+      properties:
+        event_type:
+          type: string
+          enum:
+            - location_metrics_update
+        timestamp:
+          type: string
+          format: date-time
+        location_name:
+          type: string
+        metrics:
+          type: object
+          properties:
+            orders_today:
+              type: integer
+            revenue_today:
+              type: number
+            active_orders:
+              type: integer
+            average_preparation_time:
+              type: number
+            pending_inventory_alerts:
+              type: integer
+            pending_staff_feedback:
+              type: integer
+    LoyaltyPointsUpdatePayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - transaction_type
+        - points_change
+        - new_balance
+      properties:
+        event_type:
+          type: string
+          enum:
+            - loyalty_points_updated
+        timestamp:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        transaction_id:
+          type: string
+        transaction_type:
+          type: string
+          enum:
+            - earned
+            - redeemed
+            - manual_adjustment
+            - expired
+        points_change:
+          type: integer
+        new_balance:
+          type: integer
+        order_id:
+          type: string
+          nullable: true
+        description:
+          type: string
+    CourseProgressPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - course_id
+        - previous_progress
+        - new_progress
+        - status
+      properties:
+        event_type:
+          type: string
+          enum:
+            - course_progress_updated
+        timestamp:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        course_id:
+          type: string
+        course_title:
+          type: string
+        previous_progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        new_progress:
+          type: number
+          minimum: 0
+          maximum: 100
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - completed
+        is_required:
+          type: boolean
+    LessonCompletionPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - lesson_id
+        - course_id
+      properties:
+        event_type:
+          type: string
+          enum:
+            - lesson_completed
+        timestamp:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        lesson_id:
+          type: string
+        lesson_title:
+          type: string
+        course_id:
+          type: string
+        course_title:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        course_progress_percentage:
+          type: number
+    CourseEnrollmentPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - course_id
+      properties:
+        event_type:
+          type: string
+          enum:
+            - course_enrolled
+        timestamp:
+          type: string
+          format: date-time
+        user_id:
+          type: string
+        user_name:
+          type: string
+        course_id:
+          type: string
+        course_title:
+          type: string
+        is_required:
+          type: boolean
+        location_name:
+          type: string
+          nullable: true
+    CourseCompletionPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - user_id
+        - course_id
+        - completed_at
+      properties:
+        event_type:
+          type: string
+          enum:
+            - course_completed
+        timestamp:
+          type: string
+          format: date-time
+        progress_id:
+          type: string
+        user_id:
+          type: string
+        user_name:
+          type: string
+        course_id:
+          type: string
+        course_title:
+          type: string
+        completed_at:
+          type: string
+          format: date-time
+        is_required:
+          type: boolean
+        location_name:
+          type: string
+          nullable: true
+    SystemStatusPayload:
+      type: object
+      required:
+        - event_type
+        - timestamp
+        - status_type
+        - message
+      properties:
+        event_type:
+          type: string
+          enum:
+            - system_status_update
+        timestamp:
+          type: string
+          format: date-time
+        status_type:
+          type: string
+          enum:
+            - maintenance_mode
+            - service_disruption
+            - service_restored
+            - feature_update
+            - urgent_announcement
+        message:
+          type: string
+        affects_users:
+          type: array
+          items:
+            type: string
+            enum:
+              - all
+              - customers
+              - staff
+              - admins
+        estimated_duration_minutes:
+          type: integer
+          nullable: true
+        action_required:
+          type: boolean
+        action_url:
+          type: string
+          nullable: true

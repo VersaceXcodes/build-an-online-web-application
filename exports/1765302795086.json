@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302795086,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_AdminTraining",
+      "version": "1765302629082"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_AdminTraining.tsx",
+      "type": "text",
+      "size": 44077,
+      "dependencies": false
+    }
+  ]
+}

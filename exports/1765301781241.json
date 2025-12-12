@@ -1,0 +1,15 @@
+{
+  "timestamp": 1765301781241,
+  "operation": {
+    "id": "backend:server:main"
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/backend/server.ts",
+      "type": "text",
+      "size": 114061,
+      "dependencies": false
+    }
+  ]
+}

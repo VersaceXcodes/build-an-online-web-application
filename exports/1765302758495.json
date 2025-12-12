@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302758495,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Checkout_Step3",
+      "version": "1765302628012"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_Checkout_Step3.tsx",
+      "type": "text",
+      "size": 25617,
+      "dependencies": false
+    }
+  ]
+}

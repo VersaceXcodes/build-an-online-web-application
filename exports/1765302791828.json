@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302791828,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "GV_LoadingOverlay",
+      "version": "1765302629604"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/GV_LoadingOverlay.tsx",
+      "type": "text",
+      "size": 2893,
+      "dependencies": false
+    }
+  ]
+}

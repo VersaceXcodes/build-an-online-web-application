@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302803078,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_Menu",
+      "version": "latest"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_Menu.tsx",
+      "type": "text",
+      "size": 37837,
+      "dependencies": false
+    }
+  ]
+}

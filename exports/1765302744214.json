@@ -1,0 +1,19 @@
+{
+  "timestamp": 1765302744214,
+  "operation": {
+    "id": "webapp:react:views",
+    "refs": {
+      "id": "UV_LocationInternal",
+      "version": "1765302627640"
+    }
+  },
+  "projectId": "build-an-online-web-application",
+  "files": [
+    {
+      "path": "/mnt/data/build-an-online-web-application/vitereact/src/components/views/UV_LocationInternal.tsx",
+      "type": "text",
+      "size": 22406,
+      "dependencies": false
+    }
+  ]
+}

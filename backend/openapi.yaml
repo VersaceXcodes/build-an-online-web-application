@@ -1,0 +1,3371 @@
+openapi: 3.0.0
+info:
+  title: Kake Online Web Application API
+  version: 1.0.0
+  description: Comprehensive API for Kake dessert business covering customer
+    ordering, staff operations, and admin management
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - first_name
+        - last_name
+        - phone_number
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+        marketing_opt_in:
+          type: boolean
+          default: false
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        remember_me:
+          type: boolean
+          default: false
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      required:
+        - token
+        - password
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+    User:
+      type: object
+      properties:
+        user_id:
+          type: string
+        email:
+          type: string
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+        user_type:
+          type: string
+          enum:
+            - customer
+            - staff
+            - manager
+            - admin
+        account_status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - deleted
+        marketing_opt_in:
+          type: boolean
+        loyalty_points_balance:
+          type: number
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    UpdateUserRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        phone_number:
+          type: string
+        marketing_opt_in:
+          type: boolean
+    ChangePasswordRequest:
+      type: object
+      required:
+        - current_password
+        - new_password
+      properties:
+        current_password:
+          type: string
+        new_password:
+          type: string
+          minLength: 8
+    Location:
+      type: object
+      properties:
+        location_id:
+          type: string
+        location_name:
+          type: string
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        postal_code:
+          type: string
+        phone_number:
+          type: string
+        email:
+          type: string
+        is_collection_enabled:
+          type: boolean
+        is_delivery_enabled:
+          type: boolean
+        delivery_radius_km:
+          type: number
+          nullable: true
+        delivery_fee:
+          type: number
+          nullable: true
+        free_delivery_threshold:
+          type: number
+          nullable: true
+        estimated_delivery_time_minutes:
+          type: number
+          nullable: true
+        estimated_preparation_time_minutes:
+          type: number
+        allow_scheduled_pickups:
+          type: boolean
+        just_eat_url:
+          type: string
+          nullable: true
+        deliveroo_url:
+          type: string
+          nullable: true
+        opening_hours:
+          type: string
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    Product:
+      type: object
+      properties:
+        product_id:
+          type: string
+        product_name:
+          type: string
+        short_description:
+          type: string
+        long_description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum:
+            - pastries
+            - breads
+            - cakes
+            - corporate
+        price:
+          type: number
+        compare_at_price:
+          type: number
+          nullable: true
+        primary_image_url:
+          type: string
+        additional_images:
+          type: string
+          nullable: true
+        availability_status:
+          type: string
+          enum:
+            - in_stock
+            - out_of_stock
+            - discontinued
+        stock_quantity:
+          type: number
+          nullable: true
+        low_stock_threshold:
+          type: number
+          nullable: true
+        dietary_tags:
+          type: string
+          nullable: true
+        custom_tags:
+          type: string
+          nullable: true
+        is_featured:
+          type: boolean
+        available_for_corporate:
+          type: boolean
+        available_from_date:
+          type: string
+          nullable: true
+        available_until_date:
+          type: string
+          nullable: true
+        is_archived:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    CreateProductRequest:
+      type: object
+      required:
+        - product_name
+        - short_description
+        - category
+        - price
+        - primary_image_url
+      properties:
+        product_name:
+          type: string
+        short_description:
+          type: string
+        long_description:
+          type: string
+        category:
+          type: string
+          enum:
+            - pastries
+            - breads
+            - cakes
+            - corporate
+        price:
+          type: number
+        compare_at_price:
+          type: number
+        primary_image_url:
+          type: string
+        additional_images:
+          type: string
+        availability_status:
+          type: string
+          enum:
+            - in_stock
+            - out_of_stock
+            - discontinued
+        stock_quantity:
+          type: number
+        low_stock_threshold:
+          type: number
+        dietary_tags:
+          type: string
+        custom_tags:
+          type: string
+        is_featured:
+          type: boolean
+        available_for_corporate:
+          type: boolean
+        available_from_date:
+          type: string
+        available_until_date:
+          type: string
+        location_assignments:
+          type: array
+          items:
+            type: string
+    Order:
+      type: object
+      properties:
+        order_id:
+          type: string
+        order_number:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        customer_email:
+          type: string
+        customer_name:
+          type: string
+        customer_phone:
+          type: string
+        location_name:
+          type: string
+        order_type:
+          type: string
+          enum:
+            - standard
+            - corporate
+            - celebration
+        fulfillment_method:
+          type: string
+          enum:
+            - delivery
+            - collection
+        order_status:
+          type: string
+          enum:
+            - pending_payment
+            - payment_confirmed
+            - preparing
+            - ready_for_collection
+            - out_for_delivery
+            - in_progress
+            - completed
+            - cancelled
+        delivery_address_line1:
+          type: string
+          nullable: true
+        delivery_address_line2:
+          type: string
+          nullable: true
+        delivery_city:
+          type: string
+          nullable: true
+        delivery_postal_code:
+          type: string
+          nullable: true
+        delivery_phone:
+          type: string
+          nullable: true
+        delivery_instructions:
+          type: string
+          nullable: true
+        special_instructions:
+          type: string
+          nullable: true
+        scheduled_for:
+          type: string
+          nullable: true
+        estimated_ready_time:
+          type: string
+          nullable: true
+        subtotal:
+          type: number
+        delivery_fee:
+          type: number
+        discount_amount:
+          type: number
+        tax_amount:
+          type: number
+        total_amount:
+          type: number
+        loyalty_points_used:
+          type: number
+        loyalty_points_earned:
+          type: number
+        promo_code:
+          type: string
+          nullable: true
+        payment_method:
+          type: string
+          enum:
+            - card
+            - cash
+            - online
+        payment_status:
+          type: string
+          enum:
+            - pending
+            - completed
+            - failed
+            - refunded
+        payment_transaction_id:
+          type: string
+          nullable: true
+        card_last_four:
+          type: string
+          nullable: true
+        event_date:
+          type: string
+          nullable: true
+        guest_count:
+          type: number
+          nullable: true
+        event_type:
+          type: string
+          nullable: true
+        company_name:
+          type: string
+          nullable: true
+        collection_code:
+          type: string
+          nullable: true
+        feedback_submitted:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        status_history:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderStatusHistory"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+        completed_at:
+          type: string
+          nullable: true
+    CreateOrderRequest:
+      type: object
+      required:
+        - customer_email
+        - customer_name
+        - customer_phone
+        - location_name
+        - fulfillment_method
+        - items
+        - payment_method
+      properties:
+        user_id:
+          type: string
+        customer_email:
+          type: string
+        customer_name:
+          type: string
+        customer_phone:
+          type: string
+        location_name:
+          type: string
+        order_type:
+          type: string
+          enum:
+            - standard
+            - corporate
+            - celebration
+        fulfillment_method:
+          type: string
+          enum:
+            - delivery
+            - collection
+        delivery_address_line1:
+          type: string
+        delivery_address_line2:
+          type: string
+        delivery_city:
+          type: string
+        delivery_postal_code:
+          type: string
+        delivery_phone:
+          type: string
+        delivery_instructions:
+          type: string
+        special_instructions:
+          type: string
+        scheduled_for:
+          type: string
+        event_date:
+          type: string
+        guest_count:
+          type: number
+        event_type:
+          type: string
+        company_name:
+          type: string
+        promo_code:
+          type: string
+        loyalty_points_used:
+          type: number
+        payment_method:
+          type: string
+          enum:
+            - card
+            - cash
+            - online
+        items:
+          type: array
+          items:
+            type: object
+            required:
+              - product_id
+              - quantity
+            properties:
+              product_id:
+                type: string
+              quantity:
+                type: number
+              product_specific_notes:
+                type: string
+    UpdateOrderStatusRequest:
+      type: object
+      required:
+        - order_status
+      properties:
+        order_status:
+          type: string
+          enum:
+            - pending_payment
+            - payment_confirmed
+            - preparing
+            - ready_for_collection
+            - out_for_delivery
+            - in_progress
+            - completed
+            - cancelled
+        notes:
+          type: string
+    OrderItem:
+      type: object
+      properties:
+        item_id:
+          type: string
+        order_id:
+          type: string
+        product_id:
+          type: string
+        product_name:
+          type: string
+        price_at_purchase:
+          type: number
+        quantity:
+          type: number
+        subtotal:
+          type: number
+        product_specific_notes:
+          type: string
+          nullable: true
+    OrderStatusHistory:
+      type: object
+      properties:
+        history_id:
+          type: string
+        order_id:
+          type: string
+        previous_status:
+          type: string
+          nullable: true
+        new_status:
+          type: string
+        changed_by_user_id:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        changed_at:
+          type: string
+    Address:
+      type: object
+      properties:
+        address_id:
+          type: string
+        user_id:
+          type: string
+        address_label:
+          type: string
+          nullable: true
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+          nullable: true
+        city:
+          type: string
+        postal_code:
+          type: string
+        delivery_phone:
+          type: string
+          nullable: true
+        delivery_instructions:
+          type: string
+          nullable: true
+        is_default:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    CreateAddressRequest:
+      type: object
+      required:
+        - address_line1
+        - city
+        - postal_code
+      properties:
+        address_label:
+          type: string
+        address_line1:
+          type: string
+        address_line2:
+          type: string
+        city:
+          type: string
+        postal_code:
+          type: string
+        delivery_phone:
+          type: string
+        delivery_instructions:
+          type: string
+        is_default:
+          type: boolean
+    LoyaltyPointsTransaction:
+      type: object
+      properties:
+        transaction_id:
+          type: string
+        user_id:
+          type: string
+        transaction_type:
+          type: string
+          enum:
+            - earned
+            - redeemed
+            - manual_adjustment
+            - expired
+        points_change:
+          type: number
+        balance_after:
+          type: number
+        order_id:
+          type: string
+          nullable: true
+        description:
+          type: string
+        created_at:
+          type: string
+    CustomerFeedback:
+      type: object
+      properties:
+        feedback_id:
+          type: string
+        order_id:
+          type: string
+        user_id:
+          type: string
+          nullable: true
+        overall_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        product_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        fulfillment_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        product_comment:
+          type: string
+          nullable: true
+        fulfillment_comment:
+          type: string
+          nullable: true
+        overall_comment:
+          type: string
+          nullable: true
+        quick_tags:
+          type: string
+          nullable: true
+        allow_contact:
+          type: boolean
+        reviewed_status:
+          type: string
+          enum:
+            - pending_review
+            - reviewed
+            - requires_attention
+        reviewed_by_user_id:
+          type: string
+          nullable: true
+        reviewed_at:
+          type: string
+          nullable: true
+        is_hidden_from_staff:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    CreateCustomerFeedbackRequest:
+      type: object
+      required:
+        - order_id
+        - overall_rating
+        - product_rating
+        - fulfillment_rating
+      properties:
+        order_id:
+          type: string
+        overall_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        product_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        fulfillment_rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        product_comment:
+          type: string
+        fulfillment_comment:
+          type: string
+        overall_comment:
+          type: string
+        quick_tags:
+          type: string
+        allow_contact:
+          type: boolean
+    StaffFeedback:
+      type: object
+      properties:
+        feedback_id:
+          type: string
+        reference_number:
+          type: string
+        submitted_by_user_id:
+          type: string
+        location_name:
+          type: string
+        feedback_type:
+          type: string
+          enum:
+            - suggestion
+            - complaint
+            - safety_concern
+            - equipment_issue
+            - process_improvement
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+        attachment_urls:
+          type: string
+          nullable: true
+        is_anonymous:
+          type: boolean
+        status:
+          type: string
+          enum:
+            - pending_review
+            - under_review
+            - in_progress
+            - resolved
+            - closed
+        assigned_to_user_id:
+          type: string
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+        resolved_at:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    CreateStaffFeedbackRequest:
+      type: object
+      required:
+        - location_name
+        - feedback_type
+        - title
+        - description
+      properties:
+        location_name:
+          type: string
+        feedback_type:
+          type: string
+          enum:
+            - suggestion
+            - complaint
+            - safety_concern
+            - equipment_issue
+            - process_improvement
+        title:
+          type: string
+        description:
+          type: string
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+        attachment_urls:
+          type: string
+        is_anonymous:
+          type: boolean
+    InventoryAlert:
+      type: object
+      properties:
+        alert_id:
+          type: string
+        reference_number:
+          type: string
+        submitted_by_user_id:
+          type: string
+        location_name:
+          type: string
+        item_name:
+          type: string
+        alert_type:
+          type: string
+          enum:
+            - low_stock
+            - out_of_stock
+            - quality_issue
+            - expiring_soon
+        current_quantity:
+          type: number
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+        status:
+          type: string
+          enum:
+            - pending
+            - acknowledged
+            - in_progress
+            - resolved
+        acknowledged_by_user_id:
+          type: string
+          nullable: true
+        acknowledged_at:
+          type: string
+          nullable: true
+        resolution_notes:
+          type: string
+          nullable: true
+        resolved_by_user_id:
+          type: string
+          nullable: true
+        resolved_at:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    CreateInventoryAlertRequest:
+      type: object
+      required:
+        - location_name
+        - item_name
+        - alert_type
+      properties:
+        location_name:
+          type: string
+        item_name:
+          type: string
+        alert_type:
+          type: string
+          enum:
+            - low_stock
+            - out_of_stock
+            - quality_issue
+            - expiring_soon
+        current_quantity:
+          type: number
+        notes:
+          type: string
+        priority:
+          type: string
+          enum:
+            - low
+            - medium
+            - high
+            - urgent
+    TrainingCourse:
+      type: object
+      properties:
+        course_id:
+          type: string
+        course_title:
+          type: string
+        short_description:
+          type: string
+        long_description:
+          type: string
+          nullable: true
+        cover_image_url:
+          type: string
+        category:
+          type: string
+          enum:
+            - safety
+            - customer_service
+            - baking
+            - equipment
+            - management
+        tags:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum:
+            - draft
+            - published
+            - archived
+        is_required:
+          type: boolean
+        estimated_duration_minutes:
+          type: number
+          nullable: true
+        prerequisite_course_ids:
+          type: string
+          nullable: true
+        created_by_user_id:
+          type: string
+        lessons:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrainingLesson"
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    TrainingLesson:
+      type: object
+      properties:
+        lesson_id:
+          type: string
+        course_id:
+          type: string
+        lesson_title:
+          type: string
+        lesson_type:
+          type: string
+          enum:
+            - video
+            - document
+            - quiz
+            - interactive
+        content_url:
+          type: string
+          nullable: true
+        content_text:
+          type: string
+          nullable: true
+        duration_minutes:
+          type: number
+          nullable: true
+        additional_notes:
+          type: string
+          nullable: true
+        lesson_order:
+          type: number
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    StaffCourseProgress:
+      type: object
+      properties:
+        progress_id:
+          type: string
+        user_id:
+          type: string
+        course_id:
+          type: string
+        status:
+          type: string
+          enum:
+            - not_started
+            - in_progress
+            - completed
+        progress_percentage:
+          type: number
+        started_at:
+          type: string
+          nullable: true
+        completed_at:
+          type: string
+          nullable: true
+        last_accessed_at:
+          type: string
+          nullable: true
+    MarkLessonCompleteRequest:
+      type: object
+      required:
+        - lesson_id
+      properties:
+        lesson_id:
+          type: string
+        personal_notes:
+          type: string
+    PromoCode:
+      type: object
+      properties:
+        code_id:
+          type: string
+        code:
+          type: string
+        discount_type:
+          type: string
+          enum:
+            - percentage
+            - fixed
+            - delivery
+        discount_value:
+          type: number
+        minimum_order_value:
+          type: number
+          nullable: true
+        valid_from:
+          type: string
+        valid_until:
+          type: string
+        usage_limit:
+          type: number
+          nullable: true
+        is_single_use:
+          type: boolean
+        times_used:
+          type: number
+        applicable_locations:
+          type: string
+          nullable: true
+        applicable_products:
+          type: string
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    ValidatePromoCodeRequest:
+      type: object
+      required:
+        - code
+        - order_total
+        - location_name
+      properties:
+        code:
+          type: string
+        order_total:
+          type: number
+        location_name:
+          type: string
+        product_ids:
+          type: array
+          items:
+            type: string
+    PromoCodeValidationResponse:
+      type: object
+      properties:
+        is_valid:
+          type: boolean
+        discount_amount:
+          type: number
+        message:
+          type: string
+    DropOfTheMonth:
+      type: object
+      properties:
+        drop_id:
+          type: string
+        product_name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        product_image_url:
+          type: string
+        available_from:
+          type: string
+        available_until:
+          type: string
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    StallEvent:
+      type: object
+      properties:
+        event_id:
+          type: string
+        event_name:
+          type: string
+        venue_location:
+          type: string
+        event_date:
+          type: string
+        event_time:
+          type: string
+        description:
+          type: string
+          nullable: true
+        event_image_url:
+          type: string
+          nullable: true
+        cta_button_text:
+          type: string
+          nullable: true
+        cta_button_action:
+          type: string
+          nullable: true
+        cta_button_url:
+          type: string
+          nullable: true
+        is_visible:
+          type: boolean
+        created_at:
+          type: string
+        updated_at:
+          type: string
+    Favorite:
+      type: object
+      properties:
+        favorite_id:
+          type: string
+        user_id:
+          type: string
+        product_id:
+          type: string
+        created_at:
+          type: string
+    Notification:
+      type: object
+      properties:
+        notification_id:
+          type: string
+        user_id:
+          type: string
+        notification_type:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        related_entity_type:
+          type: string
+          nullable: true
+        related_entity_id:
+          type: string
+          nullable: true
+        is_read:
+          type: boolean
+        read_at:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+    DashboardMetrics:
+      type: object
+      properties:
+        today_orders_count:
+          type: number
+        today_revenue:
+          type: number
+        this_week_orders_count:
+          type: number
+        this_week_revenue:
+          type: number
+        this_month_orders_count:
+          type: number
+        this_month_revenue:
+          type: number
+        active_orders_count:
+          type: number
+        orders_by_status:
+          type: object
+        top_products:
+          type: array
+          items:
+            type: object
+        orders_by_location:
+          type: object
+        revenue_by_fulfillment_method:
+          type: object
+    SystemSetting:
+      type: object
+      properties:
+        setting_id:
+          type: string
+        setting_key:
+          type: string
+        setting_value:
+          type: string
+        setting_type:
+          type: string
+          enum:
+            - string
+            - number
+            - boolean
+            - json
+        setting_group:
+          type: string
+        updated_at:
+          type: string
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        total:
+          type: number
+        limit:
+          type: number
+        offset:
+          type: number
+        has_more:
+          type: boolean
+  parameters:
+    LimitParam:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    OffsetParam:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    SortByParam:
+      name: sort_by
+      in: query
+      schema:
+        type: string
+    SortOrderParam:
+      name: sort_order
+      in: query
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: desc
+paths:
+  /auth/register:
+    post:
+      summary: Register new customer account
+      operationId: registerUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid input or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      summary: Authenticate user and get token
+      operationId: loginUser
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      summary: Logout current user
+      operationId: logoutUser
+      tags:
+        - Authentication
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /auth/forgot-password:
+    post:
+      summary: Request password reset
+      operationId: forgotPassword
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ForgotPasswordRequest"
+      responses:
+        "200":
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /auth/reset-password:
+    post:
+      summary: Reset password with token
+      operationId: resetPassword
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400":
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /users/me:
+    get:
+      summary: Get current user profile
+      operationId: getCurrentUser
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Update current user profile
+      operationId: updateCurrentUser
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users/me/change-password:
+    post:
+      summary: Change user password
+      operationId: changePassword
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordRequest"
+      responses:
+        "200":
+          description: Password changed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /users/{user_id}:
+    get:
+      summary: Get user by ID (for admin or public profile info)
+      operationId: getUserById
+      tags:
+        - Users
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /users:
+    get:
+      summary: Search users (admin only)
+      operationId: searchUsers
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: user_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - customer
+              - staff
+              - manager
+              - admin
+        - name: account_status
+          in: query
+          schema:
+            type: string
+            enum:
+              - active
+              - suspended
+              - deleted
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+        - $ref: "#/components/parameters/SortByParam"
+        - $ref: "#/components/parameters/SortOrderParam"
+      responses:
+        "200":
+          description: Users list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create new user (admin only)
+      operationId: createUser
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+  /locations:
+    get:
+      summary: Get all locations
+      operationId: getLocations
+      tags:
+        - Locations
+      parameters:
+        - name: is_collection_enabled
+          in: query
+          schema:
+            type: boolean
+        - name: is_delivery_enabled
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Locations list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Location"
+  /locations/{location_id}:
+    get:
+      summary: Get location by ID
+      operationId: getLocationById
+      tags:
+        - Locations
+      parameters:
+        - name: location_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Location details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Location"
+  /products:
+    get:
+      summary: Search and filter products
+      operationId: searchProducts
+      tags:
+        - Products
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: location_name
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum:
+              - pastries
+              - breads
+              - cakes
+              - corporate
+        - name: availability_status
+          in: query
+          schema:
+            type: string
+            enum:
+              - in_stock
+              - out_of_stock
+              - discontinued
+        - name: is_featured
+          in: query
+          schema:
+            type: boolean
+        - name: min_price
+          in: query
+          schema:
+            type: number
+        - name: max_price
+          in: query
+          schema:
+            type: number
+        - name: dietary_tags
+          in: query
+          schema:
+            type: string
+        - name: hide_out_of_stock
+          in: query
+          schema:
+            type: boolean
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - product_name
+              - price
+              - created_at
+        - $ref: "#/components/parameters/SortOrderParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Products list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create new product (admin only)
+      operationId: createProduct
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+  /products/{product_id}:
+    get:
+      summary: Get product by ID
+      operationId: getProductById
+      tags:
+        - Products
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    put:
+      summary: Update product (admin only)
+      operationId: updateProduct
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      summary: Delete product (admin only)
+      operationId: deleteProduct
+      tags:
+        - Products
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: product_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /orders:
+    get:
+      summary: Get orders list
+      operationId: getOrders
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+        - name: location_name
+          in: query
+          schema:
+            type: string
+        - name: order_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - standard
+              - corporate
+              - celebration
+        - name: order_status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending_payment
+              - payment_confirmed
+              - preparing
+              - ready_for_collection
+              - out_for_delivery
+              - in_progress
+              - completed
+              - cancelled
+        - name: fulfillment_method
+          in: query
+          schema:
+            type: string
+            enum:
+              - delivery
+              - collection
+        - name: payment_status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending
+              - completed
+              - failed
+              - refunded
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: revenue_min
+          in: query
+          schema:
+            type: number
+        - name: revenue_max
+          in: query
+          schema:
+            type: number
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum:
+              - created_at
+              - total_amount
+              - order_number
+        - $ref: "#/components/parameters/SortOrderParam"
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Orders list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create new order
+      operationId: createOrder
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderRequest"
+      responses:
+        "201":
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{order_id}:
+    get:
+      summary: Get order by ID
+      operationId: getOrderById
+      tags:
+        - Orders
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{order_id}/status:
+    put:
+      summary: Update order status (staff/admin only)
+      operationId: updateOrderStatus
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusRequest"
+      responses:
+        "200":
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /orders/{order_id}/cancel:
+    post:
+      summary: Cancel order
+      operationId: cancelOrder
+      tags:
+        - Orders
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Order cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+  /addresses:
+    get:
+      summary: Get user addresses
+      operationId: getUserAddresses
+      tags:
+        - Addresses
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Addresses list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Address"
+    post:
+      summary: Create new address
+      operationId: createAddress
+      tags:
+        - Addresses
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAddressRequest"
+      responses:
+        "201":
+          description: Address created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+  /addresses/{address_id}:
+    get:
+      summary: Get address by ID
+      operationId: getAddressById
+      tags:
+        - Addresses
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+    put:
+      summary: Update address
+      operationId: updateAddress
+      tags:
+        - Addresses
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAddressRequest"
+      responses:
+        "200":
+          description: Address updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+    delete:
+      summary: Delete address
+      operationId: deleteAddress
+      tags:
+        - Addresses
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: address_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Address deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /loyalty-points/transactions:
+    get:
+      summary: Get loyalty points transaction history
+      operationId: getLoyaltyPointsTransactions
+      tags:
+        - Loyalty Points
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: transaction_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - earned
+              - redeemed
+              - manual_adjustment
+              - expired
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Transaction history retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /loyalty-points/balance:
+    get:
+      summary: Get current loyalty points balance
+      operationId: getLoyaltyPointsBalance
+      tags:
+        - Loyalty Points
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Points balance retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  balance:
+                    type: number
+                  user_id:
+                    type: string
+  /feedback/customer:
+    get:
+      summary: Get customer feedback list
+      operationId: getCustomerFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: order_id
+          in: query
+          schema:
+            type: string
+        - name: reviewed_status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending_review
+              - reviewed
+              - requires_attention
+        - name: min_rating
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            maximum: 5
+        - name: max_rating
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            maximum: 5
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Feedback list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Submit customer feedback
+      operationId: createCustomerFeedback
+      tags:
+        - Feedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerFeedbackRequest"
+      responses:
+        "201":
+          description: Feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerFeedback"
+  /feedback/customer/{feedback_id}:
+    get:
+      summary: Get customer feedback by ID
+      operationId: getCustomerFeedbackById
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Feedback details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerFeedback"
+    put:
+      summary: Update customer feedback
+      operationId: updateCustomerFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerFeedbackRequest"
+      responses:
+        "200":
+          description: Feedback updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerFeedback"
+  /feedback/customer/{feedback_id}/review:
+    post:
+      summary: Mark feedback as reviewed (admin only)
+      operationId: reviewCustomerFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reviewed_status:
+                  type: string
+                  enum:
+                    - reviewed
+                    - requires_attention
+                notes:
+                  type: string
+      responses:
+        "200":
+          description: Feedback reviewed successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerFeedback"
+  /feedback/staff:
+    get:
+      summary: Get staff feedback list
+      operationId: getStaffFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: location_name
+          in: query
+          schema:
+            type: string
+        - name: feedback_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - suggestion
+              - complaint
+              - safety_concern
+              - equipment_issue
+              - process_improvement
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending_review
+              - under_review
+              - in_progress
+              - resolved
+              - closed
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum:
+              - low
+              - medium
+              - high
+              - urgent
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Staff feedback list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Submit staff feedback
+      operationId: createStaffFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStaffFeedbackRequest"
+      responses:
+        "201":
+          description: Staff feedback submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffFeedback"
+  /feedback/staff/{feedback_id}:
+    get:
+      summary: Get staff feedback by ID
+      operationId: getStaffFeedbackById
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Staff feedback details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffFeedback"
+    put:
+      summary: Update staff feedback status (admin only)
+      operationId: updateStaffFeedback
+      tags:
+        - Feedback
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - pending_review
+                    - under_review
+                    - in_progress
+                    - resolved
+                    - closed
+                priority:
+                  type: string
+                  enum:
+                    - low
+                    - medium
+                    - high
+                    - urgent
+                assigned_to_user_id:
+                  type: string
+                resolution_notes:
+                  type: string
+      responses:
+        "200":
+          description: Staff feedback updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffFeedback"
+  /inventory/alerts:
+    get:
+      summary: Get inventory alerts list
+      operationId: getInventoryAlerts
+      tags:
+        - Inventory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: location_name
+          in: query
+          schema:
+            type: string
+        - name: alert_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - low_stock
+              - out_of_stock
+              - quality_issue
+              - expiring_soon
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending
+              - acknowledged
+              - in_progress
+              - resolved
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum:
+              - low
+              - medium
+              - high
+              - urgent
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: search
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Inventory alerts list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create inventory alert
+      operationId: createInventoryAlert
+      tags:
+        - Inventory
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryAlertRequest"
+      responses:
+        "201":
+          description: Inventory alert created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryAlert"
+  /inventory/alerts/{alert_id}:
+    get:
+      summary: Get inventory alert by ID
+      operationId: getInventoryAlertById
+      tags:
+        - Inventory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: alert_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Inventory alert details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryAlert"
+    put:
+      summary: Update inventory alert status
+      operationId: updateInventoryAlert
+      tags:
+        - Inventory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: alert_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - pending
+                    - acknowledged
+                    - in_progress
+                    - resolved
+                priority:
+                  type: string
+                  enum:
+                    - low
+                    - medium
+                    - high
+                    - urgent
+                resolution_notes:
+                  type: string
+      responses:
+        "200":
+          description: Inventory alert updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryAlert"
+  /training/courses:
+    get:
+      summary: Get training courses list
+      operationId: getTrainingCourses
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum:
+              - safety
+              - customer_service
+              - baking
+              - equipment
+              - management
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - draft
+              - published
+              - archived
+        - name: is_required
+          in: query
+          schema:
+            type: boolean
+        - name: query
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Training courses list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create new training course (admin only)
+      operationId: createTrainingCourse
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - course_title
+                - short_description
+                - cover_image_url
+                - category
+              properties:
+                course_title:
+                  type: string
+                short_description:
+                  type: string
+                long_description:
+                  type: string
+                cover_image_url:
+                  type: string
+                category:
+                  type: string
+                  enum:
+                    - safety
+                    - customer_service
+                    - baking
+                    - equipment
+                    - management
+                tags:
+                  type: string
+                status:
+                  type: string
+                  enum:
+                    - draft
+                    - published
+                    - archived
+                is_required:
+                  type: boolean
+                estimated_duration_minutes:
+                  type: number
+                prerequisite_course_ids:
+                  type: string
+      responses:
+        "201":
+          description: Training course created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingCourse"
+  /training/courses/{course_id}:
+    get:
+      summary: Get training course by ID
+      operationId: getTrainingCourseById
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Training course details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingCourse"
+    put:
+      summary: Update training course (admin only)
+      operationId: updateTrainingCourse
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                course_title:
+                  type: string
+                short_description:
+                  type: string
+                long_description:
+                  type: string
+                cover_image_url:
+                  type: string
+                category:
+                  type: string
+                  enum:
+                    - safety
+                    - customer_service
+                    - baking
+                    - equipment
+                    - management
+                status:
+                  type: string
+                  enum:
+                    - draft
+                    - published
+                    - archived
+      responses:
+        "200":
+          description: Training course updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingCourse"
+  /training/courses/{course_id}/progress:
+    get:
+      summary: Get course progress for current user
+      operationId: getCourseProgress
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: course_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Course progress retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaffCourseProgress"
+  /training/lessons/{lesson_id}/complete:
+    post:
+      summary: Mark lesson as complete
+      operationId: markLessonComplete
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: lesson_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personal_notes:
+                  type: string
+      responses:
+        "200":
+          description: Lesson marked as complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /training/progress:
+    get:
+      summary: Get training progress for all courses (current user)
+      operationId: getMyTrainingProgress
+      tags:
+        - Training
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Training progress retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StaffCourseProgress"
+  /promo-codes/validate:
+    post:
+      summary: Validate promo code
+      operationId: validatePromoCode
+      tags:
+        - Promo Codes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ValidatePromoCodeRequest"
+      responses:
+        "200":
+          description: Promo code validation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCodeValidationResponse"
+  /promo-codes:
+    get:
+      summary: Get promo codes list (admin only)
+      operationId: getPromoCodes
+      tags:
+        - Promo Codes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          schema:
+            type: string
+        - name: discount_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - percentage
+              - fixed
+              - delivery
+        - name: is_active
+          in: query
+          schema:
+            type: boolean
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Promo codes list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+    post:
+      summary: Create new promo code (admin only)
+      operationId: createPromoCode
+      tags:
+        - Promo Codes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+                - discount_type
+                - discount_value
+                - valid_from
+                - valid_until
+              properties:
+                code:
+                  type: string
+                discount_type:
+                  type: string
+                  enum:
+                    - percentage
+                    - fixed
+                    - delivery
+                discount_value:
+                  type: number
+                minimum_order_value:
+                  type: number
+                valid_from:
+                  type: string
+                valid_until:
+                  type: string
+                usage_limit:
+                  type: number
+                is_single_use:
+                  type: boolean
+                applicable_locations:
+                  type: string
+                applicable_products:
+                  type: string
+                is_active:
+                  type: boolean
+      responses:
+        "201":
+          description: Promo code created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PromoCode"
+  /drop-of-the-month:
+    get:
+      summary: Get active Drop of the Month
+      operationId: getActiveDropOfTheMonth
+      tags:
+        - Drop of the Month
+      responses:
+        "200":
+          description: Active Drop of the Month retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DropOfTheMonth"
+    post:
+      summary: Create Drop of the Month (admin only)
+      operationId: createDropOfTheMonth
+      tags:
+        - Drop of the Month
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_name
+                - description
+                - price
+                - product_image_url
+                - available_from
+                - available_until
+              properties:
+                product_name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                product_image_url:
+                  type: string
+                available_from:
+                  type: string
+                available_until:
+                  type: string
+                is_active:
+                  type: boolean
+      responses:
+        "201":
+          description: Drop of the Month created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DropOfTheMonth"
+  /drop-of-the-month/{drop_id}:
+    put:
+      summary: Update Drop of the Month (admin only)
+      operationId: updateDropOfTheMonth
+      tags:
+        - Drop of the Month
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: drop_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product_name:
+                  type: string
+                description:
+                  type: string
+                price:
+                  type: number
+                product_image_url:
+                  type: string
+                available_from:
+                  type: string
+                available_until:
+                  type: string
+                is_active:
+                  type: boolean
+      responses:
+        "200":
+          description: Drop of the Month updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DropOfTheMonth"
+  /stall-events:
+    get:
+      summary: Get visible stall events
+      operationId: getStallEvents
+      tags:
+        - Stall Events
+      parameters:
+        - name: is_visible
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Stall events list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StallEvent"
+    post:
+      summary: Create stall event (admin only)
+      operationId: createStallEvent
+      tags:
+        - Stall Events
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - event_name
+                - venue_location
+                - event_date
+                - event_time
+              properties:
+                event_name:
+                  type: string
+                venue_location:
+                  type: string
+                event_date:
+                  type: string
+                event_time:
+                  type: string
+                description:
+                  type: string
+                event_image_url:
+                  type: string
+                cta_button_text:
+                  type: string
+                cta_button_action:
+                  type: string
+                cta_button_url:
+                  type: string
+                is_visible:
+                  type: boolean
+      responses:
+        "201":
+          description: Stall event created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StallEvent"
+  /stall-events/{event_id}:
+    put:
+      summary: Update stall event (admin only)
+      operationId: updateStallEvent
+      tags:
+        - Stall Events
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event_name:
+                  type: string
+                venue_location:
+                  type: string
+                event_date:
+                  type: string
+                event_time:
+                  type: string
+                description:
+                  type: string
+                event_image_url:
+                  type: string
+                is_visible:
+                  type: boolean
+      responses:
+        "200":
+          description: Stall event updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StallEvent"
+  /favorites:
+    get:
+      summary: Get user favorites
+      operationId: getUserFavorites
+      tags:
+        - Favorites
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Favorites list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Favorite"
+    post:
+      summary: Add product to favorites
+      operationId: addFavorite
+      tags:
+        - Favorites
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_id
+              properties:
+                product_id:
+                  type: string
+      responses:
+        "201":
+          description: Product added to favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Favorite"
+  /favorites/{favorite_id}:
+    delete:
+      summary: Remove product from favorites
+      operationId: removeFavorite
+      tags:
+        - Favorites
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: favorite_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product removed from favorites
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /notifications:
+    get:
+      summary: Get user notifications
+      operationId: getNotifications
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: is_read
+          in: query
+          schema:
+            type: boolean
+        - name: notification_type
+          in: query
+          schema:
+            type: string
+        - $ref: "#/components/parameters/LimitParam"
+        - $ref: "#/components/parameters/OffsetParam"
+      responses:
+        "200":
+          description: Notifications list retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedResponse"
+  /notifications/{notification_id}/read:
+    post:
+      summary: Mark notification as read
+      operationId: markNotificationAsRead
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: notification_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /notifications/read-all:
+    post:
+      summary: Mark all notifications as read
+      operationId: markAllNotificationsAsRead
+      tags:
+        - Notifications
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+  /analytics/dashboard:
+    get:
+      summary: Get dashboard metrics (admin only)
+      operationId: getDashboardMetrics
+      tags:
+        - Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: date_range
+          in: query
+          schema:
+            type: string
+            enum:
+              - today
+              - this_week
+              - this_month
+              - last_month
+              - custom
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: location
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dashboard metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardMetrics"
+  /analytics/reports:
+    get:
+      summary: Generate analytics report (admin only)
+      operationId: generateReport
+      tags:
+        - Analytics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: report_type
+          in: query
+          schema:
+            type: string
+            enum:
+              - daily_sales
+              - weekly_performance
+              - monthly_summary
+              - product_performance
+              - feedback_summary
+              - training_progress
+              - inventory_alerts
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum:
+              - json
+              - csv
+              - pdf
+      responses:
+        "200":
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+            text/csv:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+  /settings:
+    get:
+      summary: Get system settings (admin only)
+      operationId: getSettings
+      tags:
+        - Settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: setting_group
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Settings retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SystemSetting"
+  /settings/{setting_id}:
+    put:
+      summary: Update system setting (admin only)
+      operationId: updateSetting
+      tags:
+        - Settings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: setting_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - setting_value
+              properties:
+                setting_value:
+                  type: string
+      responses:
+        "200":
+          description: Setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SystemSetting"
