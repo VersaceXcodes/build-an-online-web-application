@@ -11,6 +11,7 @@ import morgan from 'morgan';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
+import multer from 'multer';
 
 // Custom type definitions
 interface AuthRequest extends Request {
@@ -69,8 +70,10 @@ const io = new Server(httpServer, { cors: { origin: '*', credentials: true } });
 const isDist = path.basename(__dirname) === 'dist';
 const publicDir = isDist ? path.resolve(__dirname, '..', 'public') : path.resolve(__dirname, 'public');
 const storageDir = path.resolve(__dirname, 'storage');
+const uploadsDir = path.join(publicDir, 'uploads', 'social-icons');
 
 if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir, { recursive: true });
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
@@ -2350,6 +2353,52 @@ app.delete('/api/admin/social-links/:link_id', authenticateToken, requireRole(['
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to delete social media link', error, 'SOCIAL_LINK_DELETE_ERROR'));
+  }
+});
+
+// Configure multer for social media icon uploads
+const socialIconStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    const ext = path.extname(file.originalname);
+    cb(null, `social-icon-${uniqueSuffix}${ext}`);
+  }
+});
+
+const socialIconUpload = multer({
+  storage: socialIconStorage,
+  limits: {
+    fileSize: 2 * 1024 * 1024 // 2MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPEG, PNG, GIF, WEBP, and SVG images are allowed.'));
+    }
+  }
+});
+
+// Upload social media icon (admin only)
+app.post('/api/admin/upload-social-icon', authenticateToken, requireRole(['admin']), socialIconUpload.single('icon'), (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json(createErrorResponse('No file uploaded', null, 'NO_FILE_UPLOADED'));
+    }
+
+    const fileUrl = `/uploads/social-icons/${req.file.filename}`;
+    res.json({
+      success: true,
+      message: 'Icon uploaded successfully',
+      icon_url: fileUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    res.status(500).json(createErrorResponse('Failed to upload icon', error, 'ICON_UPLOAD_ERROR'));
   }
 });
 

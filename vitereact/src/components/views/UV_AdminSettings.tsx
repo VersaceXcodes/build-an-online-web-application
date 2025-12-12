@@ -21,7 +21,9 @@ import {
   Plus,
   Trash2,
   Eye,
-  EyeOff
+  EyeOff,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 // ============================================================================
@@ -172,6 +174,23 @@ const deleteSocialLink = async (token: string, link_id: string) => {
   return data;
 };
 
+const uploadSocialIcon = async (token: string, file: File) => {
+  const formData = new FormData();
+  formData.append('icon', file);
+  
+  const { data } = await axios.post(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/upload-social-icon`,
+    formData,
+    {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    }
+  );
+  return data;
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -195,6 +214,9 @@ const UV_AdminSettings: React.FC = () => {
   const [editingSocialLinkId, setEditingSocialLinkId] = useState<string | null>(null);
   const [editingSocialLinkData, setEditingSocialLinkData] = useState<Partial<SocialMediaLink>>({});
   const [showAddSocialLink, setShowAddSocialLink] = useState<boolean>(false);
+  const [uploadingIcon, setUploadingIcon] = useState<boolean>(false);
+  const [uploadedIconUrl, setUploadedIconUrl] = useState<string>('');
+  const [editUploadedIconUrl, setEditUploadedIconUrl] = useState<string>('');
   const [newSocialLinkData, setNewSocialLinkData] = useState<Partial<SocialMediaLink>>({
     icon_type: 'lucide',
     hover_color: '#3b82f6',
@@ -297,6 +319,7 @@ const UV_AdminSettings: React.FC = () => {
         display_order: 0,
         is_active: true
       });
+      setUploadedIconUrl('');
     },
     onError: (error: any) => {
       showToast('error', error.response?.data?.message || 'Failed to create social media link');
@@ -313,6 +336,7 @@ const UV_AdminSettings: React.FC = () => {
       showToast('success', 'Social media link updated successfully');
       setEditingSocialLinkId(null);
       setEditingSocialLinkData({});
+      setEditUploadedIconUrl('');
     },
     onError: (error: any) => {
       showToast('error', error.response?.data?.message || 'Failed to update social media link');
@@ -421,6 +445,44 @@ const UV_AdminSettings: React.FC = () => {
       return;
     }
     createSocialLinkMutation.mutate(newSocialLinkData);
+  };
+
+  const handleIconFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEditing: boolean = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('error', 'Invalid file type. Only JPEG, PNG, GIF, WEBP, and SVG images are allowed.');
+      return;
+    }
+
+    // Validate file size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      showToast('error', 'File size must be less than 2MB');
+      return;
+    }
+
+    setUploadingIcon(true);
+    try {
+      const result = await uploadSocialIcon(authToken!, file);
+      const iconUrl = result.icon_url;
+      
+      if (isEditing) {
+        setEditUploadedIconUrl(iconUrl);
+        handleSocialLinkFieldChange('icon_url', iconUrl);
+      } else {
+        setUploadedIconUrl(iconUrl);
+        handleNewSocialLinkFieldChange('icon_url', iconUrl);
+      }
+      
+      showToast('success', 'Icon uploaded successfully');
+    } catch (error: any) {
+      showToast('error', error.response?.data?.message || 'Failed to upload icon');
+    } finally {
+      setUploadingIcon(false);
+    }
   };
 
   const handleDeleteSocialLink = (link_id: string, platform_name: string) => {
@@ -1372,17 +1434,68 @@ const UV_AdminSettings: React.FC = () => {
                               />
                             </div>
                           ) : (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-900 mb-2">
-                                Icon URL
+                            <div className="space-y-3">
+                              <label className="block text-sm font-medium text-gray-900">
+                                Icon Image
                               </label>
-                              <input
-                                type="text"
-                                value={newSocialLinkData.icon_url || ''}
-                                onChange={(e) => handleNewSocialLinkFieldChange('icon_url', e.target.value)}
-                                placeholder="/assets/images/..."
-                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                              />
+                              
+                              {/* File Upload Button */}
+                              <div className="flex items-center gap-3">
+                                <label className="flex-1 cursor-pointer">
+                                  <div className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                                    <Upload className="w-4 h-4" />
+                                    <span className="text-sm font-medium">
+                                      {uploadingIcon ? 'Uploading...' : 'Upload Image'}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
+                                    onChange={(e) => handleIconFileUpload(e, false)}
+                                    disabled={uploadingIcon}
+                                    className="hidden"
+                                  />
+                                </label>
+                                
+                                {/* Preview */}
+                                {(uploadedIconUrl || newSocialLinkData.icon_url) && (
+                                  <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border-2 border-green-200 rounded-lg">
+                                    <ImageIcon className="w-4 h-4 text-green-600" />
+                                    <span className="text-xs text-green-700 font-medium">Uploaded</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Manual URL Input */}
+                              <div>
+                                <label className="block text-xs text-gray-600 mb-1">
+                                  Or enter URL manually:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newSocialLinkData.icon_url || ''}
+                                  onChange={(e) => handleNewSocialLinkFieldChange('icon_url', e.target.value)}
+                                  placeholder="/uploads/social-icons/..."
+                                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-sm"
+                                />
+                              </div>
+
+                              {/* Image Preview */}
+                              {newSocialLinkData.icon_url && (
+                                <div className="mt-2">
+                                  <p className="text-xs text-gray-600 mb-2">Preview:</p>
+                                  <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden">
+                                    <img 
+                                      src={newSocialLinkData.icon_url} 
+                                      alt="Icon preview" 
+                                      className="w-full h-full object-contain"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           )}
                           <div>
@@ -1564,17 +1677,68 @@ const UV_AdminSettings: React.FC = () => {
                                       />
                                     </div>
                                   ) : (
-                                    <div>
-                                      <label className="block text-sm font-medium text-gray-900 mb-2">
-                                        Icon URL
+                                    <div className="space-y-3">
+                                      <label className="block text-sm font-medium text-gray-900">
+                                        Icon Image
                                       </label>
-                                      <input
-                                        type="text"
-                                        value={currentData.icon_url || ''}
-                                        onChange={(e) => handleSocialLinkFieldChange('icon_url', e.target.value)}
-                                        placeholder="/assets/images/..."
-                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                      />
+                                      
+                                      {/* File Upload Button */}
+                                      <div className="flex items-center gap-3">
+                                        <label className="flex-1 cursor-pointer">
+                                          <div className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 border-2 border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                                            <Upload className="w-4 h-4" />
+                                            <span className="text-sm font-medium">
+                                              {uploadingIcon ? 'Uploading...' : 'Upload Image'}
+                                            </span>
+                                          </div>
+                                          <input
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/gif,image/webp,image/svg+xml"
+                                            onChange={(e) => handleIconFileUpload(e, true)}
+                                            disabled={uploadingIcon}
+                                            className="hidden"
+                                          />
+                                        </label>
+                                        
+                                        {/* Preview */}
+                                        {(editUploadedIconUrl || currentData.icon_url) && (
+                                          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 border-2 border-green-200 rounded-lg">
+                                            <ImageIcon className="w-4 h-4 text-green-600" />
+                                            <span className="text-xs text-green-700 font-medium">Uploaded</span>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Manual URL Input */}
+                                      <div>
+                                        <label className="block text-xs text-gray-600 mb-1">
+                                          Or enter URL manually:
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={currentData.icon_url || ''}
+                                          onChange={(e) => handleSocialLinkFieldChange('icon_url', e.target.value)}
+                                          placeholder="/uploads/social-icons/..."
+                                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 text-sm"
+                                        />
+                                      </div>
+
+                                      {/* Image Preview */}
+                                      {currentData.icon_url && (
+                                        <div className="mt-2">
+                                          <p className="text-xs text-gray-600 mb-2">Preview:</p>
+                                          <div className="flex items-center justify-center w-16 h-16 bg-gray-100 rounded-lg border-2 border-gray-200 overflow-hidden">
+                                            <img 
+                                              src={currentData.icon_url} 
+                                              alt="Icon preview" 
+                                              className="w-full h-full object-contain"
+                                              onError={(e) => {
+                                                (e.target as HTMLImageElement).style.display = 'none';
+                                              }}
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                   <div>
