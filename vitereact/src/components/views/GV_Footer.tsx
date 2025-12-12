@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
-import { Mail, Phone, Instagram, Facebook } from 'lucide-react';
+import { Mail, Phone, Instagram, Facebook, Twitter, Linkedin, Youtube } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 import tiktokLogo from '@/assets/images/tiktok-logo.png';
 
@@ -31,9 +32,30 @@ interface Location {
   updated_at: string;
 }
 
+interface SocialMediaLink {
+  link_id: string;
+  platform_name: string;
+  platform_url: string;
+  icon_type: 'lucide' | 'custom';
+  icon_name: string | null;
+  icon_url: string | null;
+  hover_color: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 const fetchLocations = async (): Promise<Location[]> => {
   const response = await axios.get<Location[]>(
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations`
+  );
+  return response.data;
+};
+
+const fetchSocialLinks = async (): Promise<SocialMediaLink[]> => {
+  const response = await axios.get<SocialMediaLink[]>(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/social-links`
   );
   return response.data;
 };
@@ -51,16 +73,23 @@ const GV_Footer: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Fetch social media links dynamically
+  const { data: socialLinks = [] } = useQuery({
+    queryKey: ['social-links'],
+    queryFn: fetchSocialLinks,
+    staleTime: 60000, // 1 minute
+    refetchOnWindowFocus: false,
+  });
+
   // Helper function to convert location name to URL slug
   const nameToSlug = (name: string): string => {
     return name.toLowerCase().trim().replace(/\s+/g, '-');
   };
 
-  // Social media URLs (hardcoded for MVP - will be admin-configurable later)
-  const social_media_urls = {
-    instagram: 'https://www.instagram.com/kakedesserts/?igsh=MXNyc2lhOTI1ZWliMQ%3D%3D',
-    facebook: 'https://facebook.com/kake',
-    tiktok: 'https://www.tiktok.com/@kakedesserts?lang=en'
+  // Helper function to get Lucide icon component by name
+  const getLucideIcon = (iconName: string) => {
+    const IconComponent = (LucideIcons as any)[iconName];
+    return IconComponent || LucideIcons.Link;
   };
 
   const currentYear = new Date().getFullYear();
@@ -157,40 +186,75 @@ const GV_Footer: React.FC = () => {
             <div className="space-y-4">
               <h3 className="text-white text-lg font-semibold mb-4">Follow Us</h3>
               <div className="flex items-center space-x-4">
-                {social_media_urls.instagram && (
-                  <a
-                    href={social_media_urls.instagram}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors duration-200 group"
-                    aria-label="Follow us on Instagram"
-                  >
-                    <Instagram className="h-5 w-5 text-gray-300 group-hover:text-white" />
-                  </a>
-                )}
-                
-                {social_media_urls.facebook && (
-                  <a
-                    href={social_media_urls.facebook}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors duration-200 group"
-                    aria-label="Follow us on Facebook"
-                  >
-                    <Facebook className="h-5 w-5 text-gray-300 group-hover:text-white" />
-                  </a>
-                )}
-                
-                {social_media_urls.tiktok && (
-                  <a
-                    href={social_media_urls.tiktok}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-pink-600 transition-colors duration-200 group p-1.5"
-                    aria-label="Follow us on TikTok"
-                  >
-                    <img src={tiktokLogo} alt="TikTok" className="w-full h-full object-contain" />
-                  </a>
+                {socialLinks.length > 0 ? (
+                  socialLinks.map((link) => {
+                    const IconComponent = link.icon_type === 'lucide' && link.icon_name 
+                      ? getLucideIcon(link.icon_name) 
+                      : null;
+                    
+                    return (
+                      <a
+                        key={link.link_id}
+                        href={link.platform_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center transition-colors duration-200 group"
+                        style={{
+                          ['--hover-color' as any]: link.hover_color
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = link.hover_color;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '';
+                        }}
+                        aria-label={`Follow us on ${link.platform_name}`}
+                      >
+                        {link.icon_type === 'lucide' && IconComponent ? (
+                          <IconComponent className="h-5 w-5 text-gray-300 group-hover:text-white" />
+                        ) : link.icon_url ? (
+                          <img 
+                            src={link.icon_url} 
+                            alt={link.platform_name} 
+                            className="w-full h-full object-contain p-1.5" 
+                          />
+                        ) : (
+                          <LucideIcons.Link className="h-5 w-5 text-gray-300 group-hover:text-white" />
+                        )}
+                      </a>
+                    );
+                  })
+                ) : (
+                  // Fallback to hardcoded links if database is empty
+                  <>
+                    <a
+                      href="https://www.instagram.com/kakedesserts/?igsh=MXNyc2lhOTI1ZWliMQ%3D%3D"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-purple-600 transition-colors duration-200 group"
+                      aria-label="Follow us on Instagram"
+                    >
+                      <Instagram className="h-5 w-5 text-gray-300 group-hover:text-white" />
+                    </a>
+                    <a
+                      href="https://facebook.com/kake"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors duration-200 group"
+                      aria-label="Follow us on Facebook"
+                    >
+                      <Facebook className="h-5 w-5 text-gray-300 group-hover:text-white" />
+                    </a>
+                    <a
+                      href="https://www.tiktok.com/@kakedesserts?lang=en"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-pink-600 transition-colors duration-200 group p-1.5"
+                      aria-label="Follow us on TikTok"
+                    >
+                      <img src={tiktokLogo} alt="TikTok" className="w-full h-full object-contain" />
+                    </a>
+                  </>
                 )}
               </div>
               

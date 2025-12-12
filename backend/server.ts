@@ -2194,6 +2194,165 @@ app.put('/api/settings/:setting_id', authenticateToken, requireRole(['admin']), 
   }
 });
 
+// ============================================================================
+// SOCIAL MEDIA LINKS ROUTES
+// ============================================================================
+
+// Get all social media links (public)
+app.get('/api/social-links', async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT * FROM social_media_links WHERE is_active = TRUE ORDER BY display_order ASC'
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch social media links', error, 'SOCIAL_LINKS_FETCH_ERROR'));
+  }
+});
+
+// Get all social media links including inactive (admin only)
+app.get('/api/admin/social-links', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'SELECT * FROM social_media_links ORDER BY display_order ASC'
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch social media links', error, 'SOCIAL_LINKS_FETCH_ERROR'));
+  }
+});
+
+// Create new social media link (admin only)
+app.post('/api/admin/social-links', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const {
+      platform_name,
+      platform_url,
+      icon_type,
+      icon_name,
+      icon_url,
+      hover_color,
+      display_order,
+      is_active
+    } = req.body;
+
+    const link_id = generateId('sml');
+    const now = new Date().toISOString();
+
+    const result = await client.query(
+      `INSERT INTO social_media_links (
+        link_id, platform_name, platform_url, icon_type, icon_name, icon_url,
+        hover_color, display_order, is_active, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [
+        link_id,
+        platform_name,
+        platform_url,
+        icon_type,
+        icon_name || null,
+        icon_url || null,
+        hover_color || '#3b82f6',
+        display_order || 0,
+        is_active !== undefined ? is_active : true,
+        now,
+        now
+      ]
+    );
+
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create social media link', error, 'SOCIAL_LINK_CREATE_ERROR'));
+  }
+});
+
+// Update social media link (admin only)
+app.put('/api/admin/social-links/:link_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const {
+      platform_name,
+      platform_url,
+      icon_type,
+      icon_name,
+      icon_url,
+      hover_color,
+      display_order,
+      is_active
+    } = req.body;
+
+    const now = new Date().toISOString();
+
+    const result = await client.query(
+      `UPDATE social_media_links SET
+        platform_name = COALESCE($1, platform_name),
+        platform_url = COALESCE($2, platform_url),
+        icon_type = COALESCE($3, icon_type),
+        icon_name = $4,
+        icon_url = $5,
+        hover_color = COALESCE($6, hover_color),
+        display_order = COALESCE($7, display_order),
+        is_active = COALESCE($8, is_active),
+        updated_at = $9
+      WHERE link_id = $10
+      RETURNING *`,
+      [
+        platform_name,
+        platform_url,
+        icon_type,
+        icon_name,
+        icon_url,
+        hover_color,
+        display_order,
+        is_active,
+        now,
+        req.params.link_id
+      ]
+    );
+
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Social media link not found', null, 'SOCIAL_LINK_NOT_FOUND'));
+    }
+
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update social media link', error, 'SOCIAL_LINK_UPDATE_ERROR'));
+  }
+});
+
+// Delete social media link (admin only)
+app.delete('/api/admin/social-links/:link_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM social_media_links WHERE link_id = $1 RETURNING *',
+      [req.params.link_id]
+    );
+
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Social media link not found', null, 'SOCIAL_LINK_NOT_FOUND'));
+    }
+
+    client.release();
+    res.json({ success: true, message: 'Social media link deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete social media link', error, 'SOCIAL_LINK_DELETE_ERROR'));
+  }
+});
+
 app.get('/api/users', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {

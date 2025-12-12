@@ -16,7 +16,12 @@ import {
   TrendingUp,
   Mail,
   Phone,
-  Percent
+  Percent,
+  Share2,
+  Plus,
+  Trash2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 
 // ============================================================================
@@ -56,7 +61,21 @@ interface Location {
   updated_at: string;
 }
 
-type SectionType = 'general' | 'locations' | 'loyalty_points' | 'orders' | 'notifications';
+interface SocialMediaLink {
+  link_id: string;
+  platform_name: string;
+  platform_url: string;
+  icon_type: 'lucide' | 'custom';
+  icon_name: string | null;
+  icon_url: string | null;
+  hover_color: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+type SectionType = 'general' | 'locations' | 'loyalty_points' | 'orders' | 'notifications' | 'social_media';
 
 // ============================================================================
 // API FUNCTIONS
@@ -111,6 +130,48 @@ const updateLocation = async (token: string, location_id: string, locationData: 
   return data as Location;
 };
 
+const fetchSocialLinks = async (token: string) => {
+  const { data } = await axios.get(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/social-links`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return data as SocialMediaLink[];
+};
+
+const createSocialLink = async (token: string, linkData: Partial<SocialMediaLink>) => {
+  const { data } = await axios.post(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/social-links`,
+    linkData,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return data as SocialMediaLink;
+};
+
+const updateSocialLink = async (token: string, link_id: string, linkData: Partial<SocialMediaLink>) => {
+  const { data } = await axios.put(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/social-links/${link_id}`,
+    linkData,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return data as SocialMediaLink;
+};
+
+const deleteSocialLink = async (token: string, link_id: string) => {
+  const { data } = await axios.delete(
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/social-links/${link_id}`,
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return data;
+};
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -131,6 +192,15 @@ const UV_AdminSettings: React.FC = () => {
   const [editingSettingValue, setEditingSettingValue] = useState<string>('');
   const [editingLocationId, setEditingLocationId] = useState<string | null>(null);
   const [editingLocationData, setEditingLocationData] = useState<Partial<Location>>({});
+  const [editingSocialLinkId, setEditingSocialLinkId] = useState<string | null>(null);
+  const [editingSocialLinkData, setEditingSocialLinkData] = useState<Partial<SocialMediaLink>>({});
+  const [showAddSocialLink, setShowAddSocialLink] = useState<boolean>(false);
+  const [newSocialLinkData, setNewSocialLinkData] = useState<Partial<SocialMediaLink>>({
+    icon_type: 'lucide',
+    hover_color: '#3b82f6',
+    display_order: 0,
+    is_active: true
+  });
 
   // React Query - Fetch system settings
   // Map section names to setting_group values in the database
@@ -168,6 +238,19 @@ const UV_AdminSettings: React.FC = () => {
     refetchOnWindowFocus: false
   });
 
+  // React Query - Fetch social media links
+  const {
+    data: socialLinks,
+    isLoading: loadingSocialLinks,
+    error: socialLinksError
+  } = useQuery({
+    queryKey: ['social-links-settings'],
+    queryFn: () => fetchSocialLinks(authToken!),
+    enabled: !!authToken && activeSection === 'social_media',
+    staleTime: 60000,
+    refetchOnWindowFocus: false
+  });
+
   // Mutation - Update setting
   const updateSettingMutation = useMutation({
     mutationFn: ({ setting_id, setting_value }: { setting_id: string; setting_value: string }) =>
@@ -197,6 +280,55 @@ const UV_AdminSettings: React.FC = () => {
     },
     onError: (error: any) => {
       showToast('error', error.response?.data?.message || 'Failed to update location');
+    }
+  });
+
+  // Mutation - Create social link
+  const createSocialLinkMutation = useMutation({
+    mutationFn: (linkData: Partial<SocialMediaLink>) => createSocialLink(authToken!, linkData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-links-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['social-links'] });
+      showToast('success', 'Social media link created successfully');
+      setShowAddSocialLink(false);
+      setNewSocialLinkData({
+        icon_type: 'lucide',
+        hover_color: '#3b82f6',
+        display_order: 0,
+        is_active: true
+      });
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to create social media link');
+    }
+  });
+
+  // Mutation - Update social link
+  const updateSocialLinkMutation = useMutation({
+    mutationFn: ({ link_id, linkData }: { link_id: string; linkData: Partial<SocialMediaLink> }) =>
+      updateSocialLink(authToken!, link_id, linkData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-links-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['social-links'] });
+      showToast('success', 'Social media link updated successfully');
+      setEditingSocialLinkId(null);
+      setEditingSocialLinkData({});
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to update social media link');
+    }
+  });
+
+  // Mutation - Delete social link
+  const deleteSocialLinkMutation = useMutation({
+    mutationFn: (link_id: string) => deleteSocialLink(authToken!, link_id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['social-links-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['social-links'] });
+      showToast('success', 'Social media link deleted successfully');
+    },
+    onError: (error: any) => {
+      showToast('error', error.response?.data?.message || 'Failed to delete social media link');
     }
   });
 
@@ -250,10 +382,58 @@ const UV_AdminSettings: React.FC = () => {
     }));
   };
 
+  // Handle social link edit
+  const startEditSocialLink = (link: SocialMediaLink) => {
+    setEditingSocialLinkId(link.link_id);
+    setEditingSocialLinkData(link);
+  };
+
+  const cancelEditSocialLink = () => {
+    setEditingSocialLinkId(null);
+    setEditingSocialLinkData({});
+  };
+
+  const saveSocialLink = () => {
+    if (!editingSocialLinkId) return;
+    updateSocialLinkMutation.mutate({
+      link_id: editingSocialLinkId,
+      linkData: editingSocialLinkData
+    });
+  };
+
+  const handleSocialLinkFieldChange = (field: keyof SocialMediaLink, value: any) => {
+    setEditingSocialLinkData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleNewSocialLinkFieldChange = (field: keyof SocialMediaLink, value: any) => {
+    setNewSocialLinkData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleCreateSocialLink = () => {
+    if (!newSocialLinkData.platform_name || !newSocialLinkData.platform_url) {
+      showToast('error', 'Platform name and URL are required');
+      return;
+    }
+    createSocialLinkMutation.mutate(newSocialLinkData);
+  };
+
+  const handleDeleteSocialLink = (link_id: string, platform_name: string) => {
+    if (window.confirm(`Are you sure you want to delete ${platform_name}?`)) {
+      deleteSocialLinkMutation.mutate(link_id);
+    }
+  };
+
   // Section navigation items
   const sections: Array<{ id: SectionType; label: string; icon: any }> = [
     { id: 'general', label: 'General', icon: Settings },
     { id: 'locations', label: 'Locations', icon: MapPin },
+    { id: 'social_media', label: 'Social Media', icon: Share2 },
     { id: 'loyalty_points', label: 'Loyalty Points', icon: TrendingUp },
     { id: 'orders', label: 'Orders', icon: Clock },
     { id: 'notifications', label: 'Notifications', icon: Bell }
@@ -1078,6 +1258,414 @@ const UV_AdminSettings: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* Social Media Settings Section */}
+          {activeSection === 'social_media' && (
+            <div className="space-y-6">
+              {loadingSocialLinks ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading social media links...</p>
+                  </div>
+                </div>
+              ) : socialLinksError ? (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                    <div>
+                      <h3 className="text-sm font-medium text-red-800">Error Loading Social Links</h3>
+                      <p className="text-sm text-red-700 mt-1">
+                        {(socialLinksError as any)?.response?.data?.message || 'Failed to load social media links'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Header with Add Button */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900">Follow Us Links</h2>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Manage social media links displayed in the footer
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowAddSocialLink(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Social Link
+                    </button>
+                  </div>
+
+                  {/* Add New Social Link Form */}
+                  {showAddSocialLink && (
+                    <div className="bg-white rounded-xl shadow-sm border-2 border-blue-200 overflow-hidden">
+                      <div className="px-6 py-5 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <Plus className="w-5 h-5 text-blue-600" />
+                            Add New Social Media Link
+                          </h3>
+                          <button
+                            onClick={() => setShowAddSocialLink(false)}
+                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-6 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Platform Name *
+                            </label>
+                            <input
+                              type="text"
+                              value={newSocialLinkData.platform_name || ''}
+                              onChange={(e) => handleNewSocialLinkFieldChange('platform_name', e.target.value)}
+                              placeholder="e.g., Instagram, Twitter"
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Platform URL *
+                            </label>
+                            <input
+                              type="url"
+                              value={newSocialLinkData.platform_url || ''}
+                              onChange={(e) => handleNewSocialLinkFieldChange('platform_url', e.target.value)}
+                              placeholder="https://..."
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Icon Type
+                            </label>
+                            <select
+                              value={newSocialLinkData.icon_type || 'lucide'}
+                              onChange={(e) => handleNewSocialLinkFieldChange('icon_type', e.target.value as 'lucide' | 'custom')}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            >
+                              <option value="lucide">Lucide Icon</option>
+                              <option value="custom">Custom Image</option>
+                            </select>
+                          </div>
+                          {newSocialLinkData.icon_type === 'lucide' ? (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Icon Name
+                              </label>
+                              <input
+                                type="text"
+                                value={newSocialLinkData.icon_name || ''}
+                                onChange={(e) => handleNewSocialLinkFieldChange('icon_name', e.target.value)}
+                                placeholder="e.g., Instagram, Facebook, Twitter"
+                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                              />
+                            </div>
+                          ) : (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-900 mb-2">
+                                Icon URL
+                              </label>
+                              <input
+                                type="text"
+                                value={newSocialLinkData.icon_url || ''}
+                                onChange={(e) => handleNewSocialLinkFieldChange('icon_url', e.target.value)}
+                                placeholder="/assets/images/..."
+                                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                              />
+                            </div>
+                          )}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Hover Color (Hex)
+                            </label>
+                            <input
+                              type="text"
+                              value={newSocialLinkData.hover_color || '#3b82f6'}
+                              onChange={(e) => handleNewSocialLinkFieldChange('hover_color', e.target.value)}
+                              placeholder="#3b82f6"
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Display Order
+                            </label>
+                            <input
+                              type="number"
+                              value={newSocialLinkData.display_order || 0}
+                              onChange={(e) => handleNewSocialLinkFieldChange('display_order', parseInt(e.target.value))}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="new-is-active"
+                            checked={newSocialLinkData.is_active !== false}
+                            onChange={(e) => handleNewSocialLinkFieldChange('is_active', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <label htmlFor="new-is-active" className="text-sm font-medium text-gray-900">
+                            Active (visible in footer)
+                          </label>
+                        </div>
+                        <div className="flex gap-3 pt-4">
+                          <button
+                            onClick={handleCreateSocialLink}
+                            disabled={createSocialLinkMutation.isPending}
+                            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                          >
+                            {createSocialLinkMutation.isPending ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                Creating...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="w-4 h-4" />
+                                Create Link
+                              </>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => setShowAddSocialLink(false)}
+                            disabled={createSocialLinkMutation.isPending}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Social Links List */}
+                  <div className="space-y-4">
+                    {socialLinks?.map((link) => {
+                      const isEditing = editingSocialLinkId === link.link_id;
+                      const currentData = isEditing ? editingSocialLinkData : link;
+
+                      return (
+                        <div
+                          key={link.link_id}
+                          className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+                        >
+                          <div className="px-6 py-4">
+                            {!isEditing ? (
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-lg">
+                                    <Share2 className="w-6 h-6 text-gray-600" />
+                                  </div>
+                                  <div>
+                                    <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                      {link.platform_name}
+                                      {link.is_active ? (
+                                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full flex items-center gap-1">
+                                          <Eye className="w-3 h-3" />
+                                          Active
+                                        </span>
+                                      ) : (
+                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full flex items-center gap-1">
+                                          <EyeOff className="w-3 h-3" />
+                                          Hidden
+                                        </span>
+                                      )}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mt-1">
+                                      <a href={link.platform_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        {link.platform_url}
+                                      </a>
+                                    </p>
+                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                      <span>Order: {link.display_order}</span>
+                                      <span>Icon: {link.icon_type === 'lucide' ? link.icon_name : 'Custom'}</span>
+                                      <span>Color: {link.hover_color}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => startEditSocialLink(link)}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+                                  >
+                                    <Edit className="w-4 h-4" />
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteSocialLink(link.link_id, link.platform_name)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                  >
+                                    <Trash2 className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Platform Name
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={currentData.platform_name || ''}
+                                      onChange={(e) => handleSocialLinkFieldChange('platform_name', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Platform URL
+                                    </label>
+                                    <input
+                                      type="url"
+                                      value={currentData.platform_url || ''}
+                                      onChange={(e) => handleSocialLinkFieldChange('platform_url', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Icon Type
+                                    </label>
+                                    <select
+                                      value={currentData.icon_type || 'lucide'}
+                                      onChange={(e) => handleSocialLinkFieldChange('icon_type', e.target.value as 'lucide' | 'custom')}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    >
+                                      <option value="lucide">Lucide Icon</option>
+                                      <option value="custom">Custom Image</option>
+                                    </select>
+                                  </div>
+                                  {currentData.icon_type === 'lucide' ? (
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                                        Icon Name
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={currentData.icon_name || ''}
+                                        onChange={(e) => handleSocialLinkFieldChange('icon_name', e.target.value)}
+                                        placeholder="e.g., Instagram, Facebook, Twitter"
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                                        Icon URL
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={currentData.icon_url || ''}
+                                        onChange={(e) => handleSocialLinkFieldChange('icon_url', e.target.value)}
+                                        placeholder="/assets/images/..."
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Hover Color (Hex)
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={currentData.hover_color || '#3b82f6'}
+                                      onChange={(e) => handleSocialLinkFieldChange('hover_color', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Display Order
+                                    </label>
+                                    <input
+                                      type="number"
+                                      value={currentData.display_order || 0}
+                                      onChange={(e) => handleSocialLinkFieldChange('display_order', parseInt(e.target.value))}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="checkbox"
+                                    id={`is-active-${link.link_id}`}
+                                    checked={currentData.is_active !== false}
+                                    onChange={(e) => handleSocialLinkFieldChange('is_active', e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                  />
+                                  <label htmlFor={`is-active-${link.link_id}`} className="text-sm font-medium text-gray-900">
+                                    Active (visible in footer)
+                                  </label>
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                  <button
+                                    onClick={saveSocialLink}
+                                    disabled={updateSocialLinkMutation.isPending}
+                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    {updateSocialLinkMutation.isPending ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        Saving...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Check className="w-4 h-4" />
+                                        Save Changes
+                                      </>
+                                    )}
+                                  </button>
+                                  <button
+                                    onClick={cancelEditSocialLink}
+                                    disabled={updateSocialLinkMutation.isPending}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {socialLinks?.length === 0 && (
+                      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="p-12 text-center">
+                          <Share2 className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                          <h3 className="text-lg font-medium text-gray-900 mb-2">No Social Links Yet</h3>
+                          <p className="text-sm text-gray-600 mb-6">
+                            Add your first social media link to display in the footer.
+                          </p>
+                          <button
+                            onClick={() => setShowAddSocialLink(true)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                          >
+                            <Plus className="w-4 h-4" />
+                            Add Social Link
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
 
