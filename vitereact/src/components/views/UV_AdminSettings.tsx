@@ -620,8 +620,16 @@ const UV_AdminSettings: React.FC = () => {
 
         {/* Section Navigation */}
         <div className="bg-white border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <nav className="flex space-x-8" aria-label="Settings sections">
+          <div className="max-w-7xl mx-auto">
+            <nav 
+              className="flex overflow-x-auto gap-6 px-4 sm:px-6 lg:px-8 scrollbar-hide" 
+              aria-label="Settings sections"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
               {sections.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
@@ -630,10 +638,10 @@ const UV_AdminSettings: React.FC = () => {
                     key={section.id}
                     onClick={() => changeSection(section.id)}
                     className={`
-                      flex items-center gap-2 px-3 py-4 border-b-2 font-medium text-sm transition-colors
+                      flex items-center gap-2 px-4 py-4 border-b-2 font-medium text-sm transition-all whitespace-nowrap flex-shrink-0
                       ${isActive 
-                        ? 'border-blue-600 text-blue-600' 
-                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                        ? 'border-blue-600 text-blue-600 font-bold' 
+                        : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300 opacity-60'
                       }
                     `}
                   >
