@@ -17,7 +17,8 @@ import {
   Clock,
   ExternalLink,
   Link as LinkIcon,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 
 // ============================================================================
@@ -95,6 +96,11 @@ const UV_AdminEvents: React.FC = () => {
     is_visible: true, // Default to visible so events appear on landing page immediately
     cta_button_action: 'internal_link'
   });
+  const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>('url');
+  const [editImageUploadMode, setEditImageUploadMode] = useState<'url' | 'upload'>('url');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [editUploadedImagePreview, setEditUploadedImagePreview] = useState<string | null>(null);
 
   // React Query - Fetch events
   const {
@@ -121,6 +127,8 @@ const UV_AdminEvents: React.FC = () => {
         is_visible: true, // Reset to visible default
         cta_button_action: 'internal_link'
       });
+      setUploadedImagePreview(null);
+      setImageUploadMode('url');
     },
     onError: (error: any) => {
       showToast('error', error.response?.data?.message || 'Failed to create event');
@@ -137,6 +145,8 @@ const UV_AdminEvents: React.FC = () => {
       showToast('success', 'Event updated successfully');
       setEditingEventId(null);
       setEditingEventData({});
+      setEditUploadedImagePreview(null);
+      setEditImageUploadMode('url');
     },
     onError: (error: any) => {
       showToast('error', error.response?.data?.message || 'Failed to update event');
@@ -147,11 +157,15 @@ const UV_AdminEvents: React.FC = () => {
   const startEditEvent = (event: StallEvent) => {
     setEditingEventId(event.event_id);
     setEditingEventData(event);
+    setEditUploadedImagePreview(null);
+    setEditImageUploadMode('url');
   };
 
   const cancelEditEvent = () => {
     setEditingEventId(null);
     setEditingEventData({});
+    setEditUploadedImagePreview(null);
+    setEditImageUploadMode('url');
   };
 
   const saveEvent = () => {
@@ -191,6 +205,57 @@ const UV_AdminEvents: React.FC = () => {
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleImageUpload = async (file: File, isEditMode: boolean = false) => {
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      showToast('error', 'Invalid file type. Only JPEG, PNG, GIF, and WEBP images are allowed.');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('error', 'File size must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/admin/upload-event-image`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+
+      const imageUrl = response.data.image_url;
+      
+      if (isEditMode) {
+        setEditUploadedImagePreview(imageUrl);
+        handleEventFieldChange('event_image_url', imageUrl);
+      } else {
+        setUploadedImagePreview(imageUrl);
+        handleNewEventFieldChange('event_image_url', imageUrl);
+      }
+
+      showToast('success', 'Image uploaded successfully');
+    } catch (error: any) {
+      showToast('error', error.response?.data?.message || 'Failed to upload image');
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
 
   return (
@@ -286,7 +351,11 @@ const UV_AdminEvents: React.FC = () => {
                         Create New Event Alert
                       </h3>
                       <button
-                        onClick={() => setShowAddEvent(false)}
+                        onClick={() => {
+                          setShowAddEvent(false);
+                          setUploadedImagePreview(null);
+                          setImageUploadMode('url');
+                        }}
                         className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                       >
                         <X className="w-5 h-5" />
@@ -356,15 +425,83 @@ const UV_AdminEvents: React.FC = () => {
                       </div>
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-900 mb-2">
-                          Event Image URL
+                          Event Image
                         </label>
-                        <input
-                          type="text"
-                          value={newEventData.event_image_url || ''}
-                          onChange={(e) => handleNewEventFieldChange('event_image_url', e.target.value)}
-                          placeholder="https://..."
-                          className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                        />
+                        
+                        {/* Toggle between URL and Upload */}
+                        <div className="flex gap-2 mb-3">
+                          <button
+                            type="button"
+                            onClick={() => setImageUploadMode('url')}
+                            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                              imageUploadMode === 'url'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <LinkIcon className="w-4 h-4" />
+                            URL
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setImageUploadMode('upload')}
+                            className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                              imageUploadMode === 'upload'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            <Upload className="w-4 h-4" />
+                            Upload
+                          </button>
+                        </div>
+
+                        {/* URL Input */}
+                        {imageUploadMode === 'url' && (
+                          <input
+                            type="text"
+                            value={newEventData.event_image_url || ''}
+                            onChange={(e) => handleNewEventFieldChange('event_image_url', e.target.value)}
+                            placeholder="https://..."
+                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                          />
+                        )}
+
+                        {/* File Upload */}
+                        {imageUploadMode === 'upload' && (
+                          <div>
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleImageUpload(file, false);
+                              }}
+                              disabled={isUploadingImage}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                            />
+                            {isUploadingImage && (
+                              <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                Uploading...
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Image Preview */}
+                        {(uploadedImagePreview || newEventData.event_image_url) && (
+                          <div className="mt-3">
+                            <img
+                              src={uploadedImagePreview || newEventData.event_image_url}
+                              alt="Event preview"
+                              className="max-w-xs h-32 object-cover rounded-lg border-2 border-gray-200"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -435,7 +572,11 @@ const UV_AdminEvents: React.FC = () => {
                         )}
                       </button>
                       <button
-                        onClick={() => setShowAddEvent(false)}
+                        onClick={() => {
+                          setShowAddEvent(false);
+                          setUploadedImagePreview(null);
+                          setImageUploadMode('url');
+                        }}
                         disabled={createEventMutation.isPending}
                         className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:opacity-50 transition-colors"
                       >
@@ -585,14 +726,83 @@ const UV_AdminEvents: React.FC = () => {
                               </div>
                               <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                                  Event Image URL
+                                  Event Image
                                 </label>
-                                <input
-                                  type="text"
-                                  value={currentData.event_image_url || ''}
-                                  onChange={(e) => handleEventFieldChange('event_image_url', e.target.value)}
-                                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                />
+                                
+                                {/* Toggle between URL and Upload */}
+                                <div className="flex gap-2 mb-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditImageUploadMode('url')}
+                                    className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                                      editImageUploadMode === 'url'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    <LinkIcon className="w-4 h-4" />
+                                    URL
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditImageUploadMode('upload')}
+                                    className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${
+                                      editImageUploadMode === 'upload'
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    <Upload className="w-4 h-4" />
+                                    Upload
+                                  </button>
+                                </div>
+
+                                {/* URL Input */}
+                                {editImageUploadMode === 'url' && (
+                                  <input
+                                    type="text"
+                                    value={currentData.event_image_url || ''}
+                                    onChange={(e) => handleEventFieldChange('event_image_url', e.target.value)}
+                                    placeholder="https://..."
+                                    className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                  />
+                                )}
+
+                                {/* File Upload */}
+                                {editImageUploadMode === 'upload' && (
+                                  <div>
+                                    <input
+                                      type="file"
+                                      accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) handleImageUpload(file, true);
+                                      }}
+                                      disabled={isUploadingImage}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+                                    />
+                                    {isUploadingImage && (
+                                      <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                        Uploading...
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+
+                                {/* Image Preview */}
+                                {(editUploadedImagePreview || currentData.event_image_url) && (
+                                  <div className="mt-3">
+                                    <img
+                                      src={editUploadedImagePreview || currentData.event_image_url}
+                                      alt="Event preview"
+                                      className="max-w-xs h-32 object-cover rounded-lg border-2 border-gray-200"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                )}
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-900 mb-2">
