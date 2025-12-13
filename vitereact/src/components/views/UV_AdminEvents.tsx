@@ -92,7 +92,7 @@ const UV_AdminEvents: React.FC = () => {
   const [editingEventData, setEditingEventData] = useState<Partial<StallEvent>>({});
   const [showAddEvent, setShowAddEvent] = useState<boolean>(false);
   const [newEventData, setNewEventData] = useState<Partial<StallEvent>>({
-    is_visible: false,
+    is_visible: true, // Default to visible so events appear on landing page immediately
     cta_button_action: 'internal_link'
   });
 
@@ -115,10 +115,10 @@ const UV_AdminEvents: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-stall-events'] });
       queryClient.invalidateQueries({ queryKey: ['stall-event'] });
-      showToast('success', 'Event created successfully');
+      showToast('success', 'Event created successfully and is now visible on the landing page');
       setShowAddEvent(false);
       setNewEventData({
-        is_visible: false,
+        is_visible: true, // Reset to visible default
         cta_button_action: 'internal_link'
       });
     },
@@ -246,12 +246,25 @@ const UV_AdminEvents: React.FC = () => {
           {/* Content */}
           {!loadingEvents && !eventsError && (
             <div className="space-y-6">
+              {/* Info Banner */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h3 className="text-sm font-semibold text-blue-900 mb-1">How Event Alerts Work</h3>
+                    <p className="text-sm text-blue-800">
+                      Event alerts are displayed as prominent special cards on the landing page. Make sure to check the "Make visible on landing page" checkbox when creating events so customers can see them.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Header with Add Button */}
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900">Event Alerts</h2>
                   <p className="text-sm text-gray-600 mt-1">
-                    These alerts appear as special cards on the homepage
+                    These alerts appear as special cards on the homepage when marked as visible
                   </p>
                 </div>
                 <button
@@ -392,15 +405,15 @@ const UV_AdminEvents: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <input
+                       <input
                         type="checkbox"
                         id="new-is-visible"
-                        checked={newEventData.is_visible !== false}
+                        checked={newEventData.is_visible === true}
                         onChange={(e) => handleNewEventFieldChange('is_visible', e.target.checked)}
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <label htmlFor="new-is-visible" className="text-sm font-medium text-gray-900">
-                        Make visible on landing page
+                        <span className="text-blue-600 font-semibold">✓</span> Make visible on landing page
                       </label>
                     </div>
                     <div className="flex gap-3 pt-4">
@@ -621,12 +634,12 @@ const UV_AdminEvents: React.FC = () => {
                               <input
                                 type="checkbox"
                                 id={`is-visible-${event.event_id}`}
-                                checked={currentData.is_visible !== false}
+                                checked={currentData.is_visible === true}
                                 onChange={(e) => handleEventFieldChange('is_visible', e.target.checked)}
                                 className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                               />
                               <label htmlFor={`is-visible-${event.event_id}`} className="text-sm font-medium text-gray-900">
-                                Make visible on landing page
+                                <span className="text-blue-600 font-semibold">✓</span> Make visible on landing page
                               </label>
                             </div>
                             <div className="flex gap-3 pt-4">

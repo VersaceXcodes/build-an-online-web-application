@@ -138,8 +138,8 @@ const UV_Landing: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Derived state
-  const show_event_section = active_event?.is_visible || false;
+  // Derived state - Show event section if there's an active visible event
+  const show_event_section = !!active_event && active_event.is_visible;
 
   // Helper function to convert location name to URL slug
   // This MUST match the same logic in UV_LocationInternal and UV_Menu
