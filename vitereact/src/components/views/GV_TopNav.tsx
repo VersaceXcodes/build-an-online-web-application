@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare, Cookie } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare, Cookie, FileText } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_TopNav: React.FC = () => {
