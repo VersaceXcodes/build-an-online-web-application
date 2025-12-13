@@ -209,7 +209,7 @@ const UV_Login: React.FC = () => {
               {/* Guest Checkout Button */}
               <div className="mb-6">
                 <Link
-                  to="/checkout/payment"
+                  to="/checkout"
                   className="
                     w-full flex justify-center items-center
                     px-6 py-3 
