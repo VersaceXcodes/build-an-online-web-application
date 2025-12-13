@@ -652,6 +652,246 @@ app.delete('/api/products/:product_id', authenticateToken, requireRole(['admin']
   }
 });
 
+// ============================================
+// TOPPINGS ENDPOINTS
+// ============================================
+
+// Get all toppings
+app.get('/api/toppings', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { topping_type, is_available } = req.query;
+    const limit = parseInt(String(req.query.limit || 100));
+    const offset = parseInt(String(req.query.offset || 0));
+    
+    let query = 'SELECT * FROM toppings WHERE 1=1';
+    const values = [];
+    let idx = 1;
+    
+    if (topping_type) {
+      query += ` AND topping_type = $${idx++}`;
+      values.push(topping_type);
+    }
+    
+    if (is_available !== undefined) {
+      query += ` AND is_available = $${idx++}`;
+      values.push(String(is_available) === 'true');
+    }
+    
+    query += ` ORDER BY display_order ASC, topping_name ASC LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
+    
+    const result = await client.query(query, values);
+    client.release();
+    res.json(result.rows.map(t => ({ ...t, price: parseFloat(t.price) })));
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch toppings', error, 'TOPPINGS_FETCH_ERROR'));
+  }
+});
+
+// Get single topping
+app.get('/api/toppings/:topping_id', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM toppings WHERE topping_id = $1', [req.params.topping_id]);
+    client.release();
+    if (result.rows.length === 0) return res.status(404).json(createErrorResponse('Topping not found', null, 'TOPPING_NOT_FOUND'));
+    const t = result.rows[0];
+    res.json({ ...t, price: parseFloat(t.price) });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch topping', error, 'TOPPING_FETCH_ERROR'));
+  }
+});
+
+// Create topping (admin only)
+app.post('/api/toppings', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { topping_name, topping_type, price = 0, is_available = true, display_order = 0 } = req.body;
+    const topping_id = generateId('top');
+    const now = new Date().toISOString();
+    
+    await client.query(
+      'INSERT INTO toppings (topping_id, topping_name, topping_type, price, is_available, display_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+      [topping_id, topping_name, topping_type, price, is_available, display_order, now, now]
+    );
+    
+    const result = await client.query('SELECT * FROM toppings WHERE topping_id = $1', [topping_id]);
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create topping', error, 'TOPPING_CREATE_ERROR'));
+  }
+});
+
+// Update topping (admin only)
+app.put('/api/toppings/:topping_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    
+    const fields = ['topping_name', 'topping_type', 'price', 'is_available', 'display_order'];
+    fields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = $${idx++}`);
+        values.push(req.body[field]);
+      }
+    });
+    
+    if (updates.length === 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
+    }
+    
+    const now = new Date().toISOString();
+    updates.push(`updated_at = $${idx++}`);
+    values.push(now);
+    values.push(req.params.topping_id);
+    
+    await client.query(`UPDATE toppings SET ${updates.join(', ')} WHERE topping_id = $${idx}`, values);
+    const result = await client.query('SELECT * FROM toppings WHERE topping_id = $1', [req.params.topping_id]);
+    client.release();
+    
+    if (result.rows.length === 0) return res.status(404).json(createErrorResponse('Topping not found', null, 'TOPPING_NOT_FOUND'));
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update topping', error, 'TOPPING_UPDATE_ERROR'));
+  }
+});
+
+// Delete topping (admin only)
+app.delete('/api/toppings/:topping_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('DELETE FROM toppings WHERE topping_id = $1', [req.params.topping_id]);
+    client.release();
+    res.json({ success: true, message: 'Topping deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete topping', error, 'TOPPING_DELETE_ERROR'));
+  }
+});
+
+// ============================================
+// PRODUCT TOPPINGS ENDPOINTS
+// ============================================
+
+// Get toppings for a product
+app.get('/api/product-toppings', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { product_id, topping_id } = req.query;
+    let query = 'SELECT pt.*, t.topping_name, t.topping_type, t.price, t.is_available FROM product_toppings pt INNER JOIN toppings t ON pt.topping_id = t.topping_id WHERE 1=1';
+    const values = [];
+    let idx = 1;
+    
+    if (product_id) {
+      query += ` AND pt.product_id = $${idx++}`;
+      values.push(product_id);
+    }
+    
+    if (topping_id) {
+      query += ` AND pt.topping_id = $${idx++}`;
+      values.push(topping_id);
+    }
+    
+    query += ' ORDER BY t.display_order ASC, t.topping_name ASC';
+    
+    const result = await client.query(query, values);
+    client.release();
+    res.json(result.rows.map(pt => ({ ...pt, price: parseFloat(pt.price) })));
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch product toppings', error, 'PRODUCT_TOPPINGS_FETCH_ERROR'));
+  }
+});
+
+// Assign topping to product (admin only)
+app.post('/api/product-toppings', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { product_id, topping_id, is_default = false } = req.body;
+    const assignment_id = generateId('pta');
+    const now = new Date().toISOString();
+    
+    // Check if already assigned
+    const existing = await client.query('SELECT assignment_id FROM product_toppings WHERE product_id = $1 AND topping_id = $2', [product_id, topping_id]);
+    if (existing.rows.length > 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('Topping already assigned to this product', null, 'DUPLICATE_ASSIGNMENT'));
+    }
+    
+    await client.query(
+      'INSERT INTO product_toppings (assignment_id, product_id, topping_id, is_default, assigned_at) VALUES ($1, $2, $3, $4, $5)',
+      [assignment_id, product_id, topping_id, is_default, now]
+    );
+    
+    const result = await client.query(
+      'SELECT pt.*, t.topping_name, t.topping_type, t.price FROM product_toppings pt INNER JOIN toppings t ON pt.topping_id = t.topping_id WHERE pt.assignment_id = $1',
+      [assignment_id]
+    );
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to assign topping', error, 'PRODUCT_TOPPING_CREATE_ERROR'));
+  }
+});
+
+// Remove topping from product (admin only)
+app.delete('/api/product-toppings/:assignment_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('DELETE FROM product_toppings WHERE assignment_id = $1', [req.params.assignment_id]);
+    client.release();
+    res.json({ success: true, message: 'Topping removed from product successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to remove topping', error, 'PRODUCT_TOPPING_DELETE_ERROR'));
+  }
+});
+
+// Bulk assign toppings to product (admin only)
+app.post('/api/products/:product_id/assign-toppings', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { topping_ids } = req.body; // Array of topping IDs
+    const { product_id } = req.params;
+    const now = new Date().toISOString();
+    
+    // Delete existing assignments
+    await client.query('DELETE FROM product_toppings WHERE product_id = $1', [product_id]);
+    
+    // Insert new assignments
+    if (topping_ids && Array.isArray(topping_ids) && topping_ids.length > 0) {
+      for (const topping_id of topping_ids) {
+        const assignment_id = generateId('pta');
+        await client.query(
+          'INSERT INTO product_toppings (assignment_id, product_id, topping_id, is_default, assigned_at) VALUES ($1, $2, $3, $4, $5)',
+          [assignment_id, product_id, topping_id, false, now]
+        );
+      }
+    }
+    
+    // Return updated assignments
+    const result = await client.query(
+      'SELECT pt.*, t.topping_name, t.topping_type, t.price FROM product_toppings pt INNER JOIN toppings t ON pt.topping_id = t.topping_id WHERE pt.product_id = $1 ORDER BY t.display_order ASC',
+      [product_id]
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to assign toppings', error, 'BULK_ASSIGN_ERROR'));
+  }
+});
+
 app.post('/api/orders', async (req, res) => {
   const client = await pool.connect();
   try {

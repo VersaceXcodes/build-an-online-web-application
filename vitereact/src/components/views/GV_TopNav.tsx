@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare, Cookie } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_TopNav: React.FC = () => {
@@ -326,6 +326,15 @@ const GV_TopNav: React.FC = () => {
                 >
                   <Package className="w-4 h-4 mr-3" />
                   Products
+                </Link>
+                
+                <Link
+                  to="/admin/toppings"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Cookie className="w-4 h-4 mr-3" />
+                  Toppings
                 </Link>
                 
                 <Link

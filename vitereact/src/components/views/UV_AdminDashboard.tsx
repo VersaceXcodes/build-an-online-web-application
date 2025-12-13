@@ -14,7 +14,8 @@ import {
   Users,
   Package,
   Calendar,
-  MessageSquare
+  MessageSquare,
+  Cookie
 } from 'lucide-react';
 
 // ============================================================================
@@ -643,6 +644,14 @@ const UV_AdminDashboard: React.FC = () => {
               >
                 <Package className="h-8 w-8 text-green-600 mb-2" />
                 <span className="text-sm font-medium text-green-900">Products</span>
+              </Link>
+
+              <Link
+                to="/admin/toppings"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg hover:from-amber-100 hover:to-amber-200 transition-all"
+              >
+                <Cookie className="h-8 w-8 text-amber-600 mb-2" />
+                <span className="text-sm font-medium text-amber-900">Toppings</span>
               </Link>
 
               <Link

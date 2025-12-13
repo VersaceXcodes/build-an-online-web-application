@@ -1625,3 +1625,101 @@ export type UpdateUnifiedFeedbackInput = z.infer<typeof updateUnifiedFeedbackInp
 export type SearchUnifiedFeedbackInput = z.infer<typeof searchUnifiedFeedbackInputSchema>;
 export type FeedbackTimeline = z.infer<typeof feedbackTimelineSchema>;
 export type CreateFeedbackTimelineInput = z.infer<typeof createFeedbackTimelineInputSchema>;
+
+// ============================================
+// TOPPINGS SCHEMAS
+// ============================================
+
+export const toppingSchema = z.object({
+  topping_id: z.string(),
+  topping_name: z.string(),
+  topping_type: z.enum(['topping', 'sauce']),
+  price: z.number(),
+  is_available: z.boolean(),
+  display_order: z.number(),
+  created_at: z.string(),
+  updated_at: z.string()
+});
+
+export const createToppingInputSchema = z.object({
+  topping_name: z.string().min(1).max(255),
+  topping_type: z.enum(['topping', 'sauce']),
+  price: z.number().nonnegative().default(0),
+  is_available: z.boolean().default(true),
+  display_order: z.number().int().nonnegative().default(0)
+});
+
+export const updateToppingInputSchema = z.object({
+  topping_id: z.string(),
+  topping_name: z.string().min(1).max(255).optional(),
+  topping_type: z.enum(['topping', 'sauce']).optional(),
+  price: z.number().nonnegative().optional(),
+  is_available: z.boolean().optional(),
+  display_order: z.number().int().nonnegative().optional()
+});
+
+export const searchToppingsInputSchema = z.object({
+  topping_type: z.enum(['topping', 'sauce']).optional(),
+  is_available: z.boolean().optional(),
+  limit: z.number().int().positive().default(100),
+  offset: z.number().int().nonnegative().default(0)
+});
+
+export type Topping = z.infer<typeof toppingSchema>;
+export type CreateToppingInput = z.infer<typeof createToppingInputSchema>;
+export type UpdateToppingInput = z.infer<typeof updateToppingInputSchema>;
+export type SearchToppingsInput = z.infer<typeof searchToppingsInputSchema>;
+
+// ============================================
+// PRODUCT TOPPINGS SCHEMAS
+// ============================================
+
+export const productToppingSchema = z.object({
+  assignment_id: z.string(),
+  product_id: z.string(),
+  topping_id: z.string(),
+  is_default: z.boolean(),
+  assigned_at: z.string()
+});
+
+export const createProductToppingInputSchema = z.object({
+  product_id: z.string(),
+  topping_id: z.string(),
+  is_default: z.boolean().default(false)
+});
+
+export const searchProductToppingsInputSchema = z.object({
+  product_id: z.string().optional(),
+  topping_id: z.string().optional(),
+  limit: z.number().int().positive().default(100),
+  offset: z.number().int().nonnegative().default(0)
+});
+
+export type ProductTopping = z.infer<typeof productToppingSchema>;
+export type CreateProductToppingInput = z.infer<typeof createProductToppingInputSchema>;
+export type SearchProductToppingsInput = z.infer<typeof searchProductToppingsInputSchema>;
+
+// ============================================
+// ORDER ITEM TOPPINGS SCHEMAS
+// ============================================
+
+export const orderItemToppingSchema = z.object({
+  order_item_topping_id: z.string(),
+  item_id: z.string(),
+  topping_id: z.string(),
+  topping_name: z.string(),
+  price_at_purchase: z.number(),
+  quantity: z.number(),
+  created_at: z.string()
+});
+
+export const createOrderItemToppingInputSchema = z.object({
+  item_id: z.string(),
+  topping_id: z.string(),
+  topping_name: z.string().min(1).max(255),
+  price_at_purchase: z.number().nonnegative(),
+  quantity: z.number().int().positive().default(1)
+});
+
+export type OrderItemTopping = z.infer<typeof orderItemToppingSchema>;
+export type CreateOrderItemToppingInput = z.infer<typeof createOrderItemToppingInputSchema>;
