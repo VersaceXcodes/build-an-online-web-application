@@ -356,6 +356,15 @@ const GV_TopNav: React.FC = () => {
                 </Link>
                 
                 <Link
+                  to="/admin/about-page"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <FileText className="w-4 h-4 mr-3" />
+                  About Page
+                </Link>
+                
+                <Link
                   to="/admin/settings"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors"
                   onClick={() => setAccountDropdownOpen(false)}
@@ -587,6 +596,15 @@ const GV_TopNav: React.FC = () => {
             >
               <Ticket className="w-4 h-4 mr-3" />
               Promo Codes
+            </Link>
+            
+            <Link
+              to="/admin/about-page"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <FileText className="w-4 h-4 mr-3" />
+              About Page
             </Link>
             
             <Link

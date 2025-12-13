@@ -73,91 +73,14 @@ interface LocationsResponse {
 }
 
 // ============================================================================
-// STATIC CONTENT (Future: Admin-managed via CMS)
-// ============================================================================
-
-const STATIC_ABOUT_CONTENT: PageContent = {
-  hero_image_url: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d?q=80&w=2070",
-  page_title: "Our Story",
-  story_content: `
-    <p>Kake was founded in 2020 with a simple mission: to bring artisan-quality desserts to every corner of Dublin. What started as a small bakery in Blanchardstown has grown into a beloved local brand serving three vibrant communities.</p>
-    <p>Our journey began with a passion for traditional baking methods combined with innovative flavors. We believe that every dessert tells a story, and we're honored to be part of yours—whether it's a birthday celebration, a corporate event, or simply a well-deserved treat after a long day.</p>
-    <p>Today, we continue to handcraft each dessert with the same care and attention that defined our first day. From our signature croissants to our seasonal specials, every item reflects our commitment to quality, community, and the joy of sharing delicious food.</p>
-  `,
-  milestones: [
-    {
-      year: "2020",
-      title: "Kake Founded",
-      description: "Started our journey in Blanchardstown with a small team and big dreams"
-    },
-    {
-      year: "2021",
-      title: "Tallaght Opening",
-      description: "Expanded to our second location, bringing Kake to South Dublin"
-    },
-    {
-      year: "2022",
-      title: "Community Impact",
-      description: "Served over 50,000 customers and launched our loyalty program"
-    },
-    {
-      year: "2023",
-      title: "Glasnevin Partnership",
-      description: "Partnered with Just Eat and Deliveroo to reach even more dessert lovers"
-    },
-    {
-      year: "2024",
-      title: "Growing Strong",
-      description: "Continuing to innovate with new flavors and sustainable practices"
-    }
-  ],
-  values: [
-    {
-      icon_name: "quality",
-      value_name: "Quality Craftsmanship",
-      description: "We use only the finest ingredients and traditional baking methods to create desserts that exceed expectations"
-    },
-    {
-      icon_name: "community",
-      value_name: "Community First",
-      description: "Supporting local suppliers and giving back to our Dublin communities through partnerships and events"
-    },
-    {
-      icon_name: "innovation",
-      value_name: "Creative Innovation",
-      description: "Blending classic techniques with modern flavors to create unique seasonal offerings and signature items"
-    },
-    {
-      icon_name: "sustainability",
-      value_name: "Sustainability",
-      description: "Committed to reducing waste, sourcing responsibly, and making choices that benefit our planet"
-    }
-  ],
-  team_members: [
-    {
-      photo_url: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400",
-      name: "Sarah O'Brien",
-      role: "Co-Founder & Head Baker",
-      bio: "Sarah brings 15 years of artisan baking experience and a passion for creating memorable dessert experiences"
-    },
-    {
-      photo_url: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=400",
-      name: "Michael Chen",
-      role: "Co-Founder & Operations",
-      bio: "Michael's expertise in hospitality and operations ensures Kake delivers excellence at every touchpoint"
-    },
-    {
-      photo_url: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=400",
-      name: "Emma Walsh",
-      role: "Pastry Chef",
-      bio: "Emma's creative flair and attention to detail bring our seasonal specials and signature items to life"
-    }
-  ]
-};
-
-// ============================================================================
 // API FUNCTIONS
 // ============================================================================
+
+const fetchAboutPageContent = async (): Promise<PageContent> => {
+  const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api`;
+  const response = await axios.get<PageContent>(`${API_BASE_URL}/about-page`);
+  return response.data;
+};
 
 const fetchLocations = async (): Promise<Location[]> => {
   const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api`;
@@ -198,12 +121,19 @@ const getValueIcon = (icon_name: string) => {
 // ============================================================================
 
 const UV_About: React.FC = () => {
-  // Local state
-  const [page_content] = useState<PageContent>(STATIC_ABOUT_CONTENT);
-
   // Global state - CRITICAL: Individual selectors only
   const available_locations = useAppStore(state => state.location_state.available_locations);
-  // const fetch_locations_action = useAppStore(state => state.fetch_locations);
+
+  // Fetch about page content using React Query
+  const {
+    data: page_content,
+    isLoading: content_loading,
+    error: content_error
+  } = useQuery<PageContent, Error>({
+    queryKey: ['about-page-content'],
+    queryFn: fetchAboutPageContent,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
 
   // Fetch locations using React Query
   const {
@@ -232,6 +162,35 @@ const UV_About: React.FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Show loading state
+  if (content_loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (content_error || !page_content) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <p className="text-red-600 mb-4">Failed to load about page content</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

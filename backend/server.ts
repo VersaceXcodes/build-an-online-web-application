@@ -2690,6 +2690,356 @@ app.post('/api/admin/upload-event-image', authenticateToken, requireRole(['admin
   }
 });
 
+// ============================================================================
+// ABOUT PAGE CONTENT ROUTES
+// ============================================================================
+
+// Get about page content (public)
+app.get('/api/about-page', async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    // Get main content
+    const contentResult = await client.query(
+      'SELECT * FROM about_page_content ORDER BY created_at DESC LIMIT 1'
+    );
+    
+    if (contentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('About page content not found', null, 'ABOUT_PAGE_NOT_FOUND'));
+    }
+    
+    const content = contentResult.rows[0];
+    
+    // Get milestones
+    const milestonesResult = await client.query(
+      'SELECT * FROM about_page_milestones WHERE content_id = $1 ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    // Get values
+    const valuesResult = await client.query(
+      'SELECT * FROM about_page_values WHERE content_id = $1 ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    // Get team members
+    const teamResult = await client.query(
+      'SELECT * FROM about_page_team_members WHERE content_id = $1 AND is_active = TRUE ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    client.release();
+    
+    res.json({
+      ...content,
+      milestones: milestonesResult.rows,
+      values: valuesResult.rows,
+      team_members: teamResult.rows
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch about page content', error, 'ABOUT_PAGE_FETCH_ERROR'));
+  }
+});
+
+// Get about page content for admin (includes inactive team members)
+app.get('/api/admin/about-page', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    // Get main content
+    const contentResult = await client.query(
+      'SELECT * FROM about_page_content ORDER BY created_at DESC LIMIT 1'
+    );
+    
+    if (contentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('About page content not found', null, 'ABOUT_PAGE_NOT_FOUND'));
+    }
+    
+    const content = contentResult.rows[0];
+    
+    // Get milestones
+    const milestonesResult = await client.query(
+      'SELECT * FROM about_page_milestones WHERE content_id = $1 ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    // Get values
+    const valuesResult = await client.query(
+      'SELECT * FROM about_page_values WHERE content_id = $1 ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    // Get all team members (including inactive)
+    const teamResult = await client.query(
+      'SELECT * FROM about_page_team_members WHERE content_id = $1 ORDER BY display_order ASC',
+      [content.content_id]
+    );
+    
+    client.release();
+    
+    res.json({
+      ...content,
+      milestones: milestonesResult.rows,
+      values: valuesResult.rows,
+      team_members: teamResult.rows
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch about page content', error, 'ABOUT_PAGE_FETCH_ERROR'));
+  }
+});
+
+// Update main about page content (admin only)
+app.put('/api/admin/about-page/:content_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { hero_image_url, page_title, story_content } = req.body;
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `UPDATE about_page_content 
+       SET hero_image_url = $1, page_title = $2, story_content = $3, updated_at = $4 
+       WHERE content_id = $5 
+       RETURNING *`,
+      [hero_image_url, page_title, story_content, now, req.params.content_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('About page content not found', null, 'ABOUT_PAGE_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update about page content', error, 'ABOUT_PAGE_UPDATE_ERROR'));
+  }
+});
+
+// Create milestone (admin only)
+app.post('/api/admin/about-page/milestones', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { content_id, year, title, description, display_order } = req.body;
+    const milestone_id = generateId('mlst');
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `INSERT INTO about_page_milestones 
+       (milestone_id, content_id, year, title, description, display_order, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING *`,
+      [milestone_id, content_id, year, title, description, display_order || 0, now, now]
+    );
+    
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create milestone', error, 'MILESTONE_CREATE_ERROR'));
+  }
+});
+
+// Update milestone (admin only)
+app.put('/api/admin/about-page/milestones/:milestone_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { year, title, description, display_order } = req.body;
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `UPDATE about_page_milestones 
+       SET year = $1, title = $2, description = $3, display_order = $4, updated_at = $5 
+       WHERE milestone_id = $6 
+       RETURNING *`,
+      [year, title, description, display_order, now, req.params.milestone_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Milestone not found', null, 'MILESTONE_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update milestone', error, 'MILESTONE_UPDATE_ERROR'));
+  }
+});
+
+// Delete milestone (admin only)
+app.delete('/api/admin/about-page/milestones/:milestone_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM about_page_milestones WHERE milestone_id = $1 RETURNING *',
+      [req.params.milestone_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Milestone not found', null, 'MILESTONE_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json({ success: true, message: 'Milestone deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete milestone', error, 'MILESTONE_DELETE_ERROR'));
+  }
+});
+
+// Create value (admin only)
+app.post('/api/admin/about-page/values', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { content_id, icon_name, value_name, description, display_order } = req.body;
+    const value_id = generateId('val');
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `INSERT INTO about_page_values 
+       (value_id, content_id, icon_name, value_name, description, display_order, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+       RETURNING *`,
+      [value_id, content_id, icon_name, value_name, description, display_order || 0, now, now]
+    );
+    
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create value', error, 'VALUE_CREATE_ERROR'));
+  }
+});
+
+// Update value (admin only)
+app.put('/api/admin/about-page/values/:value_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { icon_name, value_name, description, display_order } = req.body;
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `UPDATE about_page_values 
+       SET icon_name = $1, value_name = $2, description = $3, display_order = $4, updated_at = $5 
+       WHERE value_id = $6 
+       RETURNING *`,
+      [icon_name, value_name, description, display_order, now, req.params.value_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Value not found', null, 'VALUE_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update value', error, 'VALUE_UPDATE_ERROR'));
+  }
+});
+
+// Delete value (admin only)
+app.delete('/api/admin/about-page/values/:value_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM about_page_values WHERE value_id = $1 RETURNING *',
+      [req.params.value_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Value not found', null, 'VALUE_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json({ success: true, message: 'Value deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete value', error, 'VALUE_DELETE_ERROR'));
+  }
+});
+
+// Create team member (admin only)
+app.post('/api/admin/about-page/team', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { content_id, photo_url, name, role, bio, display_order, is_active } = req.body;
+    const member_id = generateId('team');
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `INSERT INTO about_page_team_members 
+       (member_id, content_id, photo_url, name, role, bio, display_order, is_active, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+       RETURNING *`,
+      [member_id, content_id, photo_url, name, role, bio, display_order || 0, is_active !== false, now, now]
+    );
+    
+    client.release();
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create team member', error, 'TEAM_MEMBER_CREATE_ERROR'));
+  }
+});
+
+// Update team member (admin only)
+app.put('/api/admin/about-page/team/:member_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { photo_url, name, role, bio, display_order, is_active } = req.body;
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `UPDATE about_page_team_members 
+       SET photo_url = $1, name = $2, role = $3, bio = $4, display_order = $5, is_active = $6, updated_at = $7 
+       WHERE member_id = $8 
+       RETURNING *`,
+      [photo_url, name, role, bio, display_order, is_active, now, req.params.member_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Team member not found', null, 'TEAM_MEMBER_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update team member', error, 'TEAM_MEMBER_UPDATE_ERROR'));
+  }
+});
+
+// Delete team member (admin only)
+app.delete('/api/admin/about-page/team/:member_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query(
+      'DELETE FROM about_page_team_members WHERE member_id = $1 RETURNING *',
+      [req.params.member_id]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Team member not found', null, 'TEAM_MEMBER_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json({ success: true, message: 'Team member deleted successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete team member', error, 'TEAM_MEMBER_DELETE_ERROR'));
+  }
+});
+
 app.get('/api/users', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
