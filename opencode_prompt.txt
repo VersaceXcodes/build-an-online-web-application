@@ -1,6 +1,49 @@
-make also the section of "Corporate & Event Orders
-Make your special occasions unforgettable with our bespoke dessert offerings Winter Spice LoafDrop of the Month
-Winter Spice Loaf " also editable from the admin Special Event Alerts
+fix this Node cannot be found in the current page.Understand this warning
+index-CWDdWUrh.js:40 ReferenceError: FileText is not defined
+    at j (index-CWDdWUrh.js:7732:106614)
+    at UY (index-CWDdWUrh.js:7732:110276)
+    at nT (index-CWDdWUrh.js:38:17018)
+    at oI (index-CWDdWUrh.js:40:3139)
+    at tV (index-CWDdWUrh.js:40:44833)
+    at Yz (index-CWDdWUrh.js:40:39790)
+    at uG (index-CWDdWUrh.js:40:39718)
+    at dS (index-CWDdWUrh.js:40:39570)
+    at gI (index-CWDdWUrh.js:40:35934)
+    at BF (index-CWDdWUrh.js:40:36738)
+iI @ index-CWDdWUrh.js:40
+Rz.i.componentDidCatch.r.callback @ index-CWDdWUrh.js:40
+jF @ index-CWDdWUrh.js:38
+OF @ index-CWDdWUrh.js:40
+Gz @ index-CWDdWUrh.js:40
+lG @ index-CWDdWUrh.js:40
+pG @ index-CWDdWUrh.js:40
+Rn @ index-CWDdWUrh.js:40
+BF @ index-CWDdWUrh.js:40
+_n @ index-CWDdWUrh.js:38
+(anonymous) @ index-CWDdWUrh.js:40Understand this error
+index-CWDdWUrh.js:7948 React Error Boundary caught an error: ReferenceError: FileText is not defined
+    at j (index-CWDdWUrh.js:7732:106614)
+    at UY (index-CWDdWUrh.js:7732:110276)
+    at nT (index-CWDdWUrh.js:38:17018)
+    at oI (index-CWDdWUrh.js:40:3139)
+    at tV (index-CWDdWUrh.js:40:44833)
+    at Yz (index-CWDdWUrh.js:40:39790)
+    at uG (index-CWDdWUrh.js:40:39718)
+    at dS (index-CWDdWUrh.js:40:39570)
+    at gI (index-CWDdWUrh.js:40:35934)
+    at BF (index-CWDdWUrh.js:40:36738) {componentStack: '\n    at UY (https://123build-an-online-web-applica…ai/assets/index-CWDdWUrh.js:7948:4532)\n    at Yde'}
+componentDidCatch @ index-CWDdWUrh.js:7948
+Rz.i.componentDidCatch.r.callback @ index-CWDdWUrh.js:40
+jF @ index-CWDdWUrh.js:38
+OF @ index-CWDdWUrh.js:40
+Gz @ index-CWDdWUrh.js:40
+lG @ index-CWDdWUrh.js:40
+pG @ index-CWDdWUrh.js:40
+Rn @ index-CWDdWUrh.js:40
+BF @ index-CWDdWUrh.js:40
+_n @ index-CWDdWUrh.js:38
+(anonymous) @ index-CWDdWUrh.js:40Understand this error
+index-CWDdWUrh.js:72 Analytics updated: {event_type: 'analytics_update', timestamp: '2025-12-13T22:01:57.097Z', today_orders_count: 3, today_revenue: 86.346, orders_by_status: {…}, …} " https://123build-an-online-web-application.launchpulse.ai/ "
 
 When the user mentions generic pages, map them to concrete files/components by scanning for headings and routes. Examples you MUST follow:
 - If the user says "login" or "sign in", search for components containing the literal heading "Sign in to your account" and edit that file.
@@ -11,7 +54,56 @@ When the user mentions generic pages, map them to concrete files/components by s
 - The user's request above is the PRIMARY task. Complete it first.
 - Ignore any existing errors, warnings, or issues you detect in the project unless they directly prevent you from completing the user's requested task.
 - Do NOT automatically fix unrelated errors or refactor code unless explicitly requested.
-- Focus solely on implementing the user's request: "make also the section of "Corporate & Event Orders
-Make your special occasions unforgettable with our bespoke dessert offerings Winter Spice LoafDrop of the Month
-Winter Spice Loaf " also editable from the admin Special Event Alerts"
+- Focus solely on implementing the user's request: "fix this Node cannot be found in the current page.Understand this warning
+index-CWDdWUrh.js:40 ReferenceError: FileText is not defined
+    at j (index-CWDdWUrh.js:7732:106614)
+    at UY (index-CWDdWUrh.js:7732:110276)
+    at nT (index-CWDdWUrh.js:38:17018)
+    at oI (index-CWDdWUrh.js:40:3139)
+    at tV (index-CWDdWUrh.js:40:44833)
+    at Yz (index-CWDdWUrh.js:40:39790)
+    at uG (index-CWDdWUrh.js:40:39718)
+    at dS (index-CWDdWUrh.js:40:39570)
+    at gI (index-CWDdWUrh.js:40:35934)
+    at BF (index-CWDdWUrh.js:40:36738)
+iI @ index-CWDdWUrh.js:40
+Rz.i.componentDidCatch.r.callback @ index-CWDdWUrh.js:40
+jF @ index-CWDdWUrh.js:38
+OF @ index-CWDdWUrh.js:40
+Gz @ index-CWDdWUrh.js:40
+lG @ index-CWDdWUrh.js:40
+pG @ index-CWDdWUrh.js:40
+Rn @ index-CWDdWUrh.js:40
+BF @ index-CWDdWUrh.js:40
+_n @ index-CWDdWUrh.js:38
+(anonymous) @ index-CWDdWUrh.js:40Understand this error
+index-CWDdWUrh.js:7948 React Error Boundary caught an error: ReferenceError: FileText is not defined
+    at j (index-CWDdWUrh.js:7732:106614)
+    at UY (index-CWDdWUrh.js:7732:110276)
+    at nT (index-CWDdWUrh.js:38:17018)
+    at oI (index-CWDdWUrh.js:40:3139)
+    at tV (index-CWDdWUrh.js:40:44833)
+    at Yz (index-CWDdWUrh.js:40:39790)
+    at uG (index-CWDdWUrh.js:40:39718)
+    at dS (index-CWDdWUrh.js:40:39570)
+    at gI (index-CWDdWUrh.js:40:35934)
+    at BF (index-CWDdWUrh.js:40:36738) {componentStack: '\n    at UY (https://123build-an-online-web-applica…ai/assets/index-CWDdWUrh.js:7948:4532)\n    at Yde'}
+componentDidCatch @ index-CWDdWUrh.js:7948
+Rz.i.componentDidCatch.r.callback @ index-CWDdWUrh.js:40
+jF @ index-CWDdWUrh.js:38
+OF @ index-CWDdWUrh.js:40
+Gz @ index-CWDdWUrh.js:40
+lG @ index-CWDdWUrh.js:40
+pG @ index-CWDdWUrh.js:40
+Rn @ index-CWDdWUrh.js:40
+BF @ index-CWDdWUrh.js:40
+_n @ index-CWDdWUrh.js:38
+(anonymous) @ index-CWDdWUrh.js:40Understand this error
+index-CWDdWUrh.js:72 Analytics updated: {event_type: 'analytics_update', timestamp: '2025-12-13T22:01:57.097Z', today_orders_count: 3, today_revenue: 86.346, orders_by_status: {…}, …} " https://123build-an-online-web-application.launchpulse.ai/ ""
 - Only address errors if they block the specific functionality requested by the user.
+
+Additional context:
+User uploaded the following images. Place them exactly where requested; if no explicit location is provided, position them where they best fit within the layout without breaking responsiveness.
+- Asset 1: https://tgvswctfhlubctiodmvo.supabase.co/storage/v1/object/public/project_uploads/3695b609-8a61-4c0d-bfcd-35ca7fdbfcec/build-an-online-web-application/1765663393279_0_Screenshot_2025-12-13_at_22.00.17.png (image/png)
+
+Use the given URLs directly or copy into the project under an appropriate assets/images folder and update imports/links.
