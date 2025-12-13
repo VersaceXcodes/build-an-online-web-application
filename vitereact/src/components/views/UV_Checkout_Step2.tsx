@@ -116,7 +116,7 @@ const UV_Checkout_Step2: React.FC = () => {
   // ====================================================================
 
   const [checkoutData, setCheckoutData] = useState<CheckoutSessionData | null>(null);
-  const [paymentMethod] = useState<string>('card'); // Only card for MVP
+  const [paymentMethod, setPaymentMethod] = useState<string>('card'); // 'card' or 'cash'
   const [cardholderName, setCardholderName] = useState<string>('');
   const [billingSameAsDelivery, setBillingSameAsDelivery] = useState<boolean>(true);
   const [billingAddress, setBillingAddress] = useState<BillingAddress>({
@@ -300,6 +300,13 @@ const UV_Checkout_Step2: React.FC = () => {
   // ====================================================================
 
   const validatePaymentForm = (): boolean => {
+    // Cash payment requires no validation
+    if (paymentMethod === 'cash') {
+      setPaymentError(null);
+      return true;
+    }
+
+    // Card payment validation
     if (!cardholderName.trim()) {
       setPaymentError('Cardholder name is required');
       return false;
@@ -397,8 +404,16 @@ const UV_Checkout_Step2: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Simulated payment response
-      const paymentTransactionId = `txn_${Date.now()}`;
-      const cardLastFour = cardNumber.slice(-4);
+      let paymentTransactionId: string;
+      let cardLastFour: string | undefined;
+
+      if (paymentMethod === 'cash') {
+        paymentTransactionId = `cash_${Date.now()}`;
+        cardLastFour = undefined; // No card for cash payment
+      } else {
+        paymentTransactionId = `txn_${Date.now()}`;
+        cardLastFour = cardNumber.slice(-4);
+      }
 
       // Step 3: Confirm payment (using customer-friendly endpoint)
       await confirmPaymentMutation.mutateAsync({
@@ -512,18 +527,25 @@ const UV_Checkout_Step2: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Method</h2>
                 
                 <div className="space-y-4">
-                  {/* Card Payment (only option) */}
-                  <div className="border-2 border-blue-600 rounded-lg p-4 bg-blue-50">
+                  {/* Card Payment */}
+                  <div 
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                      paymentMethod === 'card' 
+                        ? 'border-blue-600 bg-blue-50' 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                    onClick={() => setPaymentMethod('card')}
+                  >
                     <div className="flex items-center">
                       <input
                         type="radio"
                         id="payment-card"
                         name="payment-method"
-                        checked={true}
-                        readOnly
+                        checked={paymentMethod === 'card'}
+                        onChange={() => setPaymentMethod('card')}
                         className="h-5 w-5 text-blue-600 focus:ring-blue-500"
                       />
-                      <label htmlFor="payment-card" className="ml-3 flex items-center">
+                      <label htmlFor="payment-card" className="ml-3 flex items-center cursor-pointer">
                         <span className="text-lg font-semibold text-gray-900">Credit / Debit Card</span>
                         <div className="ml-3 flex items-center space-x-2">
                           <span className="text-xs font-medium text-gray-500">Visa</span>
@@ -533,6 +555,35 @@ const UV_Checkout_Step2: React.FC = () => {
                       </label>
                     </div>
                   </div>
+
+                  {/* Cash Payment */}
+                  <div 
+                    className={`border-2 rounded-lg p-4 cursor-pointer transition-all duration-200 ${
+                      paymentMethod === 'cash' 
+                        ? 'border-blue-600 bg-blue-50' 
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                    onClick={() => setPaymentMethod('cash')}
+                  >
+                    <div className="flex items-center">
+                      <input
+                        type="radio"
+                        id="payment-cash"
+                        name="payment-method"
+                        checked={paymentMethod === 'cash'}
+                        onChange={() => setPaymentMethod('cash')}
+                        className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+                      />
+                      <label htmlFor="payment-cash" className="ml-3 flex items-center cursor-pointer">
+                        <span className="text-lg font-semibold text-gray-900">Cash on Delivery / Collection</span>
+                      </label>
+                    </div>
+                    {paymentMethod === 'cash' && (
+                      <p className="mt-2 ml-8 text-sm text-gray-600">
+                        Pay with cash when your order is delivered or when you collect it.
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Secure Badge */}
@@ -540,11 +591,16 @@ const UV_Checkout_Step2: React.FC = () => {
                   <svg className="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
-                  <span className="font-medium">Secure payment powered by industry-standard encryption</span>
+                  <span className="font-medium">
+                    {paymentMethod === 'card' 
+                      ? 'Secure payment powered by industry-standard encryption'
+                      : 'Pay securely with cash upon delivery or collection'}
+                  </span>
                 </div>
               </div>
 
-              {/* Card Details Form */}
+              {/* Card Details Form - Only show when card payment is selected */}
+              {paymentMethod === 'card' && (
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 lg:p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Card Details</h3>
                 
@@ -632,8 +688,10 @@ const UV_Checkout_Step2: React.FC = () => {
                   </div>
                 </div>
               </div>
+              )}
 
-              {/* Billing Address */}
+              {/* Billing Address - Only show when card payment is selected */}
+              {paymentMethod === 'card' && (
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 lg:p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Billing Address</h3>
                 
@@ -724,6 +782,31 @@ const UV_Checkout_Step2: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
+
+              {/* Cash Payment Info */}
+              {paymentMethod === 'cash' && (
+              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 lg:p-8">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Cash Payment</h3>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-3">
+                    <svg className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-blue-900 mb-2">
+                        Payment Instructions
+                      </p>
+                      <ul className="text-sm text-blue-800 space-y-1">
+                        <li>• Have the exact amount ready or be prepared with change</li>
+                        <li>• Payment is due upon {checkoutData?.fulfillment_method === 'delivery' ? 'delivery' : 'collection'}</li>
+                        <li>• Please have your order number ready: you'll receive it after placing your order</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              )}
 
               {/* Error Display */}
               {paymentError && (
@@ -899,7 +982,10 @@ const UV_Checkout_Step2: React.FC = () => {
                 {/* Place Order Button */}
                 <button
                   onClick={handlePlaceOrder}
-                  disabled={processingPayment || !cardholderName || !cardNumber || !cardExpiry || !cardCvc}
+                  disabled={
+                    processingPayment || 
+                    (paymentMethod === 'card' && (!cardholderName || !cardNumber || !cardExpiry || !cardCvc))
+                  }
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-100"
                   data-testid="place-order-button"
                   aria-label={`Place order for total of €${Number(cartTotals.total || 0).toFixed(2)}`}
@@ -910,10 +996,12 @@ const UV_Checkout_Step2: React.FC = () => {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Processing Payment...
+                      Processing {paymentMethod === 'cash' ? 'Order' : 'Payment'}...
                     </span>
                   ) : Number(cartTotals.total || 0) === 0 ? (
                     'Place Order (Free)'
+                  ) : paymentMethod === 'cash' ? (
+                    `Place Order (Pay Cash €${Number(cartTotals.total || 0).toFixed(2)})`
                   ) : (
                     `Place Order & Pay €${Number(cartTotals.total || 0).toFixed(2)}`
                   )}

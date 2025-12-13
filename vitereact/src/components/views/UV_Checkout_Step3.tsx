@@ -302,7 +302,10 @@ const UV_Checkout_Step3: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600">Payment Method</p>
                     <p className="text-base font-medium text-gray-900">
-                      {order.payment_method === 'card' ? 'Card' : order.payment_method} ending in {order.card_last_four || '****'}
+                      {order.payment_method === 'cash' 
+                        ? 'Cash on Delivery / Collection' 
+                        : `${order.payment_method === 'card' ? 'Card' : order.payment_method} ending in ${order.card_last_four || '****'}`
+                      }
                     </p>
                   </div>
                 </div>
@@ -494,7 +497,28 @@ const UV_Checkout_Step3: React.FC = () => {
             )}
           </div>
           
-          {/* Next Steps */}
+            {/* Cash Payment Reminder */}
+            {order.payment_method === 'cash' && (
+              <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-6 mb-8">
+                <div className="flex items-start space-x-3">
+                  <svg className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-lg font-semibold text-amber-900 mb-2">
+                      Cash Payment Required
+                    </h3>
+                    <p className="text-amber-800">
+                      Please have <strong>€{order.total_amount.toFixed(2)}</strong> ready in cash when your order is {order.fulfillment_method === 'delivery' ? 'delivered' : 'collected'}. 
+                      {order.fulfillment_method === 'delivery' && ' The delivery person will collect payment upon arrival.'}
+                      {order.fulfillment_method === 'collection' && ' Payment is due when you collect your order.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Next Steps */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 lg:p-8 mb-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">What Happens Next?</h3>
             
