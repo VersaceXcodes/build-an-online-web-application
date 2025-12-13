@@ -436,6 +436,26 @@ const UV_Login: React.FC = () => {
                 </div>
               </form>
               
+              {/* Guest Checkout Button */}
+              <div className="mt-6">
+                <Link
+                  to={redirectUrl === '/login' ? '/menu' : redirectUrl}
+                  className="
+                    w-full flex justify-center items-center
+                    px-6 py-3 
+                    bg-gray-100 hover:bg-gray-200
+                    text-gray-800 font-semibold text-base
+                    border-2 border-gray-300
+                    rounded-lg
+                    focus:outline-none focus:ring-4 focus:ring-gray-100
+                    transition-all duration-200
+                    hover:scale-105
+                  "
+                >
+                  Guest Checkout
+                </Link>
+              </div>
+              
               {/* Registration Link */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600">
