@@ -1,11 +1,11 @@
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-// import cofounderVitePlugin from "./src/_cofounder/vite-plugin/index";
 
 // https://vitejs.dev/config/
 export default defineConfig({
 	plugins: [
+		react(),
 		// webcontainers stuff
 		{
 			name: "isolation",
@@ -24,21 +24,6 @@ export default defineConfig({
 				});
 			},
 		},
-		// pre transform ; to replace/inject <GenUi*> to allow editing ui - COMMENTED OUT
-		/*
-		{
-			name: "cofounderVitePluginPre",
-			async transform(code, id) {
-				return await cofounderVitePlugin.pre({
-					code,
-					path: id,
-				});
-			},
-			enforce: "pre", // ensure this plugin runs before other transformations
-		},
-		*/
-
-		react(),
 	],
 	server: {
 		host: true,
@@ -57,5 +42,9 @@ export default defineConfig({
 	},
 	build: {
 		outDir: "dist",
+		sourcemap: false,
+		minify: false,
+		chunkSizeWarningLimit: 2000,
 	},
+	logLevel: 'info',
 });

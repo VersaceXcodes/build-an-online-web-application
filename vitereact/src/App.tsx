@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAppStore } from '@/store/main';
 import kakeLogo from '@/assets/images/kake-logo.png';
 
-// Global Shared Views
+// Global Shared Views (loaded eagerly as they're always needed)
 import GV_TopNav from '@/components/views/GV_TopNav';
 import GV_Footer from '@/components/views/GV_Footer';
 import GV_CartSlidePanel from '@/components/views/GV_CartSlidePanel';
@@ -16,51 +16,50 @@ import GV_SessionExpiryWarning from '@/components/views/GV_SessionExpiryWarning'
 import GV_PageTransition from '@/components/views/GV_PageTransition';
 import GV_SplashScreen from '@/components/views/GV_SplashScreen';
 
-// Unique Views - Public
-import UV_Landing from '@/components/views/UV_Landing';
-import UV_About from '@/components/views/UV_About';
-import UV_LocationInternal from '@/components/views/UV_LocationInternal';
-// import UV_LocationExternal from '@/components/views/UV_LocationExternal';
-import UV_Menu from '@/components/views/UV_Menu';
-import UV_ProductDetail from '@/components/views/UV_ProductDetail';
-import UV_CorporateOrderForm from '@/components/views/UV_CorporateOrderForm';
-import UV_Login from '@/components/views/UV_Login';
-import UV_Register from '@/components/views/UV_Register';
-import UV_ForgotPassword from '@/components/views/UV_ForgotPassword';
-import UV_ResetPassword from '@/components/views/UV_ResetPassword';
+// Lazy-loaded Views - Public (code splitting for better performance)
+const UV_Landing = React.lazy(() => import('@/components/views/UV_Landing'));
+const UV_About = React.lazy(() => import('@/components/views/UV_About'));
+const UV_LocationInternal = React.lazy(() => import('@/components/views/UV_LocationInternal'));
+const UV_Menu = React.lazy(() => import('@/components/views/UV_Menu'));
+const UV_ProductDetail = React.lazy(() => import('@/components/views/UV_ProductDetail'));
+const UV_CorporateOrderForm = React.lazy(() => import('@/components/views/UV_CorporateOrderForm'));
+const UV_Login = React.lazy(() => import('@/components/views/UV_Login'));
+const UV_Register = React.lazy(() => import('@/components/views/UV_Register'));
+const UV_ForgotPassword = React.lazy(() => import('@/components/views/UV_ForgotPassword'));
+const UV_ResetPassword = React.lazy(() => import('@/components/views/UV_ResetPassword'));
 
-// Unique Views - Customer Protected
-import UV_Checkout_Step1 from '@/components/views/UV_Checkout_Step1';
-import UV_Checkout_Step2 from '@/components/views/UV_Checkout_Step2';
-import UV_Checkout_Step3 from '@/components/views/UV_Checkout_Step3';
-import UV_CustomerDashboard from '@/components/views/UV_CustomerDashboard';
-import UV_OrderTracking from '@/components/views/UV_OrderTracking';
-import UV_FeedbackForm from '@/components/views/UV_FeedbackForm';
-import UV_Favorites from '@/components/views/UV_Favorites';
-import UV_UnifiedFeedbackSubmit from '@/components/views/UV_UnifiedFeedbackSubmit';
+// Lazy-loaded Views - Customer Protected
+const UV_Checkout_Step1 = React.lazy(() => import('@/components/views/UV_Checkout_Step1'));
+const UV_Checkout_Step2 = React.lazy(() => import('@/components/views/UV_Checkout_Step2'));
+const UV_Checkout_Step3 = React.lazy(() => import('@/components/views/UV_Checkout_Step3'));
+const UV_CustomerDashboard = React.lazy(() => import('@/components/views/UV_CustomerDashboard'));
+const UV_OrderTracking = React.lazy(() => import('@/components/views/UV_OrderTracking'));
+const UV_FeedbackForm = React.lazy(() => import('@/components/views/UV_FeedbackForm'));
+const UV_Favorites = React.lazy(() => import('@/components/views/UV_Favorites'));
+const UV_UnifiedFeedbackSubmit = React.lazy(() => import('@/components/views/UV_UnifiedFeedbackSubmit'));
 
-// Unique Views - Staff Protected
-import UV_StaffDashboard from '@/components/views/UV_StaffDashboard';
-import UV_StaffInventoryAlerts from '@/components/views/UV_StaffInventoryAlerts';
-import UV_StaffTraining from '@/components/views/UV_StaffTraining';
-import UV_StaffFeedbackSubmission from '@/components/views/UV_StaffFeedbackSubmission';
+// Lazy-loaded Views - Staff Protected
+const UV_StaffDashboard = React.lazy(() => import('@/components/views/UV_StaffDashboard'));
+const UV_StaffInventoryAlerts = React.lazy(() => import('@/components/views/UV_StaffInventoryAlerts'));
+const UV_StaffTraining = React.lazy(() => import('@/components/views/UV_StaffTraining'));
+const UV_StaffFeedbackSubmission = React.lazy(() => import('@/components/views/UV_StaffFeedbackSubmission'));
 
-// Unique Views - Admin Protected
-import UV_AdminDashboard from '@/components/views/UV_AdminDashboard';
-import UV_AdminOrders from '@/components/views/UV_AdminOrders';
-import UV_AdminProducts from '@/components/views/UV_AdminProducts';
-import UV_AdminUsers from '@/components/views/UV_AdminUsers';
-import UV_AdminTraining from '@/components/views/UV_AdminTraining';
-import UV_AdminFeedbackCustomer from '@/components/views/UV_AdminFeedbackCustomer';
-import UV_AdminFeedbackStaff from '@/components/views/UV_AdminFeedbackStaff';
-import UV_AdminFeedbackUnified from '@/components/views/UV_AdminFeedbackUnified';
-import UV_AdminInventoryAlerts from '@/components/views/UV_AdminInventoryAlerts';
-import UV_AdminSettings from '@/components/views/UV_AdminSettings';
-import UV_AdminReports from '@/components/views/UV_AdminReports';
-import UV_AdminPromoCodes from '@/components/views/UV_AdminPromoCodes';
-import UV_AdminToppings from '@/components/views/UV_AdminToppings';
-import UV_AdminEvents from '@/components/views/UV_AdminEvents';
-import UV_AdminAboutPage from '@/components/views/UV_AdminAboutPage';
+// Lazy-loaded Views - Admin Protected
+const UV_AdminDashboard = React.lazy(() => import('@/components/views/UV_AdminDashboard'));
+const UV_AdminOrders = React.lazy(() => import('@/components/views/UV_AdminOrders'));
+const UV_AdminProducts = React.lazy(() => import('@/components/views/UV_AdminProducts'));
+const UV_AdminUsers = React.lazy(() => import('@/components/views/UV_AdminUsers'));
+const UV_AdminTraining = React.lazy(() => import('@/components/views/UV_AdminTraining'));
+const UV_AdminFeedbackCustomer = React.lazy(() => import('@/components/views/UV_AdminFeedbackCustomer'));
+const UV_AdminFeedbackStaff = React.lazy(() => import('@/components/views/UV_AdminFeedbackStaff'));
+const UV_AdminFeedbackUnified = React.lazy(() => import('@/components/views/UV_AdminFeedbackUnified'));
+const UV_AdminInventoryAlerts = React.lazy(() => import('@/components/views/UV_AdminInventoryAlerts'));
+const UV_AdminSettings = React.lazy(() => import('@/components/views/UV_AdminSettings'));
+const UV_AdminReports = React.lazy(() => import('@/components/views/UV_AdminReports'));
+const UV_AdminPromoCodes = React.lazy(() => import('@/components/views/UV_AdminPromoCodes'));
+const UV_AdminToppings = React.lazy(() => import('@/components/views/UV_AdminToppings'));
+const UV_AdminEvents = React.lazy(() => import('@/components/views/UV_AdminEvents'));
+const UV_AdminAboutPage = React.lazy(() => import('@/components/views/UV_AdminAboutPage'));
 
 // ============================================================================
 // QUERY CLIENT CONFIGURATION
@@ -330,7 +329,8 @@ export const AppRoutes: React.FC = () => {
   return (
     <AppInitializer>
       <LayoutWrapper>
-        <Routes>
+        <React.Suspense fallback={<LoadingSpinner />}>
+          <Routes>
           {/* ========================================== */}
           {/* PUBLIC ROUTES */}
           {/* ========================================== */}
@@ -654,6 +654,7 @@ export const AppRoutes: React.FC = () => {
           
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </React.Suspense>
       </LayoutWrapper>
     </AppInitializer>
   );
