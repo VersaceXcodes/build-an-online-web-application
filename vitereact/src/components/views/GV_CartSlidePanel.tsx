@@ -21,7 +21,9 @@ const GV_CartSlidePanel: React.FC = () => {
   
   // Store actions
   const updateCartQuantity = useAppStore(state => state.update_cart_quantity);
+  const updateCartQuantityByIndex = useAppStore(state => state.update_cart_quantity_by_index);
   const removeFromCart = useAppStore(state => state.remove_from_cart);
+  const removeCartItemByIndex = useAppStore(state => state.remove_cart_item_by_index);
   const applyPromoCodeAction = useAppStore(state => state.apply_promo_code);
   const removePromoCodeAction = useAppStore(state => state.remove_promo_code);
   const applyLoyaltyPointsAction = useAppStore(state => state.apply_loyalty_points);
@@ -38,7 +40,7 @@ const GV_CartSlidePanel: React.FC = () => {
   const [applyingPromo, setApplyingPromo] = useState(false);
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
   const [loyaltyPointsInput, setLoyaltyPointsInput] = useState('');
-  const [updatingQuantity, setUpdatingQuantity] = useState<string | null>(null);
+  const [updatingQuantity, setUpdatingQuantity] = useState<number | null>(null);
   
   // Calculate loyalty points that can be used
   const loyaltyPointsAvailable = currentUser?.loyalty_points_balance || 0;
@@ -96,32 +98,32 @@ const GV_CartSlidePanel: React.FC = () => {
     };
   }, [cartPanelOpen]);
   
-  // Handle item quantity update
-  const handleQuantityUpdate = (productId: string, newQuantity: number) => {
+  // Handle item quantity update (by index)
+  const handleQuantityUpdate = (index: number, newQuantity: number) => {
     if (newQuantity < 1) {
-      handleRemoveItem(productId);
+      handleRemoveItem(index);
       return;
     }
     
-    setUpdatingQuantity(productId);
-    updateCartQuantity(productId, newQuantity);
+    setUpdatingQuantity(index);
+    updateCartQuantityByIndex(index, newQuantity);
     
     // Simulate async update delay (store handles immediately)
     setTimeout(() => setUpdatingQuantity(null), 200);
   };
   
-  // Handle item removal with confirmation
-  const handleRemoveItem = (productId: string) => {
-    const item = cartItems.find(i => i.product_id === productId);
+  // Handle item removal with confirmation (by index)
+  const handleRemoveItem = (index: number) => {
+    const item = cartItems[index];
     if (!item) return;
     
     showConfirmation({
       title: 'Remove item from cart?',
-      message: `Are you sure you want to remove ${item.product_name} from your cart?`,
+      message: `Are you sure you want to remove ${item.product_name}${item.customer_name ? ` (for ${item.customer_name})` : ''} from your cart?`,
       confirm_text: 'Remove',
       cancel_text: 'Cancel',
       on_confirm: () => {
-        removeFromCart(productId);
+        removeCartItemByIndex(index);
         showToast('info', 'Item removed from cart');
         hideConfirmation();
       },
@@ -358,9 +360,9 @@ const GV_CartSlidePanel: React.FC = () => {
               
               {/* Cart Items List */}
               <div className="space-y-4">
-                {cartItems.map((item) => (
+                {cartItems.map((item, index) => (
                   <div 
-                    key={item.product_id}
+                    key={`${item.product_id}-${index}`}
                     className="flex gap-4 bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
                   >
                     {/* Product Image */}
@@ -387,6 +389,21 @@ const GV_CartSlidePanel: React.FC = () => {
                           {item.product_name}
                         </h4>
                       </Link>
+                      {item.customer_name && (
+                        <p className="text-xs text-blue-600 font-medium mt-1">
+                          For: {item.customer_name}
+                        </p>
+                      )}
+                      {(item.selected_toppings && item.selected_toppings.length > 0) && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          🍫 {item.selected_toppings.map(t => t.topping_name).join(', ')}
+                        </p>
+                      )}
+                      {(item.selected_sauces && item.selected_sauces.length > 0) && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          🍯 {item.selected_sauces.map(s => s.topping_name).join(', ')}
+                        </p>
+                      )}
                       <p className="text-sm text-gray-600 mt-1">
                         €{Number(item.price || 0).toFixed(2)} each
                       </p>
@@ -395,8 +412,8 @@ const GV_CartSlidePanel: React.FC = () => {
                       <div className="flex items-center gap-3 mt-2">
                         <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden">
                           <button
-                            onClick={() => handleQuantityUpdate(item.product_id, item.quantity - 1)}
-                            disabled={updatingQuantity === item.product_id || item.quantity <= 1}
+                            onClick={() => handleQuantityUpdate(index, item.quantity - 1)}
+                            disabled={updatingQuantity === index || item.quantity <= 1}
                             className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             aria-label="Decrease quantity"
                           >
@@ -406,8 +423,8 @@ const GV_CartSlidePanel: React.FC = () => {
                             {item.quantity}
                           </span>
                           <button
-                            onClick={() => handleQuantityUpdate(item.product_id, item.quantity + 1)}
-                            disabled={updatingQuantity === item.product_id}
+                            onClick={() => handleQuantityUpdate(index, item.quantity + 1)}
+                            disabled={updatingQuantity === index}
                             className="px-3 py-1 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                             aria-label="Increase quantity"
                           >
@@ -416,7 +433,7 @@ const GV_CartSlidePanel: React.FC = () => {
                         </div>
                         
                         <button
-                          onClick={() => handleRemoveItem(item.product_id)}
+                          onClick={() => handleRemoveItem(index)}
                           className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           aria-label="Remove item"
                         >

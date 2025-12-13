@@ -56,6 +56,17 @@ interface CartItem {
   quantity: number;
   subtotal: number;
   primary_image_url: string;
+  customer_name?: string;
+  selected_toppings?: Array<{
+    topping_id: string;
+    topping_name: string;
+    price: number;
+  }>;
+  selected_sauces?: Array<{
+    topping_id: string;
+    topping_name: string;
+    price: number;
+  }>;
 }
 
 // Toast Notification Type
@@ -201,7 +212,9 @@ interface AppStore {
   // Cart Actions
   add_to_cart: (item: CartItem) => void;
   remove_from_cart: (product_id: string) => void;
+  remove_cart_item_by_index: (index: number) => void;
   update_cart_quantity: (product_id: string, quantity: number) => void;
+  update_cart_quantity_by_index: (index: number, quantity: number) => void;
   apply_promo_code: (code: string, discount_amount: number) => void;
   remove_promo_code: () => void;
   apply_loyalty_points: (points: number) => void;
@@ -645,24 +658,35 @@ export const useAppStore = create<AppStore>()(
 
         add_to_cart: (item: CartItem) => {
           set((state) => {
-            const existing_item = state.cart_state.items.find(
-              (i) => i.product_id === item.product_id
-            );
+            // Check if exact same item exists (same product, customer, and toppings)
+            const existing_item = state.cart_state.items.find((i) => {
+              const sameProduct = i.product_id === item.product_id;
+              const sameCustomer = (i.customer_name || '') === (item.customer_name || '');
+              const sameToppings = JSON.stringify(i.selected_toppings || []) === JSON.stringify(item.selected_toppings || []);
+              const sameSauces = JSON.stringify(i.selected_sauces || []) === JSON.stringify(item.selected_sauces || []);
+              return sameProduct && sameCustomer && sameToppings && sameSauces;
+            });
 
             let new_items: CartItem[];
             if (existing_item) {
-              // Update quantity for existing item
-              new_items = state.cart_state.items.map((i) =>
-                i.product_id === item.product_id
-                  ? {
-                      ...i,
-                      quantity: i.quantity + item.quantity,
-                      subtotal: i.price * (i.quantity + item.quantity),
-                    }
-                  : i
-              );
+              // Update quantity for existing item with same customization
+              new_items = state.cart_state.items.map((i) => {
+                const sameProduct = i.product_id === item.product_id;
+                const sameCustomer = (i.customer_name || '') === (item.customer_name || '');
+                const sameToppings = JSON.stringify(i.selected_toppings || []) === JSON.stringify(item.selected_toppings || []);
+                const sameSauces = JSON.stringify(i.selected_sauces || []) === JSON.stringify(item.selected_sauces || []);
+                
+                if (sameProduct && sameCustomer && sameToppings && sameSauces) {
+                  return {
+                    ...i,
+                    quantity: i.quantity + item.quantity,
+                    subtotal: i.price * (i.quantity + item.quantity),
+                  };
+                }
+                return i;
+              });
             } else {
-              // Add new item
+              // Add new item (different customization)
               new_items = [...state.cart_state.items, item];
             }
 
@@ -691,6 +715,18 @@ export const useAppStore = create<AppStore>()(
           get().show_toast('info', 'Item removed from cart');
         },
 
+        remove_cart_item_by_index: (index: number) => {
+          set((state) => ({
+            cart_state: {
+              ...state.cart_state,
+              items: state.cart_state.items.filter((_, i) => i !== index),
+            },
+          }));
+
+          get().calculate_cart_totals();
+          get().show_toast('info', 'Item removed from cart');
+        },
+
         update_cart_quantity: (product_id: string, quantity: number) => {
           if (quantity < 1) {
             get().remove_from_cart(product_id);
@@ -702,6 +738,30 @@ export const useAppStore = create<AppStore>()(
               ...state.cart_state,
               items: state.cart_state.items.map((item) =>
                 item.product_id === product_id
+                  ? {
+                      ...item,
+                      quantity,
+                      subtotal: item.price * quantity,
+                    }
+                  : item
+              ),
+            },
+          }));
+
+          get().calculate_cart_totals();
+        },
+
+        update_cart_quantity_by_index: (index: number, quantity: number) => {
+          if (quantity < 1) {
+            get().remove_cart_item_by_index(index);
+            return;
+          }
+
+          set((state) => ({
+            cart_state: {
+              ...state.cart_state,
+              items: state.cart_state.items.map((item, i) =>
+                i === index
                   ? {
                       ...item,
                       quantity,

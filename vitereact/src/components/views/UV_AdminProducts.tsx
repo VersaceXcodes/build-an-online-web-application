@@ -1380,6 +1380,19 @@ const UV_AdminProducts: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Available Toppings & Sauces */}
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Available Customizations</h4>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p className="text-sm text-blue-900 mb-2">
+                          <strong>Note:</strong> All available toppings and sauces can be selected by customers when ordering this product.
+                        </p>
+                        <p className="text-xs text-blue-700">
+                          To manage the list of available toppings and sauces, use the Toppings Management page in the admin menu.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Options */}
                     <div>
                       <h4 className="text-lg font-semibold text-gray-900 mb-4">Options</h4>

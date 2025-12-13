@@ -1157,18 +1157,33 @@ const UV_Checkout_Step1: React.FC = () => {
 
                   {/* Items */}
                   <div className="space-y-3 mb-6 max-h-64 overflow-y-auto">
-                    {cartItems.map((item) => (
-                      <div key={item.product_id} className="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                    {cartItems.map((item, index) => (
+                      <div key={`${item.product_id}-${index}`} className="flex items-start space-x-3 pb-3 border-b border-gray-100">
                         <img
                           src={item.primary_image_url}
                           alt={item.product_name}
-                          className="w-16 h-16 object-cover rounded-lg"
+                          className="w-16 h-16 object-cover rounded-lg flex-shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{item.product_name}</p>
-                          <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                          <p className="text-sm font-medium text-gray-900">{item.product_name}</p>
+                          {item.customer_name && (
+                            <p className="text-xs text-blue-600 font-medium mt-1">
+                              For: {item.customer_name}
+                            </p>
+                          )}
+                          {(item.selected_toppings && item.selected_toppings.length > 0) && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              Toppings: {item.selected_toppings.map(t => t.topping_name).join(', ')}
+                            </p>
+                          )}
+                          {(item.selected_sauces && item.selected_sauces.length > 0) && (
+                            <p className="text-xs text-gray-600 mt-1">
+                              Sauces: {item.selected_sauces.map(s => s.topping_name).join(', ')}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-600 mt-1">Qty: {item.quantity}</p>
                         </div>
-                        <p className="text-sm font-semibold text-gray-900">€{Number(item.subtotal || 0).toFixed(2)}</p>
+                        <p className="text-sm font-semibold text-gray-900 flex-shrink-0">€{Number(item.subtotal || 0).toFixed(2)}</p>
                       </div>
                     ))}
                   </div>

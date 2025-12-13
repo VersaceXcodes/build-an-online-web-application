@@ -64,6 +64,15 @@ interface ProductApiResponse {
   updated_at: string;
 }
 
+interface Topping {
+  topping_id: string;
+  topping_name: string;
+  topping_type: 'topping' | 'sauce';
+  price: number;
+  is_available: boolean;
+  display_order: number;
+}
+
 // ============================================================================
 // COMPONENT
 // ============================================================================
@@ -85,6 +94,9 @@ const UV_ProductDetail: React.FC = () => {
   const [selectedQuantity, setSelectedQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [additionalImagesArray, setAdditionalImagesArray] = useState<string[]>([]);
+  const [customerName, setCustomerName] = useState('');
+  const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
+  const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
 
   // ============================================================================
   // API CALLS - FETCH PRODUCT DETAILS
@@ -193,6 +205,34 @@ const UV_ProductDetail: React.FC = () => {
     enabled: !!product && !!product.category,
     staleTime: 300000, // 5 minutes
   });
+
+  // ============================================================================
+  // API CALLS - FETCH TOPPINGS
+  // ============================================================================
+
+  const fetchToppings = async (): Promise<Topping[]> => {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/toppings`,
+      {
+        params: {
+          is_available: true
+        }
+      }
+    );
+    return response.data.map((t: any) => ({
+      ...t,
+      price: Number(t.price || 0)
+    }));
+  };
+
+  const { data: toppingsData = [] } = useQuery({
+    queryKey: ['toppings'],
+    queryFn: fetchToppings,
+    staleTime: 300000, // 5 minutes
+  });
+
+  const availableToppings = toppingsData.filter(t => t.topping_type === 'topping');
+  const availableSauces = toppingsData.filter(t => t.topping_type === 'sauce');
 
   // ============================================================================
   // API CALLS - FAVORITES
@@ -332,17 +372,52 @@ const UV_ProductDetail: React.FC = () => {
       return;
     }
 
+    // Calculate total including toppings
+    const toppingsCost = selectedToppings.reduce((sum, toppingId) => {
+      const topping = toppingsData.find(t => t.topping_id === toppingId);
+      return sum + (topping?.price || 0);
+    }, 0);
+
+    const saucesCost = selectedSauces.reduce((sum, sauceId) => {
+      const sauce = toppingsData.find(t => t.topping_id === sauceId);
+      return sum + (sauce?.price || 0);
+    }, 0);
+
+    const totalPrice = product.price + toppingsCost + saucesCost;
+
     const cartItem = {
       product_id: product.product_id,
       product_name: product.product_name,
-      price: product.price,
+      price: totalPrice,
       quantity: selectedQuantity,
-      subtotal: product.price * selectedQuantity,
+      subtotal: totalPrice * selectedQuantity,
       primary_image_url: product.primary_image_url,
+      customer_name: customerName.trim() || undefined,
+      selected_toppings: selectedToppings.map(id => {
+        const topping = toppingsData.find(t => t.topping_id === id);
+        return {
+          topping_id: id,
+          topping_name: topping?.topping_name || '',
+          price: topping?.price || 0
+        };
+      }),
+      selected_sauces: selectedSauces.map(id => {
+        const sauce = toppingsData.find(t => t.topping_id === id);
+        return {
+          topping_id: id,
+          topping_name: sauce?.topping_name || '',
+          price: sauce?.price || 0
+        };
+      })
     };
 
     addToCart(cartItem);
-    setSelectedQuantity(1); // Reset quantity
+    
+    // Reset selections
+    setSelectedQuantity(1);
+    setCustomerName('');
+    setSelectedToppings([]);
+    setSelectedSauces([]);
     
     // Optional: Auto-open cart panel
     setTimeout(() => {
@@ -664,6 +739,91 @@ const UV_ProductDetail: React.FC = () => {
                 </div>
               )}
 
+              {/* Customer Name Input */}
+              <div className="space-y-3">
+                <label htmlFor="customer_name" className="block text-sm font-semibold text-kake-chocolate-500">
+                  Customer Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="customer_name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter name for this item"
+                  className="w-full px-4 py-3 border-2 border-kake-cream-300 rounded-lg focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-500/20 transition-all"
+                  disabled={isOutOfStock}
+                />
+                <p className="text-xs text-kake-chocolate-500/70">
+                  Perfect for group orders - label each item with a name
+                </p>
+              </div>
+
+              {/* Toppings Selection */}
+              {availableToppings.length > 0 && (
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-kake-chocolate-500">
+                    Choose Toppings (Optional)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableToppings.map((topping) => (
+                      <button
+                        key={topping.topping_id}
+                        type="button"
+                        onClick={() => {
+                          if (selectedToppings.includes(topping.topping_id)) {
+                            setSelectedToppings(prev => prev.filter(id => id !== topping.topping_id));
+                          } else {
+                            setSelectedToppings(prev => [...prev, topping.topping_id]);
+                          }
+                        }}
+                        disabled={isOutOfStock}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                          selectedToppings.includes(topping.topping_id)
+                            ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                            : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {topping.topping_name}
+                        {topping.price > 0 && ` (+€${topping.price.toFixed(2)})`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sauces Selection */}
+              {availableSauces.length > 0 && (
+                <div className="space-y-3">
+                  <label className="block text-sm font-semibold text-kake-chocolate-500">
+                    Choose Sauces (Optional)
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableSauces.map((sauce) => (
+                      <button
+                        key={sauce.topping_id}
+                        type="button"
+                        onClick={() => {
+                          if (selectedSauces.includes(sauce.topping_id)) {
+                            setSelectedSauces(prev => prev.filter(id => id !== sauce.topping_id));
+                          } else {
+                            setSelectedSauces(prev => [...prev, sauce.topping_id]);
+                          }
+                        }}
+                        disabled={isOutOfStock}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                          selectedSauces.includes(sauce.topping_id)
+                            ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                            : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
+                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      >
+                        {sauce.topping_name}
+                        {sauce.price > 0 && ` (+€${sauce.price.toFixed(2)})`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Quantity Selector */}
               <div className="space-y-3">
                 <label className="block text-sm font-semibold text-kake-chocolate-500">
@@ -694,7 +854,19 @@ const UV_ProductDetail: React.FC = () => {
                   
                   {!isOutOfStock && (
                     <span className="text-kake-chocolate-500/70 text-sm">
-                      Total: <span className="font-bold text-kake-chocolate-500">€{(product.price * selectedQuantity).toFixed(2)}</span>
+                      Total: <span className="font-bold text-kake-chocolate-500">
+                        €{(() => {
+                          const toppingsCost = selectedToppings.reduce((sum, id) => {
+                            const topping = toppingsData.find(t => t.topping_id === id);
+                            return sum + (topping?.price || 0);
+                          }, 0);
+                          const saucesCost = selectedSauces.reduce((sum, id) => {
+                            const sauce = toppingsData.find(t => t.topping_id === id);
+                            return sum + (sauce?.price || 0);
+                          }, 0);
+                          return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                        })()}
+                      </span>
                     </span>
                   )}
                 </div>
@@ -716,7 +888,19 @@ const UV_ProductDetail: React.FC = () => {
                   ) : (
                     <span className="flex items-center justify-center gap-2">
                       <span>Add to Cart</span>
-                      <span className="text-sm opacity-90">€{(product.price * selectedQuantity).toFixed(2)}</span>
+                      <span className="text-sm opacity-90">
+                        €{(() => {
+                          const toppingsCost = selectedToppings.reduce((sum, id) => {
+                            const topping = toppingsData.find(t => t.topping_id === id);
+                            return sum + (topping?.price || 0);
+                          }, 0);
+                          const saucesCost = selectedSauces.reduce((sum, id) => {
+                            const sauce = toppingsData.find(t => t.topping_id === id);
+                            return sum + (sauce?.price || 0);
+                          }, 0);
+                          return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                        })()}
+                      </span>
                     </span>
                   )}
                 </button>
@@ -832,7 +1016,19 @@ const UV_ProductDetail: React.FC = () => {
                 ) : (
                   <span className="flex items-center justify-center gap-2">
                     <span>Add to Cart</span>
-                    <span className="text-sm">€{(product.price * selectedQuantity).toFixed(2)}</span>
+                    <span className="text-sm">
+                      €{(() => {
+                        const toppingsCost = selectedToppings.reduce((sum, id) => {
+                          const topping = toppingsData.find(t => t.topping_id === id);
+                          return sum + (topping?.price || 0);
+                        }, 0);
+                        const saucesCost = selectedSauces.reduce((sum, id) => {
+                          const sauce = toppingsData.find(t => t.topping_id === id);
+                          return sum + (sauce?.price || 0);
+                        }, 0);
+                        return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                      })()}
+                    </span>
                   </span>
                 )}
               </button>
