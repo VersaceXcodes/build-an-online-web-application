@@ -357,20 +357,12 @@ export const AppRoutes: React.FC = () => {
               
               <Route 
                 path="/checkout" 
-                element={
-                  <ProtectedRoute>
-                    <UV_Checkout_Step1 />
-                  </ProtectedRoute>
-                } 
+                element={<UV_Checkout_Step1 />} 
               />
               
               <Route 
                 path="/checkout/payment" 
-                element={
-                  <ProtectedRoute>
-                    <UV_Checkout_Step2 />
-                  </ProtectedRoute>
-                } 
+                element={<UV_Checkout_Step2 />} 
               />
               
               <Route 
