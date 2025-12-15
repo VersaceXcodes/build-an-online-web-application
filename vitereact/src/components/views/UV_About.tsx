@@ -258,8 +258,8 @@ const UV_About: React.FC = () => {
           </div>
 
           <div className="relative">
-            {/* Timeline line (desktop only) */}
-            <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-luxury-gold-500/30"></div>
+            {/* Continuous vertical orange line */}
+            <div className="absolute left-1/2 top-8 bottom-8 transform -translate-x-1/2 w-0.5 bg-kake-caramel-500 rounded-full"></div>
 
             <div className="space-y-12 lg:space-y-16">
               {page_content.milestones.map((milestone, index) => (
@@ -269,13 +269,13 @@ const UV_About: React.FC = () => {
                     index % 2 === 0 ? 'lg:flex-row-reverse' : ''
                   }`}
                 >
-                  {/* Timeline dot */}
-                  <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-luxury-gold-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                  {/* Timeline dot with orange border and cream background */}
+                  <div className="absolute left-1/2 transform -translate-x-1/2 w-3 h-3 bg-kake-cream-50 rounded-full border-2 border-kake-caramel-500 shadow-md z-10"></div>
 
                   {/* Content card */}
                   <div className={`w-full lg:w-5/12 ${index % 2 === 0 ? 'lg:text-right lg:pr-12' : 'lg:pl-12'}`}>
                     <div className="bg-white rounded-xl shadow-lg p-8 border border-kake-cream-200 hover:shadow-xl transition-shadow duration-200">
-                      <div className="inline-block px-4 py-2 gradient-gold text-luxury-darkCharcoal font-bold text-lg rounded-lg mb-4">
+                      <div className="inline-block px-4 py-2 gradient-caramel text-white font-bold text-lg rounded-lg mb-4">
                         {milestone.year}
                       </div>
                       <h3 className="font-serif text-2xl font-bold text-kake-chocolate-500 mb-3">
