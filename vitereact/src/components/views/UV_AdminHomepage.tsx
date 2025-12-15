@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
@@ -10,7 +11,8 @@ import {
   Upload,
   Link as LinkIcon,
   AlertCircle,
-  Check
+  Check,
+  Edit
 } from 'lucide-react';
 
 // ============================================================================
@@ -102,11 +104,7 @@ const UV_AdminHomepage: React.FC = () => {
     queryFn: () => fetchCorporateSection(authToken!),
     enabled: !!authToken,
     staleTime: 60000,
-    refetchOnWindowFocus: false,
-    onSuccess: (data) => {
-      // Initialize form with fetched data
-      setFormData(data);
-    }
+    refetchOnWindowFocus: false
   });
 
   // Initialize form data when section loads
@@ -174,14 +172,14 @@ const UV_AdminHomepage: React.FC = () => {
   // Loading state
   if (loadingSection) {
     return (
-      <div className="min-h-screen bg-luxury-darkCocoa py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="glass-luxury rounded-xl shadow-luxury p-8 animate-pulse">
-            <div className="h-8 bg-luxury-gold-500/20 rounded w-1/3 mb-6"></div>
+          <div className="bg-white rounded-xl shadow-lg p-8 animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
             <div className="space-y-4">
-              <div className="h-12 bg-luxury-gold-500/10 rounded"></div>
-              <div className="h-12 bg-luxury-gold-500/10 rounded"></div>
-              <div className="h-32 bg-luxury-gold-500/10 rounded"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-32 bg-gray-200 rounded"></div>
             </div>
           </div>
         </div>
@@ -189,14 +187,115 @@ const UV_AdminHomepage: React.FC = () => {
     );
   }
 
-  // Error state
+  // Error state - show friendly message directing to Event Alerts
   if (sectionError) {
     return (
-      <div className="min-h-screen bg-luxury-darkCocoa py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="glass-luxury border-2 border-red-500/50 rounded-xl p-6 text-center">
-            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <p className="text-red-400 font-medium">Failed to load homepage section</p>
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <div className="text-center mb-6">
+              <AlertCircle className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Homepage Content Management
+              </h2>
+              <p className="text-gray-600">
+                Control your homepage Corporate & Event Orders section through Event Alerts
+              </p>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">How to Manage Homepage Content</h3>
+              <ol className="list-decimal list-inside space-y-2 text-blue-800">
+                <li>Go to the <strong>Event Alerts</strong> page</li>
+                <li>Create a new event or edit an existing one</li>
+                <li>Check the <strong>"Use as Drop of the Month"</strong> option</li>
+                <li>Fill in the special price, available until date, and pre-order button details</li>
+                <li>Save the event - it will automatically appear in the homepage Corporate & Event Orders section</li>
+              </ol>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Important:</p>
+                  <p>Only ONE event can be marked as "Drop of the Month" at a time. When you mark a new event, any previously marked event will automatically be unmarked.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Link
+                to="/admin/events"
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-center"
+              >
+                Go to Event Alerts
+              </Link>
+              <Link
+                to="/admin/dashboard"
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If no data but no error, show the same helpful message
+  if (!loadingSection && !section) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+            <div className="text-center mb-6">
+              <AlertCircle className="h-16 w-16 text-blue-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                No Homepage Content Configured
+              </h2>
+              <p className="text-gray-600">
+                Set up your homepage Corporate & Event Orders section through Event Alerts
+              </p>
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-900 mb-3">How to Set Up Homepage Content</h3>
+              <ol className="list-decimal list-inside space-y-2 text-blue-800">
+                <li>Go to the <strong>Event Alerts</strong> page</li>
+                <li>Create a new event or edit an existing one</li>
+                <li>Check the <strong>"Use as Drop of the Month"</strong> option</li>
+                <li>Fill in the special price, available until date, and pre-order button details</li>
+                <li>Make sure the event is marked as <strong>"Make visible on landing page"</strong></li>
+                <li>Save the event - it will automatically appear in the homepage Corporate & Event Orders section</li>
+              </ol>
+            </div>
+
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-amber-800">
+                  <p className="font-semibold mb-1">Important:</p>
+                  <p>Only ONE event can be marked as "Drop of the Month" at a time. When you mark a new event, any previously marked event will automatically be unmarked.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <Link
+                to="/admin/events"
+                className="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-center"
+              >
+                Go to Event Alerts
+              </Link>
+              <Link
+                to="/admin/dashboard"
+                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+              >
+                Back to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -204,290 +303,138 @@ const UV_AdminHomepage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-luxury-darkCocoa py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-serif text-3xl font-bold text-luxury-champagne mb-2">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Landing Page Content
           </h1>
-          <p className="text-luxury-champagne/70 font-sans">
-            Manage the "Corporate & Event Orders" section on the homepage
+          <p className="text-gray-600">
+            Viewing Drop of the Month - Edit in Event Alerts
           </p>
         </div>
 
-        {/* Form */}
-        <div className="glass-luxury rounded-xl shadow-luxury-lg p-6 md:p-8 space-y-6">
+        {/* Read-only Display */}
+        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 space-y-6">
+          
+          {/* Info Banner */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-blue-800">
+                <p className="font-semibold mb-1">Viewing Drop of the Month Event</p>
+                <p>This content is managed through Event Alerts. Click "Edit in Event Alerts" below to make changes.</p>
+              </div>
+            </div>
+          </div>
           
           {/* Section Visibility Toggle */}
-          <div className="flex items-center justify-between p-4 glass-luxury-darker rounded-lg border border-luxury-gold-500/30">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
             <div>
-              <label className="font-semibold text-luxury-champagne font-sans">
+              <label className="font-semibold text-gray-900">
                 Section Visibility
               </label>
-              <p className="text-sm text-luxury-champagne/60 mt-1 font-sans">
+              <p className="text-sm text-gray-600 mt-1">
                 {formData.is_enabled ? 'Section is visible on the homepage' : 'Section is hidden from the homepage'}
               </p>
             </div>
-            <button
-              onClick={() => handleFieldChange('is_enabled', !formData.is_enabled)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-sans ${
+            <span
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
                 formData.is_enabled
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'bg-gray-500 text-white hover:bg-gray-600'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-gray-100 text-gray-600'
               }`}
             >
               {formData.is_enabled ? (
                 <>
                   <Eye className="h-5 w-5" />
-                  <span>Visible</span>
+                  <span className="font-medium">Visible</span>
                 </>
               ) : (
                 <>
                   <EyeOff className="h-5 w-5" />
-                  <span>Hidden</span>
+                  <span className="font-medium">Hidden</span>
                 </>
               )}
-            </button>
+            </span>
           </div>
 
-          {/* Section Title */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Section Title
-            </label>
-            <input
-              type="text"
-              value={formData.section_title || ''}
-              onChange={(e) => handleFieldChange('section_title', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Corporate & Event Orders"
-            />
-          </div>
-
-          {/* Section Subtitle */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Section Subtitle <span className="text-luxury-champagne/50">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.section_subtitle || ''}
-              onChange={(e) => handleFieldChange('section_subtitle', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Make your special occasions unforgettable..."
-            />
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-luxury-gold-500/20 my-6"></div>
-
-          {/* Card Title */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Card Title <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.card_title || ''}
-              onChange={(e) => handleFieldChange('card_title', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Winter Spice Loaf"
-              required
-            />
-          </div>
-
-          {/* Card Description */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Card Description <span className="text-red-400">*</span>
-            </label>
-            <textarea
-              value={formData.card_description || ''}
-              onChange={(e) => handleFieldChange('card_description', e.target.value)}
-              rows={4}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Elevate your corporate events, celebrations, and special occasions..."
-              required
-            />
-          </div>
-
-          {/* Card Image */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Card Image <span className="text-red-400">*</span>
-            </label>
-            
-            {/* Image upload mode toggle */}
-            <div className="flex space-x-2 mb-3">
-              <button
-                onClick={() => setImageUploadMode('url')}
-                className={`px-4 py-2 rounded-lg transition-colors font-sans ${
-                  imageUploadMode === 'url'
-                    ? 'gradient-gold text-luxury-darkCharcoal'
-                    : 'bg-luxury-darkCharcoal text-luxury-champagne border border-luxury-gold-500/30 hover:border-luxury-gold-500'
-                }`}
-              >
-                <LinkIcon className="h-4 w-4 inline mr-2" />
-                Image URL
-              </button>
-              <button
-                onClick={() => setImageUploadMode('upload')}
-                className={`px-4 py-2 rounded-lg transition-colors font-sans ${
-                  imageUploadMode === 'upload'
-                    ? 'gradient-gold text-luxury-darkCharcoal'
-                    : 'bg-luxury-darkCharcoal text-luxury-champagne border border-luxury-gold-500/30 hover:border-luxury-gold-500'
-                }`}
-              >
-                <Upload className="h-4 w-4 inline mr-2" />
-                Upload
-              </button>
+          {/* Read-only fields */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Event Title</label>
+              <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                {formData.card_title || 'N/A'}
+              </div>
             </div>
 
-            {/* URL input */}
-            {imageUploadMode === 'url' && (
-              <input
-                type="text"
-                value={formData.card_image_url || ''}
-                onChange={(e) => handleFieldChange('card_image_url', e.target.value)}
-                className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-                placeholder="https://images.unsplash.com/..."
-                required
-              />
-            )}
-
-            {/* File upload */}
-            {imageUploadMode === 'upload' && (
-              <div className="relative">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={isUploadingImage}
-                  className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-luxury-gold-500 file:text-luxury-darkCharcoal hover:file:bg-luxury-gold-600 disabled:opacity-50 font-sans"
-                />
-                {isUploadingImage && (
-                  <div className="absolute inset-0 bg-luxury-darkCharcoal/80 rounded-lg flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-luxury-gold-500"></div>
-                  </div>
-                )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 whitespace-pre-wrap">
+                {formData.card_description || 'N/A'}
               </div>
-            )}
+            </div>
 
-            {/* Image preview */}
-            {(uploadedImagePreview || formData.card_image_url) && (
-              <div className="mt-4">
+            {formData.card_image_url && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
                 <img
-                  src={uploadedImagePreview || formData.card_image_url}
-                  alt="Preview"
-                  className="w-full h-48 object-cover rounded-lg border border-luxury-gold-500/30"
+                  src={formData.card_image_url}
+                  alt="Event preview"
+                  className="w-full max-w-md h-48 object-cover rounded-lg border border-gray-200"
                 />
               </div>
             )}
-          </div>
 
-          {/* Special Price */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Special Price <span className="text-luxury-champagne/50">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.special_price || ''}
-              onChange={(e) => handleFieldChange('special_price', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="€24.99"
-            />
-          </div>
+            {formData.special_price && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Special Price</label>
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                  €{formData.special_price}
+                </div>
+              </div>
+            )}
 
-          {/* Available Until */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Available Until <span className="text-luxury-champagne/50">(optional)</span>
-            </label>
-            <input
-              type="text"
-              value={formData.available_until || ''}
-              onChange={(e) => handleFieldChange('available_until', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Dec 31"
-            />
-            <p className="mt-2 text-sm text-luxury-champagne/50 font-sans">
-              This is a display-only field. Enter text like "Dec 31" or "End of Month"
-            </p>
-          </div>
+            {formData.available_until && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Until</label>
+                <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                  {new Date(formData.available_until).toLocaleDateString('en-IE', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+              </div>
+            )}
 
-          {/* Divider */}
-          <div className="border-t border-luxury-gold-500/20 my-6"></div>
-
-          {/* CTA Text */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Call-to-Action Button Text <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.cta_text || ''}
-              onChange={(e) => handleFieldChange('cta_text', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="Pre-order Now"
-              required
-            />
-          </div>
-
-          {/* CTA Link */}
-          <div>
-            <label className="block text-sm font-medium text-luxury-champagne mb-2 font-sans">
-              Call-to-Action Button Link <span className="text-red-400">*</span>
-            </label>
-            <input
-              type="text"
-              value={formData.cta_link || ''}
-              onChange={(e) => handleFieldChange('cta_link', e.target.value)}
-              className="w-full px-4 py-3 bg-luxury-darkCharcoal border border-luxury-gold-500/30 rounded-lg text-luxury-champagne placeholder-luxury-champagne/40 focus:outline-none focus:ring-2 focus:ring-luxury-gold-500 font-sans"
-              placeholder="/corporate-order"
-              required
-            />
-            <p className="mt-2 text-sm text-luxury-champagne/50 font-sans">
-              Use internal routes like "/corporate-order" or external URLs like "https://example.com"
-            </p>
-          </div>
-
-          {/* Save Button */}
-          <div className="pt-6 border-t border-luxury-gold-500/20">
-            <button
-              onClick={handleSaveChanges}
-              disabled={updateSectionMutation.isLoading || !formData.card_title || !formData.card_description || !formData.card_image_url || !formData.cta_text || !formData.cta_link}
-              className="w-full gradient-gold text-luxury-darkCharcoal font-semibold px-6 py-4 rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 font-sans"
-            >
-              {updateSectionMutation.isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-luxury-darkCharcoal"></div>
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-5 w-5" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Info box */}
-          <div className="glass-luxury-darker rounded-lg p-4 border border-luxury-gold-500/30">
-            <div className="flex items-start space-x-3">
-              <AlertCircle className="h-5 w-5 text-luxury-gold-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-luxury-champagne/70 font-sans">
-                <p className="font-semibold text-luxury-champagne mb-1">Important Notes:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Changes take effect immediately on the homepage</li>
-                  <li>If section is disabled, it will be completely hidden from visitors</li>
-                  <li>Special price and "Available Until" are optional display fields</li>
-                  <li>Recommended image size: 800x600px or larger</li>
-                </ul>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pre-order Button Label</label>
+              <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                {formData.cta_text || 'N/A'}
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Pre-order Button URL</label>
+              <div className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                {formData.cta_link || 'N/A'}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="pt-6 border-t border-gray-200 flex gap-3">
+            <Link
+              to="/admin/events"
+              className="flex-1 bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center flex items-center justify-center gap-2"
+            >
+              <Edit className="h-5 w-5" />
+              Edit in Event Alerts
+            </Link>
+            <Link
+              to="/admin/dashboard"
+              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+            >
+              Back to Dashboard
+            </Link>
           </div>
         </div>
       </div>

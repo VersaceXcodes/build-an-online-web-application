@@ -2578,101 +2578,90 @@ app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin'])
 // ============================================================================
 
 // Public endpoint - Get homepage corporate section content
+// Public endpoint - Get homepage corporate section (uses Drop of the Month from Event Alerts)
 app.get('/api/homepage/corporate-section', async (req, res) => {
   const client = await pool.connect();
   try {
-    const result = await client.query('SELECT * FROM homepage_corporate_section WHERE id = 1');
-    client.release();
+    const now = new Date().toISOString();
+    // Query for visible Drop of the Month events that are still available
+    const result = await client.query(
+      'SELECT * FROM stall_events WHERE is_visible = true AND is_drop_of_the_month = true AND (available_until IS NULL OR available_until >= $1) ORDER BY updated_at DESC LIMIT 1',
+      [now]
+    );
     
     if (result.rows.length === 0) {
-      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
+      client.release();
+      return res.json(null); // Return null if no drop of the month configured
     }
     
-    const section = result.rows[0];
+    const event = result.rows[0];
+    client.release();
     
-    // If section is disabled, return null
-    if (!section.is_enabled) {
-      return res.json(null);
-    }
-    
-    res.json(section);
+    // Return formatted response matching old homepage_corporate_section schema
+    res.json({
+      id: event.event_id,
+      section_title: 'Corporate & Event Orders',
+      section_subtitle: 'Make your special occasions unforgettable',
+      card_title: event.event_name,
+      card_description: event.description || '',
+      card_image_url: event.event_image_url || '',
+      special_price: event.special_price ? parseFloat(event.special_price) : null,
+      available_until: event.available_until,
+      cta_text: event.preorder_button_label || 'Pre-order Now',
+      cta_link: event.preorder_button_url || '/corporate-order',
+      is_enabled: event.is_visible,
+      updated_at: event.updated_at,
+      created_at: event.created_at
+    });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch corporate section', error, 'SECTION_FETCH_ERROR'));
   }
 });
 
-// Admin endpoint - Get homepage corporate section content (includes disabled sections)
+// Admin endpoint - Get homepage corporate section content (alias to Drop of the Month event)
 app.get('/api/admin/homepage/corporate-section', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
-    const result = await client.query('SELECT * FROM homepage_corporate_section WHERE id = 1');
-    client.release();
+    // Query for the Drop of the Month event (visible or hidden)
+    const result = await client.query(
+      'SELECT * FROM stall_events WHERE is_drop_of_the_month = true ORDER BY updated_at DESC LIMIT 1'
+    );
     
     if (result.rows.length === 0) {
-      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
+      client.release();
+      return res.status(404).json(createErrorResponse('No Drop of the Month event configured. Please create an Event Alert and mark it as Drop of the Month.', null, 'SECTION_NOT_FOUND'));
     }
     
-    res.json(result.rows[0]);
+    const event = result.rows[0];
+    client.release();
+    
+    // Return formatted response matching old homepage_corporate_section schema
+    res.json({
+      id: event.event_id,
+      section_title: 'Corporate & Event Orders',
+      section_subtitle: 'Make your special occasions unforgettable',
+      card_title: event.event_name,
+      card_description: event.description || '',
+      card_image_url: event.event_image_url || '',
+      special_price: event.special_price ? parseFloat(event.special_price) : null,
+      available_until: event.available_until,
+      cta_text: event.preorder_button_label || 'Pre-order Now',
+      cta_link: event.preorder_button_url || '/corporate-order',
+      is_enabled: event.is_visible,
+      updated_at: event.updated_at,
+      created_at: event.created_at
+    });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch corporate section', error, 'SECTION_FETCH_ERROR'));
   }
 });
 
-// Admin endpoint - Update homepage corporate section content
+// Admin endpoint - Update homepage corporate section (no longer used - redirect to Event Alerts)
+// This endpoint is kept for backwards compatibility but returns a message directing admins to Event Alerts
 app.put('/api/admin/homepage/corporate-section', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
-  const client = await pool.connect();
-  try {
-    const {
-      section_title,
-      section_subtitle,
-      card_title,
-      card_description,
-      card_image_url,
-      special_price,
-      available_until,
-      cta_text,
-      cta_link,
-      is_enabled
-    } = req.body;
-    
-    // Validate required fields
-    if (!card_title || !card_description || !card_image_url || !cta_text || !cta_link) {
-      return res.status(400).json(createErrorResponse('Missing required fields', null, 'VALIDATION_ERROR'));
-    }
-    
-    const now = new Date().toISOString();
-    
-    const result = await client.query(
-      `UPDATE homepage_corporate_section 
-       SET section_title = $1, 
-           section_subtitle = $2, 
-           card_title = $3, 
-           card_description = $4, 
-           card_image_url = $5, 
-           special_price = $6, 
-           available_until = $7, 
-           cta_text = $8, 
-           cta_link = $9, 
-           is_enabled = $10, 
-           updated_at = $11 
-       WHERE id = 1 
-       RETURNING *`,
-      [section_title, section_subtitle, card_title, card_description, card_image_url, special_price, available_until, cta_text, cta_link, is_enabled, now]
-    );
-    
-    client.release();
-    
-    if (result.rows.length === 0) {
-      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
-    }
-    
-    res.json(result.rows[0]);
-  } catch (error) {
-    client.release();
-    res.status(500).json(createErrorResponse('Failed to update corporate section', error, 'SECTION_UPDATE_ERROR'));
-  }
+  res.status(400).json(createErrorResponse('This endpoint is deprecated. Please use Event Alerts to manage homepage content. Go to Admin Dashboard > Event Alerts and create or edit an event with "Drop of the Month" checked.', null, 'DEPRECATED_ENDPOINT'));
 });
 
 app.get('/api/event-alerts/drop-of-the-month', async (req, res) => {
