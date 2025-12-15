@@ -29,6 +29,14 @@ interface Location {
   just_eat_url: string | null;
   deliveroo_url: string | null;
   opening_hours: string; // JSON string
+  opening_hours_structured?: Array<{
+    id: string;
+    location_id: string;
+    day_of_week: number;
+    opens_at: string | null;
+    closes_at: string | null;
+    is_closed: boolean;
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -44,20 +52,21 @@ interface OpeningHours {
 // API FUNCTIONS
 // ============================================================================
 
-const fetchLocations = async (): Promise<Location[]> => {
+const fetchLocationBySlug = async (slug: string): Promise<Location> => {
   const response = await axios.get(
-    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations`
+    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations/slug/${slug}`
   );
   
   // Transform numeric fields from strings to numbers
-  return response.data.map((loc: any) => ({
+  const loc = response.data;
+  return {
     ...loc,
     delivery_radius_km: loc.delivery_radius_km ? Number(loc.delivery_radius_km) : null,
     delivery_fee: loc.delivery_fee ? Number(loc.delivery_fee) : null,
     free_delivery_threshold: loc.free_delivery_threshold ? Number(loc.free_delivery_threshold) : null,
     estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? Number(loc.estimated_delivery_time_minutes) : null,
     estimated_preparation_time_minutes: Number(loc.estimated_preparation_time_minutes || 20),
-  }));
+  };
 };
 
 // ============================================================================
@@ -96,50 +105,48 @@ const UV_LocationInternal: React.FC = () => {
   const setFulfillmentMethod = useAppStore(state => state.set_fulfillment_method);
   const setLocationDetails = useAppStore(state => state.set_location_details);
   
-  // Fetch locations using react-query
+  // Fetch location by slug using react-query
   const { 
-    data: locations, 
+    data: location_details, 
     isLoading, 
     error,
     isError
   } = useQuery({
-    queryKey: ['locations'],
-    queryFn: fetchLocations,
+    queryKey: ['location', location_name],
+    queryFn: () => fetchLocationBySlug(location_name!),
+    enabled: !!location_name,
     staleTime: 60000, // Cache for 1 minute
     retry: 2,
     retryDelay: 1000,
   });
   
-  // Helper function to convert location name to URL slug
-  const nameToSlug = (name: string): string => {
-    return name.toLowerCase().trim().replace(/\s+/g, '-');
-  };
-
-  // Find matching location from fetched data by comparing URL slug
-  const location_details = useMemo(() => {
-    if (!locations || !location_name) return null;
+  // Parse opening hours from structured data or JSON fallback
+  const opening_hours_parsed = useMemo(() => {
+    if (!location_details) return null;
     
-    // Normalize the URL parameter
-    const normalizedUrlSlug = location_name.toLowerCase().trim();
-    
-    // Find location by converting location_name to slug and comparing
-    const matchedLocation = locations.find(
-      loc => nameToSlug(loc.location_name) === normalizedUrlSlug
-    );
-    
-    // Debug log
-    if (!matchedLocation) {
-      console.log('Location not found. URL slug:', normalizedUrlSlug);
-      console.log('Available locations:', locations.map(l => ({ name: l.location_name, slug: nameToSlug(l.location_name) })));
+    // Check if we have structured opening hours from the new API
+    if (location_details.opening_hours_structured && Array.isArray(location_details.opening_hours_structured)) {
+      // Convert from structured format to the expected format
+      const hoursMap: OpeningHours = {};
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      
+      location_details.opening_hours_structured.forEach((hour: any) => {
+        const dayName = dayNames[hour.day_of_week];
+        hoursMap[dayName] = {
+          open: hour.is_closed ? 'Closed' : hour.opens_at,
+          close: hour.is_closed ? 'Closed' : hour.closes_at,
+        };
+      });
+      
+      return hoursMap;
     }
     
-    return matchedLocation || null;
-  }, [locations, location_name]);
-  
-  // Parse opening hours
-  const opening_hours_parsed = useMemo(() => {
-    if (!location_details?.opening_hours) return null;
-    return parseOpeningHours(location_details.opening_hours);
+    // Fallback to JSON parsing if no structured data
+    if (location_details.opening_hours) {
+      return parseOpeningHours(location_details.opening_hours);
+    }
+    
+    return null;
   }, [location_details]);
   
   // Get today's hours for quick display
@@ -211,7 +218,7 @@ const UV_LocationInternal: React.FC = () => {
   // ============================================================================
   
   // Show error if query failed OR if loading complete but no location found
-  if (isError || (!isLoading && locations && !location_details)) {
+  if (isError || (!isLoading && !location_details)) {
     return (
       <>
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

@@ -400,12 +400,118 @@ app.get('/api/locations/:location_id', async (req, res) => {
   }
 });
 
+// Get location by slug (public)
+app.get('/api/locations/slug/:slug', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { slug } = req.params;
+    const result = await client.query('SELECT * FROM locations WHERE slug = $1 AND is_active = true', [slug]);
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    }
+    
+    const loc = result.rows[0];
+    
+    // Get opening hours for this location
+    const hoursResult = await client.query(
+      'SELECT * FROM opening_hours WHERE location_id = $1 ORDER BY day_of_week',
+      [loc.location_id]
+    );
+    
+    client.release();
+    res.json({ 
+      ...loc, 
+      delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, 
+      delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, 
+      free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, 
+      estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, 
+      estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes),
+      opening_hours_structured: hoursResult.rows
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch location', error, 'LOCATION_FETCH_ERROR'));
+  }
+});
+
+// Create new location (admin only)
+app.post('/api/locations', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { 
+      location_name, 
+      slug,
+      address_line1, 
+      address_line2, 
+      city, 
+      postal_code, 
+      phone_number, 
+      email, 
+      is_collection_enabled = true, 
+      is_delivery_enabled = true, 
+      delivery_radius_km, 
+      delivery_fee, 
+      free_delivery_threshold, 
+      estimated_delivery_time_minutes, 
+      estimated_preparation_time_minutes = 20, 
+      allow_scheduled_pickups = true, 
+      just_eat_url, 
+      deliveroo_url,
+      is_active = true
+    } = req.body;
+
+    // Validate required fields
+    if (!location_name || !slug || !address_line1 || !city || !postal_code || !phone_number || !email) {
+      return res.status(400).json(createErrorResponse('Missing required fields', null, 'MISSING_FIELDS'));
+    }
+
+    // Check if slug already exists
+    const slugCheck = await client.query('SELECT location_id FROM locations WHERE slug = $1', [slug]);
+    if (slugCheck.rows.length > 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('Slug already exists', null, 'SLUG_EXISTS'));
+    }
+
+    const location_id = generateId('loc');
+    const now = new Date().toISOString();
+    const opening_hours = '{}'; // Default empty JSON
+
+    const result = await client.query(
+      `INSERT INTO locations (
+        location_id, location_name, slug, address_line1, address_line2, city, postal_code, 
+        phone_number, email, is_collection_enabled, is_delivery_enabled, delivery_radius_km, 
+        delivery_fee, free_delivery_threshold, estimated_delivery_time_minutes, 
+        estimated_preparation_time_minutes, allow_scheduled_pickups, just_eat_url, 
+        deliveroo_url, opening_hours, is_active, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+      RETURNING *`,
+      [
+        location_id, location_name, slug, address_line1, address_line2, city, postal_code,
+        phone_number, email, is_collection_enabled, is_delivery_enabled, delivery_radius_km,
+        delivery_fee, free_delivery_threshold, estimated_delivery_time_minutes,
+        estimated_preparation_time_minutes, allow_scheduled_pickups, just_eat_url,
+        deliveroo_url, opening_hours, is_active, now, now
+      ]
+    );
+
+    const loc = result.rows[0];
+    client.release();
+    res.status(201).json({ ...loc, delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes) });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create location', error, 'LOCATION_CREATE_ERROR'));
+  }
+});
+
 app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const { location_id } = req.params;
     const { 
       location_name, 
+      slug,
       address_line1, 
       address_line2, 
       city, 
@@ -422,7 +528,8 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
       allow_scheduled_pickups, 
       just_eat_url, 
       deliveroo_url, 
-      opening_hours 
+      opening_hours,
+      is_active
     } = req.body;
 
     // Check if location exists
@@ -432,37 +539,48 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
       return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
     }
 
+    // If slug is being updated, check it's unique
+    if (slug) {
+      const slugCheck = await client.query('SELECT location_id FROM locations WHERE slug = $1 AND location_id != $2', [slug, location_id]);
+      if (slugCheck.rows.length > 0) {
+        client.release();
+        return res.status(400).json(createErrorResponse('Slug already exists', null, 'SLUG_EXISTS'));
+      }
+    }
+
     const now = new Date().toISOString();
     
     // Update location
     const result = await client.query(
       `UPDATE locations SET 
         location_name = COALESCE($1, location_name),
-        address_line1 = COALESCE($2, address_line1),
-        address_line2 = $3,
-        city = COALESCE($4, city),
-        postal_code = COALESCE($5, postal_code),
-        phone_number = COALESCE($6, phone_number),
-        email = COALESCE($7, email),
-        is_collection_enabled = COALESCE($8, is_collection_enabled),
-        is_delivery_enabled = COALESCE($9, is_delivery_enabled),
-        delivery_radius_km = $10,
-        delivery_fee = $11,
-        free_delivery_threshold = $12,
-        estimated_delivery_time_minutes = $13,
-        estimated_preparation_time_minutes = COALESCE($14, estimated_preparation_time_minutes),
-        allow_scheduled_pickups = COALESCE($15, allow_scheduled_pickups),
-        just_eat_url = $16,
-        deliveroo_url = $17,
-        opening_hours = COALESCE($18, opening_hours),
-        updated_at = $19
-      WHERE location_id = $20
+        slug = COALESCE($2, slug),
+        address_line1 = COALESCE($3, address_line1),
+        address_line2 = $4,
+        city = COALESCE($5, city),
+        postal_code = COALESCE($6, postal_code),
+        phone_number = COALESCE($7, phone_number),
+        email = COALESCE($8, email),
+        is_collection_enabled = COALESCE($9, is_collection_enabled),
+        is_delivery_enabled = COALESCE($10, is_delivery_enabled),
+        delivery_radius_km = $11,
+        delivery_fee = $12,
+        free_delivery_threshold = $13,
+        estimated_delivery_time_minutes = $14,
+        estimated_preparation_time_minutes = COALESCE($15, estimated_preparation_time_minutes),
+        allow_scheduled_pickups = COALESCE($16, allow_scheduled_pickups),
+        just_eat_url = $17,
+        deliveroo_url = $18,
+        opening_hours = COALESCE($19, opening_hours),
+        is_active = COALESCE($20, is_active),
+        updated_at = $21
+      WHERE location_id = $22
       RETURNING *`,
       [
-        location_name, address_line1, address_line2, city, postal_code, phone_number, email,
+        location_name, slug, address_line1, address_line2, city, postal_code, phone_number, email,
         is_collection_enabled, is_delivery_enabled, delivery_radius_km, delivery_fee,
         free_delivery_threshold, estimated_delivery_time_minutes, estimated_preparation_time_minutes,
-        allow_scheduled_pickups, just_eat_url, deliveroo_url, opening_hours, now, location_id
+        allow_scheduled_pickups, just_eat_url, deliveroo_url, opening_hours, is_active, now, location_id
       ]
     );
 
@@ -472,6 +590,121 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to update location', error, 'LOCATION_UPDATE_ERROR'));
+  }
+});
+
+// Delete location (admin only - soft delete by marking inactive)
+app.delete('/api/locations/:location_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location_id } = req.params;
+    
+    // Check if location exists
+    const checkResult = await client.query('SELECT location_id FROM locations WHERE location_id = $1', [location_id]);
+    if (checkResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    }
+
+    // Soft delete by marking as inactive
+    const now = new Date().toISOString();
+    await client.query('UPDATE locations SET is_active = false, updated_at = $1 WHERE location_id = $2', [now, location_id]);
+    
+    client.release();
+    res.json({ success: true, message: 'Location deactivated successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to delete location', error, 'LOCATION_DELETE_ERROR'));
+  }
+});
+
+// ============================================
+// OPENING HOURS ENDPOINTS
+// ============================================
+
+// Get opening hours for a location
+app.get('/api/locations/:location_id/opening-hours', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { location_id } = req.params;
+    const result = await client.query(
+      'SELECT * FROM opening_hours WHERE location_id = $1 ORDER BY day_of_week',
+      [location_id]
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch opening hours', error, 'OPENING_HOURS_FETCH_ERROR'));
+  }
+});
+
+// Update opening hours for a location (admin only)
+app.put('/api/locations/:location_id/opening-hours', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location_id } = req.params;
+    const { hours } = req.body; // Array of { day_of_week, opens_at, closes_at, is_closed }
+
+    if (!Array.isArray(hours)) {
+      return res.status(400).json(createErrorResponse('Hours must be an array', null, 'INVALID_HOURS'));
+    }
+
+    // Check if location exists
+    const checkResult = await client.query('SELECT location_id FROM locations WHERE location_id = $1', [location_id]);
+    if (checkResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    }
+
+    const now = new Date().toISOString();
+
+    // Begin transaction
+    await client.query('BEGIN');
+
+    // Delete existing hours for this location
+    await client.query('DELETE FROM opening_hours WHERE location_id = $1', [location_id]);
+
+    // Insert new hours
+    for (const hour of hours) {
+      const { day_of_week, opens_at, closes_at, is_closed } = hour;
+      
+      // Validate day_of_week
+      if (day_of_week < 0 || day_of_week > 6) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(400).json(createErrorResponse('Invalid day_of_week (must be 0-6)', null, 'INVALID_DAY'));
+      }
+
+      // If not closed, require opens_at and closes_at
+      if (!is_closed && (!opens_at || !closes_at)) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(400).json(createErrorResponse('opens_at and closes_at required when not closed', null, 'INVALID_HOURS'));
+      }
+
+      const id = generateId('oh');
+      await client.query(
+        'INSERT INTO opening_hours (id, location_id, day_of_week, opens_at, closes_at, is_closed, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+        [id, location_id, day_of_week, opens_at, closes_at, is_closed, now, now]
+      );
+    }
+
+    // Commit transaction
+    await client.query('COMMIT');
+
+    // Fetch and return updated hours
+    const result = await client.query(
+      'SELECT * FROM opening_hours WHERE location_id = $1 ORDER BY day_of_week',
+      [location_id]
+    );
+
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update opening hours', error, 'OPENING_HOURS_UPDATE_ERROR'));
   }
 });
 
