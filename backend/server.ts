@@ -2504,10 +2504,24 @@ app.get('/api/stall-events', async (req, res) => {
 app.post('/api/stall-events', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
-    const { event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible = false } = req.body;
+    const { event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible = false, is_drop_of_the_month = false, special_price, available_until, preorder_button_label, preorder_button_url } = req.body;
+    
+    // Validate Drop of the Month requirements
+    if (is_drop_of_the_month) {
+      if (!event_name || !description) {
+        return res.status(400).json(createErrorResponse('Title and description are required for Drop of the Month', null, 'VALIDATION_ERROR'));
+      }
+      if (special_price !== null && special_price !== undefined && special_price <= 0) {
+        return res.status(400).json(createErrorResponse('Special price must be a positive number', null, 'VALIDATION_ERROR'));
+      }
+      
+      // Unset is_drop_of_the_month for all other events
+      await client.query('UPDATE stall_events SET is_drop_of_the_month = false WHERE is_drop_of_the_month = true');
+    }
+    
     const event_id = generateId('event');
     const now = new Date().toISOString();
-    await client.query('INSERT INTO stall_events (event_id, event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)', [event_id, event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible, now, now]);
+    await client.query('INSERT INTO stall_events (event_id, event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible, is_drop_of_the_month, special_price, available_until, preorder_button_label, preorder_button_url, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)', [event_id, event_name, venue_location, event_date, event_time, description, event_image_url, cta_button_text, cta_button_action, cta_button_url, is_visible, is_drop_of_the_month, special_price, available_until, preorder_button_label, preorder_button_url, now, now]);
     const result = await client.query('SELECT * FROM stall_events WHERE event_id = $1', [event_id]);
     client.release();
     res.status(201).json(result.rows[0]);
@@ -2520,10 +2534,26 @@ app.post('/api/stall-events', authenticateToken, requireRole(['admin']), async (
 app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
+    // Validate Drop of the Month requirements if being set
+    if (req.body.is_drop_of_the_month === true) {
+      if (req.body.event_name !== undefined && !req.body.event_name) {
+        return res.status(400).json(createErrorResponse('Title is required for Drop of the Month', null, 'VALIDATION_ERROR'));
+      }
+      if (req.body.description !== undefined && !req.body.description) {
+        return res.status(400).json(createErrorResponse('Description is required for Drop of the Month', null, 'VALIDATION_ERROR'));
+      }
+      if (req.body.special_price !== null && req.body.special_price !== undefined && req.body.special_price <= 0) {
+        return res.status(400).json(createErrorResponse('Special price must be a positive number', null, 'VALIDATION_ERROR'));
+      }
+      
+      // Unset is_drop_of_the_month for all other events
+      await client.query('UPDATE stall_events SET is_drop_of_the_month = false WHERE is_drop_of_the_month = true AND event_id != $1', [req.params.event_id]);
+    }
+    
     const updates = [];
     const values = [];
     let idx = 1;
-    ['event_name', 'venue_location', 'event_date', 'event_time', 'description', 'event_image_url', 'cta_button_text', 'cta_button_action', 'cta_button_url', 'is_visible'].forEach(field => {
+    ['event_name', 'venue_location', 'event_date', 'event_time', 'description', 'event_image_url', 'cta_button_text', 'cta_button_action', 'cta_button_url', 'is_visible', 'is_drop_of_the_month', 'special_price', 'available_until', 'preorder_button_label', 'preorder_button_url'].forEach(field => {
       if (req.body[field] !== undefined) {
         updates.push(`${field} = $${idx++}`);
         values.push(req.body[field]);
@@ -2540,6 +2570,40 @@ app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin'])
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to update event', error, 'EVENT_UPDATE_ERROR'));
+  }
+});
+
+app.get('/api/event-alerts/drop-of-the-month', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const now = new Date().toISOString();
+    // Query for visible Drop of the Month events that are still available
+    const result = await client.query(
+      'SELECT * FROM stall_events WHERE is_visible = true AND is_drop_of_the_month = true AND (available_until IS NULL OR available_until >= $1) ORDER BY updated_at DESC LIMIT 1',
+      [now]
+    );
+    
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(204).send();
+    }
+    
+    const event = result.rows[0];
+    client.release();
+    
+    // Return formatted response
+    res.json({
+      title: event.event_name,
+      description: event.description,
+      image: event.event_image_url,
+      special_price: event.special_price ? parseFloat(event.special_price) : null,
+      available_until: event.available_until,
+      preorder_button_label: event.preorder_button_label || 'Pre-order Now',
+      preorder_button_url: event.preorder_button_url || '/corporate-order'
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch Drop of the Month', error, 'DROP_FETCH_ERROR'));
   }
 });
 

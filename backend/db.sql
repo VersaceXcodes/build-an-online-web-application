@@ -401,11 +401,33 @@ CREATE TABLE drop_of_the_month (
     drop_id TEXT PRIMARY KEY,
     product_name TEXT NOT NULL,
     description TEXT NOT NULL,
-    price NUMERIC NOT NULL,
+    price NUMERIC(10, 2) NOT NULL,
     product_image_url TEXT NOT NULL,
     available_from TEXT NOT NULL,
     available_until TEXT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT false,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+
+-- STALL EVENTS TABLE (Event Alerts)
+CREATE TABLE stall_events (
+    event_id TEXT PRIMARY KEY,
+    event_name TEXT NOT NULL,
+    venue_location TEXT NOT NULL,
+    event_date TEXT NOT NULL,
+    event_time TEXT NOT NULL,
+    description TEXT,
+    event_image_url TEXT,
+    cta_button_text TEXT,
+    cta_button_action TEXT,
+    cta_button_url TEXT,
+    is_visible BOOLEAN NOT NULL DEFAULT false,
+    is_drop_of_the_month BOOLEAN NOT NULL DEFAULT false,
+    special_price NUMERIC(10, 2),
+    available_until TEXT,
+    preorder_button_label TEXT,
+    preorder_button_url TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );

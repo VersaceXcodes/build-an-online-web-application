@@ -1151,6 +1151,11 @@ export const stallEventSchema = z.object({
   cta_button_action: z.string().nullable(),
   cta_button_url: z.string().nullable(),
   is_visible: z.boolean(),
+  is_drop_of_the_month: z.boolean(),
+  special_price: z.number().nullable(),
+  available_until: z.string().nullable(),
+  preorder_button_label: z.string().nullable(),
+  preorder_button_url: z.string().nullable(),
   created_at: z.string(),
   updated_at: z.string()
 });
@@ -1165,7 +1170,12 @@ export const createStallEventInputSchema = z.object({
   cta_button_text: z.string().max(100).nullable(),
   cta_button_action: z.string().max(50).nullable(),
   cta_button_url: z.string().url().nullable(),
-  is_visible: z.boolean().default(false)
+  is_visible: z.boolean().default(false),
+  is_drop_of_the_month: z.boolean().default(false),
+  special_price: z.number().positive().nullable(),
+  available_until: z.string().nullable(),
+  preorder_button_label: z.string().max(100).nullable(),
+  preorder_button_url: z.string().url().nullable()
 });
 
 export const updateStallEventInputSchema = z.object({
@@ -1179,7 +1189,12 @@ export const updateStallEventInputSchema = z.object({
   cta_button_text: z.string().max(100).nullable().optional(),
   cta_button_action: z.string().max(50).nullable().optional(),
   cta_button_url: z.string().url().nullable().optional(),
-  is_visible: z.boolean().optional()
+  is_visible: z.boolean().optional(),
+  is_drop_of_the_month: z.boolean().optional(),
+  special_price: z.number().positive().nullable().optional(),
+  available_until: z.string().nullable().optional(),
+  preorder_button_label: z.string().max(100).nullable().optional(),
+  preorder_button_url: z.string().url().nullable().optional()
 });
 
 export const searchStallEventsInputSchema = z.object({

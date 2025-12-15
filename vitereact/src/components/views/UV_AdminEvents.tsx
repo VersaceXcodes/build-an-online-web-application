@@ -37,6 +37,11 @@ interface StallEvent {
   cta_button_action: string | null;
   cta_button_url: string | null;
   is_visible: boolean;
+  is_drop_of_the_month: boolean;
+  special_price: number | null;
+  available_until: string | null;
+  preorder_button_label: string | null;
+  preorder_button_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -94,7 +99,12 @@ const UV_AdminEvents: React.FC = () => {
   const [showAddEvent, setShowAddEvent] = useState<boolean>(false);
   const [newEventData, setNewEventData] = useState<Partial<StallEvent>>({
     is_visible: true, // Default to visible so events appear on landing page immediately
-    cta_button_action: 'internal_link'
+    cta_button_action: 'internal_link',
+    is_drop_of_the_month: false,
+    special_price: null,
+    available_until: null,
+    preorder_button_label: null,
+    preorder_button_url: null
   });
   const [imageUploadMode, setImageUploadMode] = useState<'url' | 'upload'>('url');
   const [editImageUploadMode, setEditImageUploadMode] = useState<'url' | 'upload'>('url');
@@ -541,6 +551,77 @@ const UV_AdminEvents: React.FC = () => {
                         />
                       </div>
                     </div>
+                    
+                    {/* Drop of the Month Section */}
+                    <div className="border-t border-gray-200 pt-4 mt-4">
+                      <div className="flex items-center gap-2 mb-4">
+                        <input
+                          type="checkbox"
+                          id="new-is-drop"
+                          checked={newEventData.is_drop_of_the_month === true}
+                          onChange={(e) => handleNewEventFieldChange('is_drop_of_the_month', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <label htmlFor="new-is-drop" className="text-sm font-medium text-gray-900">
+                          <span className="text-blue-600 font-semibold">★</span> Use as Drop of the Month in Corporate & Event Orders section
+                        </label>
+                      </div>
+                      
+                      {newEventData.is_drop_of_the_month && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-6 p-4 bg-blue-50 rounded-lg">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Special Price (€)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={newEventData.special_price || ''}
+                              onChange={(e) => handleNewEventFieldChange('special_price', e.target.value ? parseFloat(e.target.value) : null)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                              placeholder="6.50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Available Until
+                            </label>
+                            <input
+                              type="date"
+                              value={newEventData.available_until || ''}
+                              onChange={(e) => handleNewEventFieldChange('available_until', e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Pre-order Button Label
+                            </label>
+                            <input
+                              type="text"
+                              value={newEventData.preorder_button_label || ''}
+                              onChange={(e) => handleNewEventFieldChange('preorder_button_label', e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                              placeholder="Pre-order Now"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-900 mb-2">
+                              Pre-order Button URL
+                            </label>
+                            <input
+                              type="text"
+                              value={newEventData.preorder_button_url || ''}
+                              onChange={(e) => handleNewEventFieldChange('preorder_button_url', e.target.value)}
+                              className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                              placeholder="/corporate-order"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex items-center gap-2">
                        <input
                         type="checkbox"
@@ -618,6 +699,11 @@ const UV_AdminEvents: React.FC = () => {
                                       Hidden
                                     </span>
                                   )}
+                                  {event.is_drop_of_the_month && (
+                                    <span className="px-3 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                                      ★ Drop of the Month
+                                    </span>
+                                  )}
                                 </div>
                                 <div className="space-y-2 text-sm text-gray-600">
                                   <div className="flex items-center gap-2">
@@ -651,6 +737,23 @@ const UV_AdminEvents: React.FC = () => {
                                       <a href={event.event_image_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
                                         View Image
                                       </a>
+                                    </div>
+                                  )}
+                                  {event.is_drop_of_the_month && (
+                                    <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                      <p className="text-xs font-semibold text-amber-900 mb-2">Drop of the Month Details:</p>
+                                      {event.special_price && (
+                                        <p className="text-xs text-amber-800">Special Price: €{Number(event.special_price).toFixed(2)}</p>
+                                      )}
+                                      {event.available_until && (
+                                        <p className="text-xs text-amber-800">Available Until: {new Date(event.available_until).toLocaleDateString()}</p>
+                                      )}
+                                      {event.preorder_button_label && (
+                                        <p className="text-xs text-amber-800">Button: {event.preorder_button_label}</p>
+                                      )}
+                                      {event.preorder_button_url && (
+                                        <p className="text-xs text-amber-800">URL: {event.preorder_button_url}</p>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -840,6 +943,77 @@ const UV_AdminEvents: React.FC = () => {
                                 />
                               </div>
                             </div>
+                            
+                            {/* Drop of the Month Section */}
+                            <div className="border-t border-gray-200 pt-4 mt-4">
+                              <div className="flex items-center gap-2 mb-4">
+                                <input
+                                  type="checkbox"
+                                  id={`is-drop-${event.event_id}`}
+                                  checked={currentData.is_drop_of_the_month === true}
+                                  onChange={(e) => handleEventFieldChange('is_drop_of_the_month', e.target.checked)}
+                                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor={`is-drop-${event.event_id}`} className="text-sm font-medium text-gray-900">
+                                  <span className="text-blue-600 font-semibold">★</span> Use as Drop of the Month in Corporate & Event Orders section
+                                </label>
+                              </div>
+                              
+                              {currentData.is_drop_of_the_month && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-6 p-4 bg-blue-50 rounded-lg">
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Special Price (€)
+                                    </label>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      min="0"
+                                      value={currentData.special_price || ''}
+                                      onChange={(e) => handleEventFieldChange('special_price', e.target.value ? parseFloat(e.target.value) : null)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      placeholder="6.50"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Available Until
+                                    </label>
+                                    <input
+                                      type="date"
+                                      value={currentData.available_until || ''}
+                                      onChange={(e) => handleEventFieldChange('available_until', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Pre-order Button Label
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={currentData.preorder_button_label || ''}
+                                      onChange={(e) => handleEventFieldChange('preorder_button_label', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      placeholder="Pre-order Now"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                                      Pre-order Button URL
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={currentData.preorder_button_url || ''}
+                                      onChange={(e) => handleEventFieldChange('preorder_button_url', e.target.value)}
+                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
+                                      placeholder="/corporate-order"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
