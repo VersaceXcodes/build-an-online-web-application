@@ -933,14 +933,19 @@ const UV_AdminSettings: React.FC = () => {
                                      </div>
                                      <div>
                                        <label className="block text-sm font-medium text-gray-700 mb-1">Opening Hours</label>
-                                       <textarea
-                                         value={currentData.opening_hours || ''}
-                                         onChange={(e) => handleLocationFieldChange('opening_hours', e.target.value)}
-                                         className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                         rows={4}
-                                         placeholder="e.g., Mon-Fri: 9am-6pm, Sat: 10am-4pm, Sun: Closed"
-                                       />
-                                       <p className="text-xs text-gray-500 mt-1">Enter the opening hours for this location</p>
+                                       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                         <p className="text-sm text-blue-800 mb-2 font-medium">
+                                           <Clock className="inline h-4 w-4 mr-1" />
+                                           Opening hours are now managed in the dedicated Locations page
+                                         </p>
+                                         <Link
+                                           to="/admin/locations"
+                                           className="text-sm text-blue-600 hover:text-blue-700 underline"
+                                         >
+                                           Go to Location Management →
+                                         </Link>
+                                       </div>
+                                       <p className="text-xs text-gray-500 mt-1">Use the Locations page for full day-by-day hour management</p>
                                      </div>
                                    </div>
                                  </div>
@@ -1066,9 +1071,12 @@ const UV_AdminSettings: React.FC = () => {
                                          <Clock className="w-4 h-4 text-blue-600" />
                                          Opening Hours
                                        </p>
-                                       <p className="text-sm text-gray-600 whitespace-pre-line">
-                                         {location.opening_hours}
-                                       </p>
+                                       <Link
+                                         to="/admin/locations"
+                                         className="text-sm text-blue-600 hover:text-blue-700 underline inline-flex items-center gap-1"
+                                       >
+                                         Manage in Locations page →
+                                       </Link>
                                      </div>
                                    </div>
                                  </div>

@@ -378,8 +378,28 @@ app.get('/api/locations', async (req, res) => {
     if (is_delivery_enabled !== undefined) { query += ` AND is_delivery_enabled = $${values.length + 1}`; values.push(String(is_delivery_enabled) === 'true'); }
     query += ' ORDER BY location_name';
     const result = await client.query(query, values);
+    
+    // Fetch opening hours for each location
+    const locationsWithHours = await Promise.all(
+      result.rows.map(async (loc) => {
+        const hoursResult = await client.query(
+          'SELECT * FROM opening_hours WHERE location_id = $1 ORDER BY day_of_week',
+          [loc.location_id]
+        );
+        return {
+          ...loc,
+          delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null,
+          delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null,
+          free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null,
+          estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null,
+          estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes),
+          opening_hours_structured: hoursResult.rows
+        };
+      })
+    );
+    
     client.release();
-    res.json(result.rows.map(loc => ({ ...loc, delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes) })));
+    res.json(locationsWithHours);
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch locations', error, 'LOCATIONS_FETCH_ERROR'));
@@ -390,10 +410,28 @@ app.get('/api/locations/:location_id', async (req, res) => {
   const client = await pool.connect();
   try {
     const result = await client.query('SELECT * FROM locations WHERE location_id = $1', [req.params.location_id]);
-    client.release();
-    if (result.rows.length === 0) return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    if (result.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Location not found', null, 'LOCATION_NOT_FOUND'));
+    }
     const loc = result.rows[0];
-    res.json({ ...loc, delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes) });
+    
+    // Get opening hours for this location
+    const hoursResult = await client.query(
+      'SELECT * FROM opening_hours WHERE location_id = $1 ORDER BY day_of_week',
+      [loc.location_id]
+    );
+    
+    client.release();
+    res.json({ 
+      ...loc, 
+      delivery_radius_km: loc.delivery_radius_km ? parseFloat(loc.delivery_radius_km) : null, 
+      delivery_fee: loc.delivery_fee ? parseFloat(loc.delivery_fee) : null, 
+      free_delivery_threshold: loc.free_delivery_threshold ? parseFloat(loc.free_delivery_threshold) : null, 
+      estimated_delivery_time_minutes: loc.estimated_delivery_time_minutes ? parseFloat(loc.estimated_delivery_time_minutes) : null, 
+      estimated_preparation_time_minutes: parseFloat(loc.estimated_preparation_time_minutes),
+      opening_hours_structured: hoursResult.rows
+    });
   } catch (error) {
     client.release();
     res.status(500).json(createErrorResponse('Failed to fetch location', error, 'LOCATION_FETCH_ERROR'));

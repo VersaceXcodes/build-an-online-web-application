@@ -162,6 +162,30 @@ const UV_AdminLocations: React.FC = () => {
 
   const handleSaveHours = () => {
     if (!selectedLocation) return;
+    
+    // Validate opening hours before saving
+    for (const hour of hoursData) {
+      if (!hour.is_closed) {
+        if (!hour.opens_at || !hour.closes_at) {
+          showNotification(`Please set opening and closing times for ${DAYS[hour.day_of_week]} or mark it as closed`, 'error');
+          return;
+        }
+        
+        // Validate time format (HH:MM)
+        const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+        if (!timeRegex.test(hour.opens_at) || !timeRegex.test(hour.closes_at)) {
+          showNotification(`Invalid time format for ${DAYS[hour.day_of_week]}. Use HH:MM format`, 'error');
+          return;
+        }
+        
+        // Validate close time is after open time
+        if (hour.closes_at <= hour.opens_at) {
+          showNotification(`Closing time must be after opening time for ${DAYS[hour.day_of_week]}`, 'error');
+          return;
+        }
+      }
+    }
+    
     updateHoursMutation.mutate({
       location_id: selectedLocation.location_id,
       hours: hoursData,
@@ -170,9 +194,26 @@ const UV_AdminLocations: React.FC = () => {
 
   const handleHourChange = (dayIndex: number, field: keyof OpeningHour, value: any) => {
     setHoursData(prev =>
-      prev.map((hour, idx) =>
-        idx === dayIndex ? { ...hour, [field]: value } : hour
-      )
+      prev.map((hour, idx) => {
+        if (idx !== dayIndex) return hour;
+        
+        // If toggling is_closed to true, clear the times
+        if (field === 'is_closed' && value === true) {
+          return { ...hour, is_closed: true, opens_at: null, closes_at: null };
+        }
+        
+        // If toggling is_closed to false, set default times if not already set
+        if (field === 'is_closed' && value === false) {
+          return { 
+            ...hour, 
+            is_closed: false, 
+            opens_at: hour.opens_at || '09:00',
+            closes_at: hour.closes_at || '18:00'
+          };
+        }
+        
+        return { ...hour, [field]: value };
+      })
     );
   };
 

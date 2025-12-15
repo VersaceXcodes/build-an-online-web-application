@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { ExternalLink, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, MapPin, Phone, Mail, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS (from Zod schemas)

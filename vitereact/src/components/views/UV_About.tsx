@@ -55,7 +55,15 @@ interface Location {
   postal_code: string;
   phone_number: string;
   email: string;
-  opening_hours: string;
+  opening_hours: string; // Legacy JSON field
+  opening_hours_structured?: Array<{
+    id: string;
+    location_id: string;
+    day_of_week: number;
+    opens_at: string | null;
+    closes_at: string | null;
+    is_closed: boolean;
+  }>;
   delivery_radius_km: number | null;
   delivery_fee: number | null;
   free_delivery_threshold: number | null;
@@ -409,9 +417,28 @@ const UV_About: React.FC = () => {
           {!locations_loading && !locations_error && locations_for_visit.length > 0 && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {locations_for_visit.map((location) => {
-                const opening_hours = parseOpeningHours(location.opening_hours);
-                const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                const today_hours = opening_hours[today] || { open: 'Closed', close: '' };
+                // Get today's hours from structured data or fallback to JSON parsing
+                const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+                let todayHoursDisplay = 'Hours not set';
+                
+                if (location.opening_hours_structured && location.opening_hours_structured.length > 0) {
+                  const todayHours = location.opening_hours_structured.find(h => h.day_of_week === todayIndex);
+                  if (todayHours) {
+                    if (todayHours.is_closed) {
+                      todayHoursDisplay = 'Closed Today';
+                    } else {
+                      todayHoursDisplay = `Today: ${todayHours.opens_at} - ${todayHours.closes_at}`;
+                    }
+                  }
+                } else if (location.opening_hours) {
+                  // Fallback to legacy JSON parsing
+                  const opening_hours = parseOpeningHours(location.opening_hours);
+                  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                  const today_hours = opening_hours[today] || { open: 'Closed', close: '' };
+                  todayHoursDisplay = today_hours.open !== 'Closed' 
+                    ? `Today: ${today_hours.open} - ${today_hours.close}`
+                    : 'Closed Today';
+                }
 
                 return (
                   <div
@@ -425,9 +452,7 @@ const UV_About: React.FC = () => {
                       <div className="flex items-center text-purple-100">
                         <Clock className="w-4 h-4 mr-2" />
                         <span className="text-sm font-medium">
-                          {today_hours.open !== 'Closed' 
-                            ? `Today: ${today_hours.open} - ${today_hours.close}`
-                            : 'Closed Today'}
+                          {todayHoursDisplay}
                         </span>
                       </div>
                     </div>

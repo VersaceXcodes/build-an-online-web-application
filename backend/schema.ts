@@ -118,13 +118,16 @@ export const locationSchema = z.object({
   allow_scheduled_pickups: z.boolean(),
   just_eat_url: z.string().nullable(),
   deliveroo_url: z.string().nullable(),
-  opening_hours: z.string(),
+  opening_hours: z.string(), // Legacy JSON field - use opening_hours_structured instead
+  slug: z.string().optional(),
+  is_active: z.boolean().optional(),
   created_at: z.string(),
   updated_at: z.string()
 });
 
 export const createLocationInputSchema = z.object({
   location_name: z.string().min(1).max(255),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens only'),
   address_line1: z.string().min(1).max(255),
   address_line2: z.string().max(255).nullable(),
   city: z.string().min(1).max(100),
@@ -142,12 +145,14 @@ export const createLocationInputSchema = z.object({
   allow_scheduled_pickups: z.boolean().default(true),
   just_eat_url: z.string().url().nullable(),
   deliveroo_url: z.string().url().nullable(),
-  opening_hours: z.string().min(1)
+  opening_hours: z.string().default('{}'), // Legacy field, use structured opening_hours table instead
+  is_active: z.boolean().default(true)
 });
 
 export const updateLocationInputSchema = z.object({
   location_id: z.string(),
   location_name: z.string().min(1).max(255).optional(),
+  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/, 'Slug must be lowercase alphanumeric with hyphens only').optional(),
   address_line1: z.string().min(1).max(255).optional(),
   address_line2: z.string().max(255).nullable().optional(),
   city: z.string().min(1).max(100).optional(),
@@ -165,7 +170,8 @@ export const updateLocationInputSchema = z.object({
   allow_scheduled_pickups: z.boolean().optional(),
   just_eat_url: z.string().url().nullable().optional(),
   deliveroo_url: z.string().url().nullable().optional(),
-  opening_hours: z.string().min(1).optional()
+  opening_hours: z.string().optional(), // Legacy field, use structured opening_hours table instead
+  is_active: z.boolean().optional()
 });
 
 export const searchLocationsInputSchema = z.object({
