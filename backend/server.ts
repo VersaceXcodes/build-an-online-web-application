@@ -1139,8 +1139,41 @@ app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff',
   }
 });
 
+// Optional authentication middleware - allows both authenticated and guest users
+const optionalAuthenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    // No token provided - continue as guest
+    req.user = undefined;
+    return next();
+  }
+  
+  try {
+    const client = await pool.connect();
+    const sessionResult = await client.query('SELECT user_id, expires_at FROM sessions WHERE token = $1', [token]);
+    if (sessionResult.rows.length === 0) {
+      client.release();
+      return res.status(401).json(createErrorResponse('Invalid token', undefined, 'AUTH_TOKEN_INVALID'));
+    }
+    const session = sessionResult.rows[0];
+    if (new Date(session.expires_at) < new Date()) {
+      client.release();
+      return res.status(401).json(createErrorResponse('Token expired', undefined, 'AUTH_TOKEN_EXPIRED'));
+    }
+    const userResult = await client.query('SELECT user_id, email, first_name, last_name, phone_number, user_type, account_status, loyalty_points_balance FROM users WHERE user_id = $1', [session.user_id]);
+    client.release();
+    if (userResult.rows.length === 0) return res.status(401).json(createErrorResponse('User not found', undefined, 'USER_NOT_FOUND'));
+    req.user = userResult.rows[0];
+    next();
+  } catch (error) {
+    return res.status(403).json(createErrorResponse('Invalid or expired token', error, 'AUTH_TOKEN_INVALID'));
+  }
+};
+
 // Payment confirmation endpoint - allows customers to confirm payment on their own orders
-app.put('/api/orders/:order_id/confirm-payment', authenticateToken, async (req: AuthRequest, res: Response) => {
+app.put('/api/orders/:order_id/confirm-payment', optionalAuthenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
@@ -1155,8 +1188,10 @@ app.put('/api/orders/:order_id/confirm-payment', authenticateToken, async (req: 
     
     const order = orderResult.rows[0];
     
-    // Customers can only confirm payment on their own orders (or if user_id is null for guest orders)
-    if (req.user.user_type === 'customer' && order.user_id && order.user_id !== req.user.user_id) {
+    // Authorization check:
+    // - Guest orders (user_id is null): anyone can confirm if they have the order_id
+    // - Authenticated user orders: only the order owner can confirm
+    if (req.user && req.user.user_type === 'customer' && order.user_id && order.user_id !== req.user.user_id) {
       await client.query('ROLLBACK');
       client.release();
       return res.status(403).json(createErrorResponse('Cannot confirm payment for this order', null, 'FORBIDDEN'));
@@ -1181,7 +1216,7 @@ app.put('/api/orders/:order_id/confirm-payment', authenticateToken, async (req: 
     // Add status history entry
     await client.query(
       'INSERT INTO order_status_history (history_id, order_id, previous_status, new_status, changed_by_user_id, notes, changed_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-      [generateId('hist'), req.params.order_id, order.order_status, new_status, req.user.user_id, 'Payment confirmed by customer', now]
+      [generateId('hist'), req.params.order_id, order.order_status, new_status, req.user?.user_id || null, 'Payment confirmed by customer', now]
     );
     
     // Award loyalty points when payment is confirmed, but only if not already awarded
