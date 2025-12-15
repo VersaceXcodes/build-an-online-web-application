@@ -186,7 +186,7 @@ const deleteTeamMember = async (token: string, member_id: string) => {
 // ============================================================================
 
 const UV_AdminAboutPage: React.FC = () => {
-  const token = useAppStore(state => state.auth_state.token);
+  const token = useAppStore(state => state.authentication_state.auth_token);
   const queryClient = useQueryClient();
 
   const [activeSection, setActiveSection] = useState<SectionType>('main');
