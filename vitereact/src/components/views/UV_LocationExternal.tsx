@@ -15,6 +15,7 @@ interface Location {
   address_line2: string | null;
   city: string;
   postal_code: string;
+  country: string;
   phone_number: string;
   email: string;
   is_collection_enabled: boolean;
@@ -28,6 +29,14 @@ interface Location {
   just_eat_url: string | null;
   deliveroo_url: string | null;
   opening_hours: string;
+  opening_hours_structured?: Array<{
+    id: string;
+    location_id: string;
+    day_of_week: number;
+    opens_at: string | null;
+    closes_at: string | null;
+    is_closed: boolean;
+  }>;
   created_at: string;
   updated_at: string;
 }
@@ -61,16 +70,16 @@ interface Product {
 // ============================================================================
 
 const fetchGlasnevinLocation = async (): Promise<Location | null> => {
-  const response = await axios.get<Location[]>(
-    `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations`
-  );
-  
-  // Find Glasnevin location from the array
-  const glasnevin = response.data.find(
-    (loc) => loc.location_name.toLowerCase() === 'glasnevin'
-  );
-  
-  return glasnevin || null;
+  // Use the slug endpoint to get structured opening hours
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/locations/slug/glasnevin`
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch Glasnevin location:', error);
+    return null;
+  }
 };
 
 const fetchGlasnevinMenu = async (): Promise<Product[]> => {
@@ -189,54 +198,83 @@ const UV_LocationExternal: React.FC = () => {
 
   return (
     <>
-      {/* Hero Section - Location Header */}
-      <div className="bg-gradient-to-br from-purple-600 to-pink-600 text-white">
+      {/* Hero Section - Location Header - Matching Landing Page */}
+      <div className="bg-kake-cream-50 text-kake-chocolate-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
           <div className="text-center">
-            <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight">
+            <h1 className="text-4xl sm:text-5xl font-bold mb-4 leading-tight font-serif">
               Kake Glasnevin
             </h1>
-            <p className="text-xl sm:text-2xl text-purple-100 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl sm:text-2xl text-kake-chocolate-500/80 mb-8 max-w-3xl mx-auto font-sans">
               Order our delicious desserts through our delivery partners
             </p>
             
             {/* Location Details */}
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto border border-white/20">
+            <div className="bg-kake-cream-100/90 backdrop-blur-sm rounded-xl p-6 max-w-2xl mx-auto border border-kake-caramel-500/30">
               <div className="grid sm:grid-cols-2 gap-4 text-left">
                 <div className="flex items-start space-x-3">
-                  <MapPin className="w-5 h-5 text-purple-200 flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-5 h-5 text-kake-caramel-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm text-purple-200 font-medium mb-1">Address</p>
-                    <p className="text-white">
+                    <p className="text-sm text-kake-chocolate-500/70 font-medium mb-1 font-sans">Address</p>
+                    <p className="text-kake-chocolate-500 font-sans">
                       {glasnevin_location.address_line1}
                       {glasnevin_location.address_line2 && (
                         <>, {glasnevin_location.address_line2}</>
                       )}
                     </p>
-                    <p className="text-white">
+                    <p className="text-kake-chocolate-500 font-sans">
                       {glasnevin_location.city}, {glasnevin_location.postal_code}
+                    </p>
+                    <p className="text-kake-chocolate-500 font-sans">
+                      {glasnevin_location.country}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-start space-x-3">
-                  <Phone className="w-5 h-5 text-purple-200 flex-shrink-0 mt-0.5" />
+                  <Phone className="w-5 h-5 text-kake-caramel-500 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm text-purple-200 font-medium mb-1">Contact</p>
+                    <p className="text-sm text-kake-chocolate-500/70 font-medium mb-1 font-sans">Contact</p>
                     <a
                       href={`tel:${glasnevin_location.phone_number}`}
-                      className="text-white hover:text-purple-100 transition-colors block"
+                      className="text-kake-chocolate-500 hover:text-kake-caramel-500 transition-colors block font-sans"
                     >
                       {glasnevin_location.phone_number}
                     </a>
                     <a
                       href={`mailto:${glasnevin_location.email}`}
-                      className="text-white hover:text-purple-100 transition-colors block"
+                      className="text-kake-chocolate-500 hover:text-kake-caramel-500 transition-colors block font-sans"
                     >
                       {glasnevin_location.email}
                     </a>
                   </div>
                 </div>
+
+                {/* Opening Hours */}
+                {glasnevin_location.opening_hours_structured && glasnevin_location.opening_hours_structured.length > 0 && (
+                  <div className="sm:col-span-2 flex items-start space-x-3">
+                    <Clock className="w-5 h-5 text-kake-caramel-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm text-kake-chocolate-500/70 font-medium mb-2 font-sans">Opening Hours</p>
+                      <div className="space-y-1">
+                        {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((dayName, idx) => {
+                          const hours = glasnevin_location.opening_hours_structured?.find(h => h.day_of_week === idx);
+                          const today = new Date().getDay();
+                          const isToday = idx === today;
+                          
+                          return (
+                            <div key={idx} className={`flex justify-between text-xs font-sans ${isToday ? 'font-bold text-kake-chocolate-500' : 'text-kake-chocolate-500/70'}`}>
+                              <span>{dayName}</span>
+                              <span>
+                                {hours?.is_closed ? 'Closed' : `${hours?.opens_at} – ${hours?.closes_at}`}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -17,6 +17,7 @@ interface Location {
   address_line2: string | null;
   city: string;
   postal_code: string;
+  country: string;
   phone_number: string;
   email: string;
   is_collection_enabled: boolean;

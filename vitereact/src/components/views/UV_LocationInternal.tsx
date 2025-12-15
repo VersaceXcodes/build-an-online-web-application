@@ -16,6 +16,7 @@ interface Location {
   address_line2: string | null;
   city: string;
   postal_code: string;
+  country: string;
   phone_number: string;
   email: string;
   is_collection_enabled: boolean;
@@ -132,10 +133,17 @@ const UV_LocationInternal: React.FC = () => {
       
       location_details.opening_hours_structured.forEach((hour: any) => {
         const dayName = dayNames[hour.day_of_week];
-        hoursMap[dayName] = {
-          open: hour.is_closed ? 'Closed' : hour.opens_at,
-          close: hour.is_closed ? 'Closed' : hour.closes_at,
-        };
+        if (hour.is_closed) {
+          hoursMap[dayName] = {
+            open: 'Closed',
+            close: 'Closed',
+          };
+        } else {
+          hoursMap[dayName] = {
+            open: hour.opens_at || '',
+            close: hour.closes_at || '',
+          };
+        }
       });
       
       return hoursMap;
@@ -267,15 +275,15 @@ const UV_LocationInternal: React.FC = () => {
   
   return (
     <>
-      {/* Hero Section with Location Name */}
-      <div className="relative h-64 bg-gradient-to-br from-blue-600 to-indigo-700">
-        <div className="absolute inset-0 bg-black/20"></div>
+      {/* Hero Section with Location Name - Matching Landing Page */}
+      <div className="relative h-64 bg-kake-cream-50">
+        <div className="absolute inset-0 bg-black/5"></div>
         <div className="relative h-full flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-kake-chocolate-500 mb-4 font-serif">
               {location_details.location_name}
             </h1>
-            <p className="text-xl text-white/90 font-medium">
+            <p className="text-xl text-kake-chocolate-500/80 font-medium font-sans">
               Choose your ordering preference
             </p>
           </div>
@@ -312,9 +320,9 @@ const UV_LocationInternal: React.FC = () => {
               {/* Address */}
               <div className="space-y-4">
                 <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <MapPin className="h-5 w-5 text-kake-caramel-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
+                    <h3 className="font-semibold text-kake-chocolate-500 mb-1">Address</h3>
                     <p className="text-gray-600 leading-relaxed">
                       {location_details.address_line1}
                       {location_details.address_line2 && (
@@ -325,18 +333,20 @@ const UV_LocationInternal: React.FC = () => {
                       )}
                       <br />
                       {location_details.city} {location_details.postal_code}
+                      <br />
+                      {location_details.country}
                     </p>
                   </div>
                 </div>
                 
                 {/* Phone */}
                 <div className="flex items-start space-x-3">
-                  <Phone className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Phone className="h-5 w-5 text-kake-caramel-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
+                    <h3 className="font-semibold text-kake-chocolate-500 mb-1">Phone</h3>
                     <a
                       href={`tel:${location_details.phone_number}`}
-                      className="text-blue-600 hover:text-blue-700 transition-colors"
+                      className="text-kake-caramel-500 hover:text-kake-caramel-400 transition-colors"
                     >
                       {location_details.phone_number}
                     </a>
@@ -345,12 +355,12 @@ const UV_LocationInternal: React.FC = () => {
                 
                 {/* Email */}
                 <div className="flex items-start space-x-3">
-                  <Mail className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Mail className="h-5 w-5 text-kake-caramel-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
+                    <h3 className="font-semibold text-kake-chocolate-500 mb-1">Email</h3>
                     <a
                       href={`mailto:${location_details.email}`}
-                      className="text-blue-600 hover:text-blue-700 transition-colors"
+                      className="text-kake-caramel-500 hover:text-kake-caramel-400 transition-colors"
                     >
                       {location_details.email}
                     </a>
@@ -361,14 +371,18 @@ const UV_LocationInternal: React.FC = () => {
               {/* Opening Hours */}
               <div>
                 <div className="flex items-start space-x-3 mb-4">
-                  <Clock className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <Clock className="h-5 w-5 text-kake-caramel-500 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-3">Opening Hours</h3>
+                    <h3 className="font-semibold text-kake-chocolate-500 mb-3">Opening Hours</h3>
                     
                     {todays_hours && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-3">
-                        <p className="text-sm font-medium text-blue-900">
-                          Today: {todays_hours.open} - {todays_hours.close}
+                      <div className="bg-kake-cream-100 border border-kake-caramel-500/30 rounded-lg px-4 py-3 mb-3">
+                        <p className="text-sm font-medium text-kake-chocolate-500">
+                          {todays_hours.open === 'Closed' ? (
+                            <>Today: Closed</>
+                          ) : (
+                            <>Today: {todays_hours.open} – {todays_hours.close}</>
+                          )}
                         </p>
                       </div>
                     )}
@@ -385,7 +399,13 @@ const UV_LocationInternal: React.FC = () => {
                             }`}
                           >
                             <span className="capitalize">{formatDayName(day)}</span>
-                            <span>{hours.open} - {hours.close}</span>
+                            <span>
+                              {hours.open === 'Closed' ? (
+                                'Closed'
+                              ) : (
+                                `${hours.open} – ${hours.close}`
+                              )}
+                            </span>
                           </div>
                         ))}
                       </div>
