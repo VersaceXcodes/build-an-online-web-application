@@ -174,10 +174,10 @@ const UV_About: React.FC = () => {
   // Show loading state
   if (content_loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-luxury-gold-500 mx-auto mb-4"></div>
+          <p className="font-sans text-kake-chocolate-400">Loading...</p>
         </div>
       </div>
     );
@@ -186,12 +186,12 @@ const UV_About: React.FC = () => {
   // Show error state
   if (content_error || !page_content) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="text-center max-w-md mx-auto px-4">
-          <p className="text-red-600 mb-4">Failed to load about page content</p>
+          <p className="font-sans text-red-600 mb-4">Failed to load about page content</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            className="px-6 py-3 min-h-[48px] gradient-gold text-luxury-darkCharcoal font-bold rounded-xl hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105"
           >
             Retry
           </button>
@@ -203,24 +203,25 @@ const UV_About: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="relative h-[500px] lg:h-[600px] overflow-hidden">
+      <section className="relative bg-luxury-darkCharcoal py-20 lg:py-32 overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center opacity-5"
           style={{
             backgroundImage: `url(${page_content.hero_image_url})`,
           }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 to-purple-600/80"></div>
-        </div>
+        ></div>
         
-        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6 animate-fade-in">
-              {page_content.page_title}
-            </h1>
-            <p className="text-xl md:text-2xl text-purple-100 max-w-2xl mx-auto">
-              Handcrafted desserts made with love, served with pride
-            </p>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="glass-luxury backdrop-blur-glass rounded-3xl p-8 md:p-12 lg:p-16 shadow-luxury-lg animate-fade-in">
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-luxury-champagne mb-6 leading-tight text-center">
+                {page_content.page_title}
+              </h1>
+              
+              <p className="font-sans text-lg md:text-xl text-luxury-champagne/90 mb-8 max-w-2xl mx-auto leading-relaxed text-center">
+                Handcrafted desserts made with love, served with pride
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -230,14 +231,14 @@ const UV_About: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
                 The Kake Story
               </h2>
-              <div className="w-24 h-1 bg-purple-600 mx-auto rounded-full"></div>
+              <div className="w-24 h-1 bg-luxury-gold-500 mx-auto rounded-full"></div>
             </div>
             
             <div 
-              className="prose prose-lg max-w-none text-gray-600 leading-relaxed"
+              className="prose prose-lg max-w-none text-kake-chocolate-400 leading-relaxed"
               dangerouslySetInnerHTML={{ __html: page_content.story_content }}
             />
           </div>
@@ -245,20 +246,20 @@ const UV_About: React.FC = () => {
       </section>
 
       {/* Timeline Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-purple-50 to-pink-50">
+      <section className="py-16 lg:py-24 bg-kake-cream-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Our Journey
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="font-sans text-xl text-kake-chocolate-400 max-w-2xl mx-auto">
               Every milestone marks a moment we're proud of
             </p>
           </div>
 
           <div className="relative">
             {/* Timeline line (desktop only) */}
-            <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-purple-300"></div>
+            <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-luxury-gold-500/30"></div>
 
             <div className="space-y-12 lg:space-y-16">
               {page_content.milestones.map((milestone, index) => (
@@ -269,18 +270,18 @@ const UV_About: React.FC = () => {
                   }`}
                 >
                   {/* Timeline dot */}
-                  <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-purple-600 rounded-full border-4 border-white shadow-lg z-10"></div>
+                  <div className="hidden lg:flex absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-luxury-gold-500 rounded-full border-4 border-white shadow-lg z-10"></div>
 
                   {/* Content card */}
                   <div className={`w-full lg:w-5/12 ${index % 2 === 0 ? 'lg:text-right lg:pr-12' : 'lg:pl-12'}`}>
-                    <div className="bg-white rounded-xl shadow-lg p-8 border border-purple-100 hover:shadow-xl transition-shadow duration-200">
-                      <div className="inline-block px-4 py-2 bg-purple-600 text-white font-bold text-lg rounded-lg mb-4">
+                    <div className="bg-white rounded-xl shadow-lg p-8 border border-kake-cream-200 hover:shadow-xl transition-shadow duration-200">
+                      <div className="inline-block px-4 py-2 gradient-gold text-luxury-darkCharcoal font-bold text-lg rounded-lg mb-4">
                         {milestone.year}
                       </div>
-                      <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                      <h3 className="font-serif text-2xl font-bold text-kake-chocolate-500 mb-3">
                         {milestone.title}
                       </h3>
-                      <p className="text-gray-600 leading-relaxed">
+                      <p className="font-sans text-kake-chocolate-400 leading-relaxed">
                         {milestone.description}
                       </p>
                     </div>
@@ -296,10 +297,10 @@ const UV_About: React.FC = () => {
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Our Values
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="font-sans text-xl text-kake-chocolate-400 max-w-2xl mx-auto">
               The principles that guide everything we do
             </p>
           </div>
@@ -308,15 +309,15 @@ const UV_About: React.FC = () => {
             {page_content.values.map((value, index) => (
               <div
                 key={index}
-                className="text-center p-8 rounded-xl bg-gradient-to-br from-purple-50 to-white border border-purple-100 hover:shadow-xl transition-all duration-200 hover:scale-105"
+                className="text-center p-8 rounded-xl bg-kake-cream-50 border border-kake-cream-200 hover:shadow-xl transition-all duration-200 hover:scale-105"
               >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-600 text-white rounded-full mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-luxury-gold-500 text-luxury-darkCharcoal rounded-full mb-6">
                   {getValueIcon(value.icon_name)}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                <h3 className="font-serif text-xl font-bold text-kake-chocolate-500 mb-3">
                   {value.value_name}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="font-sans text-kake-chocolate-400 leading-relaxed">
                   {value.description}
                 </p>
               </div>
@@ -327,13 +328,13 @@ const UV_About: React.FC = () => {
 
       {/* Team Section */}
       {page_content.team_members && page_content.team_members.length > 0 && (
-        <section className="py-16 lg:py-24 bg-gray-50">
+        <section className="py-16 lg:py-24 bg-kake-cream-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
                 Meet the Team
               </h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="font-sans text-xl text-kake-chocolate-400 max-w-2xl mx-auto">
                 The passionate people behind every delicious creation
               </p>
             </div>
@@ -350,17 +351,17 @@ const UV_About: React.FC = () => {
                       alt={member.name}
                       className="w-48 h-48 rounded-full object-cover mx-auto border-4 border-white shadow-xl"
                     />
-                    <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                      <Heart className="w-6 h-6 text-white" fill="currentColor" />
+                    <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-luxury-gold-500 rounded-full flex items-center justify-center shadow-lg">
+                      <Heart className="w-6 h-6 text-luxury-darkCharcoal" fill="currentColor" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                  <h3 className="font-serif text-2xl font-bold text-kake-chocolate-500 mb-2">
                     {member.name}
                   </h3>
-                  <p className="text-purple-600 font-semibold mb-4">
+                  <p className="font-sans text-luxury-gold-600 font-semibold mb-4">
                     {member.role}
                   </p>
-                  <p className="text-gray-600 leading-relaxed">
+                  <p className="font-sans text-kake-chocolate-400 leading-relaxed">
                     {member.bio}
                   </p>
                 </div>
@@ -374,10 +375,10 @@ const UV_About: React.FC = () => {
       <section className="py-16 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-chocolate-500 mb-4">
               Visit Us
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="font-sans text-xl text-kake-chocolate-400 max-w-2xl mx-auto">
               Find us at one of our Dublin locations
             </p>
           </div>
@@ -386,18 +387,18 @@ const UV_About: React.FC = () => {
           {locations_loading && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" role="status" aria-live="polite" aria-label="Loading locations">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden animate-pulse">
-                  <div className="bg-gradient-to-r from-purple-200 to-pink-200 p-6 h-28">
-                    <div className="h-6 bg-purple-300 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-purple-200 rounded w-1/2"></div>
+                <div key={i} className="bg-white rounded-xl shadow-lg border border-kake-cream-200 overflow-hidden animate-pulse">
+                  <div className="p-6 h-28">
+                    <div className="h-6 bg-kake-cream-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-kake-cream-100 rounded w-1/2"></div>
                   </div>
                   <div className="p-6 space-y-4">
                     <div className="space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-full"></div>
-                      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      <div className="h-4 bg-kake-cream-100 rounded w-full"></div>
+                      <div className="h-4 bg-kake-cream-100 rounded w-5/6"></div>
                     </div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-4/5"></div>
+                    <div className="h-4 bg-kake-cream-100 rounded w-3/4"></div>
+                    <div className="h-4 bg-kake-cream-100 rounded w-4/5"></div>
                   </div>
                 </div>
               ))}
@@ -420,12 +421,14 @@ const UV_About: React.FC = () => {
                 // Get today's hours from structured data or fallback to JSON parsing
                 const todayIndex = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
                 let todayHoursDisplay = 'Hours not set';
+                let isClosed = false;
                 
                 if (location.opening_hours_structured && location.opening_hours_structured.length > 0) {
                   const todayHours = location.opening_hours_structured.find(h => h.day_of_week === todayIndex);
                   if (todayHours) {
                     if (todayHours.is_closed) {
                       todayHoursDisplay = 'Closed Today';
+                      isClosed = true;
                     } else {
                       todayHoursDisplay = `Today: ${todayHours.opens_at} - ${todayHours.closes_at}`;
                     }
@@ -435,23 +438,26 @@ const UV_About: React.FC = () => {
                   const opening_hours = parseOpeningHours(location.opening_hours);
                   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
                   const today_hours = opening_hours[today] || { open: 'Closed', close: '' };
-                  todayHoursDisplay = today_hours.open !== 'Closed' 
-                    ? `Today: ${today_hours.open} - ${today_hours.close}`
-                    : 'Closed Today';
+                  if (today_hours.open !== 'Closed') {
+                    todayHoursDisplay = `Today: ${today_hours.open} - ${today_hours.close}`;
+                  } else {
+                    todayHoursDisplay = 'Closed Today';
+                    isClosed = true;
+                  }
                 }
 
                 return (
                   <div
                     key={location.location_id}
-                    className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden hover:shadow-2xl transition-all duration-200 hover:scale-105"
+                    className="bg-white rounded-2xl shadow-lg border border-kake-cream-200 overflow-hidden hover:shadow-xl hover:border-luxury-gold-500/50 transition-all duration-200 hover:scale-105"
                   >
-                    <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
-                      <h3 className="text-2xl font-bold text-white mb-2">
+                    <div className="p-6 bg-kake-cream-50 border-b border-kake-cream-200">
+                      <h3 className="font-serif text-2xl font-bold text-kake-chocolate-500 mb-2">
                         {location.location_name}
                       </h3>
-                      <div className="flex items-center text-purple-100">
-                        <Clock className="w-4 h-4 mr-2" />
-                        <span className="text-sm font-medium">
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-2 text-luxury-gold-500" />
+                        <span className={`text-sm font-semibold ${isClosed ? 'text-red-600' : 'text-luxury-gold-600'}`}>
                           {todayHoursDisplay}
                         </span>
                       </div>
@@ -459,31 +465,31 @@ const UV_About: React.FC = () => {
 
                     <div className="p-6 space-y-4">
                       <div className="flex items-start space-x-3">
-                        <MapPin className="w-5 h-5 text-purple-600 flex-shrink-0 mt-1" />
+                        <MapPin className="w-5 h-5 text-luxury-gold-500 flex-shrink-0 mt-1" />
                         <div className="flex-1">
-                          <p className="text-gray-900 font-medium">{location.address_line1}</p>
+                          <p className="text-kake-chocolate-500 font-medium">{location.address_line1}</p>
                           {location.address_line2 && (
-                            <p className="text-gray-900">{location.address_line2}</p>
+                            <p className="text-kake-chocolate-400">{location.address_line2}</p>
                           )}
-                          <p className="text-gray-900">{location.city}, {location.postal_code}</p>
+                          <p className="text-kake-chocolate-400">{location.city}, {location.postal_code}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center space-x-3">
-                        <Phone className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-luxury-gold-500 flex-shrink-0" />
                         <a
                           href={`tel:${location.phone_number}`}
-                          className="text-gray-900 hover:text-purple-600 transition-colors"
+                          className="text-kake-chocolate-400 hover:text-luxury-gold-600 transition-colors font-sans"
                         >
                           {location.phone_number}
                         </a>
                       </div>
 
                       <div className="flex items-center space-x-3">
-                        <Mail className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                        <Mail className="w-5 h-5 text-luxury-gold-500 flex-shrink-0" />
                         <a
                           href={`mailto:${location.email}`}
-                          className="text-gray-900 hover:text-purple-600 transition-colors"
+                          className="text-kake-chocolate-400 hover:text-luxury-gold-600 transition-colors font-sans"
                         >
                           {location.email}
                         </a>
@@ -498,7 +504,7 @@ const UV_About: React.FC = () => {
           {/* Empty State */}
           {!locations_loading && !locations_error && locations_for_visit.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-600 text-lg">
+              <p className="text-kake-chocolate-400 text-lg font-sans">
                 Location information coming soon
               </p>
             </div>
@@ -507,17 +513,17 @@ const UV_About: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 lg:py-20 bg-gradient-to-br from-purple-600 to-pink-600">
+      <section className="py-16 lg:py-20 gradient-chocolate">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">
+          <h2 className="font-serif text-3xl lg:text-4xl font-bold text-kake-lightCream-100 mb-6">
             Ready to Experience Kake?
           </h2>
-          <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
+          <p className="font-sans text-xl text-kake-cream-200 mb-8 max-w-2xl mx-auto leading-relaxed">
             Choose your location and discover our handcrafted desserts
           </p>
           <Link
             to="/"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-lg font-bold text-lg bg-white text-purple-600 hover:bg-gray-100 transition-all duration-200 shadow-xl hover:shadow-2xl hover:scale-105"
+            className="inline-flex items-center justify-center px-8 py-4 min-h-[48px] rounded-xl font-bold text-lg gradient-gold text-luxury-darkCharcoal shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105"
           >
             Start Ordering
           </Link>
