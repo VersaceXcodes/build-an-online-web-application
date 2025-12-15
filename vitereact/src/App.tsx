@@ -19,6 +19,9 @@ import GV_SplashScreen from '@/components/views/GV_SplashScreen';
 // Lazy-loaded Views - Public (code splitting for better performance)
 const UV_Landing = React.lazy(() => import('@/components/views/UV_Landing'));
 const UV_About = React.lazy(() => import('@/components/views/UV_About'));
+const UV_Privacy = React.lazy(() => import('@/components/views/UV_Privacy'));
+const UV_Terms = React.lazy(() => import('@/components/views/UV_Terms'));
+const UV_Cookies = React.lazy(() => import('@/components/views/UV_Cookies'));
 const UV_LocationInternal = React.lazy(() => import('@/components/views/UV_LocationInternal'));
 const UV_Menu = React.lazy(() => import('@/components/views/UV_Menu'));
 const UV_ProductDetail = React.lazy(() => import('@/components/views/UV_ProductDetail'));
@@ -62,6 +65,7 @@ const UV_AdminEvents = React.lazy(() => import('@/components/views/UV_AdminEvent
 const UV_AdminAboutPage = React.lazy(() => import('@/components/views/UV_AdminAboutPage'));
 const UV_AdminLocations = React.lazy(() => import('@/components/views/UV_AdminLocations'));
 const UV_AdminHomepage = React.lazy(() => import('@/components/views/UV_AdminHomepage'));
+const UV_AdminLegal = React.lazy(() => import('@/components/views/UV_AdminLegal'));
 
 // ============================================================================
 // QUERY CLIENT CONFIGURATION
@@ -339,6 +343,9 @@ export const AppRoutes: React.FC = () => {
           
           <Route path="/" element={<UV_Landing />} />
           <Route path="/about" element={<UV_About />} />
+          <Route path="/privacy" element={<UV_Privacy />} />
+          <Route path="/terms" element={<UV_Terms />} />
+          <Route path="/cookies" element={<UV_Cookies />} />
               
               {/* Location Routes */}
               <Route path="/location/:location_name" element={<UV_LocationInternal />} />
@@ -657,6 +664,15 @@ export const AppRoutes: React.FC = () => {
                 element={
                   <RoleProtectedRoute allowedRoles={['admin']}>
                     <UV_AdminAboutPage />
+                  </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/legal" 
+                element={
+                  <RoleProtectedRoute allowedRoles={['admin']}>
+                    <UV_AdminLegal />
                   </RoleProtectedRoute>
                 } 
               />

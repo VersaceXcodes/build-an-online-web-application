@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Cookie,
   Sparkles,
-  Home
+  Home,
+  Scale
 } from 'lucide-react';
 
 // ============================================================================
@@ -689,11 +690,19 @@ const UV_AdminDashboard: React.FC = () => {
               </Link>
 
               <Link
-                to="/admin/events"
+                to="/admin/homepage"
                 className="flex flex-col items-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg hover:from-teal-100 hover:to-teal-200 transition-all"
               >
                 <Home className="h-8 w-8 text-teal-600 mb-2" />
                 <span className="text-sm font-medium text-teal-900">Homepage Content</span>
+              </Link>
+
+              <Link
+                to="/admin/legal"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg hover:from-slate-100 hover:to-slate-200 transition-all"
+              >
+                <Scale className="h-8 w-8 text-slate-600 mb-2" />
+                <span className="text-sm font-medium text-slate-900">Legal Pages</span>
               </Link>
             </div>
           </div>

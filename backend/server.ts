@@ -2208,35 +2208,108 @@ app.get('/api/training/progress', authenticateToken, requireRole(['staff']), asy
 });
 
 // ============================================================================
-// TRAINING LESSON MANAGEMENT ENDPOINTS
+// LEGAL DOCUMENTS ENDPOINTS
 // ============================================================================
 
-app.post('/api/training/courses/:course_id/lessons', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+// Public endpoint to get Privacy Policy
+app.get('/api/legal/privacy', async (req, res) => {
   const client = await pool.connect();
   try {
-    const { lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order } = req.body;
-    const lesson_id = generateId('lesson');
-    const now = new Date().toISOString();
-    
-    // Verify course exists
-    const courseCheck = await client.query('SELECT course_id FROM training_courses WHERE course_id = $1', [req.params.course_id]);
-    if (courseCheck.rows.length === 0) {
-      client.release();
-      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
-    }
-    
-    await client.query(
-      'INSERT INTO training_lessons (lesson_id, course_id, lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-      [lesson_id, req.params.course_id, lesson_title, lesson_type, content_url, content_text, duration_minutes, additional_notes, lesson_order, now, now]
-    );
-    
-    const result = await client.query('SELECT * FROM training_lessons WHERE lesson_id = $1', [lesson_id]);
+    const result = await client.query('SELECT slug, title, content FROM legal_documents WHERE slug = $1', ['privacy-policy']);
     client.release();
-    res.status(201).json(result.rows[0]);
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Privacy policy not found', null, 'NOT_FOUND'));
+    }
+    res.json(result.rows[0]);
   } catch (error) {
     client.release();
-    res.status(500).json(createErrorResponse('Failed to create lesson', error, 'LESSON_CREATE_ERROR'));
+    res.status(500).json(createErrorResponse('Failed to fetch privacy policy', error, 'FETCH_ERROR'));
   }
+});
+
+// Public endpoint to get Terms & Conditions
+app.get('/api/legal/terms', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT slug, title, content FROM legal_documents WHERE slug = $1', ['terms-and-conditions']);
+    client.release();
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Terms not found', null, 'NOT_FOUND'));
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch terms', error, 'FETCH_ERROR'));
+  }
+});
+
+// Admin endpoint to get a legal document by slug
+app.get('/api/admin/legal/:slug', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { slug } = req.params;
+    
+    // Validate slug
+    if (!['privacy-policy', 'terms-and-conditions'].includes(slug)) {
+      return res.status(400).json(createErrorResponse('Invalid slug', null, 'INVALID_SLUG'));
+    }
+    
+    const result = await client.query('SELECT * FROM legal_documents WHERE slug = $1', [slug]);
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Legal document not found', null, 'NOT_FOUND'));
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch legal document', error, 'FETCH_ERROR'));
+  }
+});
+
+// Admin endpoint to update a legal document
+app.put('/api/admin/legal/:slug', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { slug } = req.params;
+    const { title, content } = req.body;
+    
+    // Validate slug
+    if (!['privacy-policy', 'terms-and-conditions'].includes(slug)) {
+      return res.status(400).json(createErrorResponse('Invalid slug', null, 'INVALID_SLUG'));
+    }
+    
+    // Validate required fields
+    if (!title || !content) {
+      return res.status(400).json(createErrorResponse('Title and content are required', null, 'MISSING_FIELDS'));
+    }
+    
+    const now = new Date().toISOString();
+    const result = await client.query(
+      'UPDATE legal_documents SET title = $1, content = $2, updated_at = $3 WHERE slug = $4 RETURNING *',
+      [title, content, now, slug]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Legal document not found', null, 'NOT_FOUND'));
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update legal document', error, 'UPDATE_ERROR'));
+  }
+});
+
+// ============================================================================
+// START SERVER
+// ============================================================================
+
+httpServer.listen(Number(actualPort), '0.0.0.0', () => {
+  console.log(`Server running on port ${actualPort}`);
 });
 
 app.get('/api/training/courses/:course_id/lessons', authenticateToken, async (req: AuthRequest, res: Response) => {
