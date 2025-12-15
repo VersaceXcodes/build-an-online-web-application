@@ -61,6 +61,7 @@ const UV_AdminToppings = React.lazy(() => import('@/components/views/UV_AdminTop
 const UV_AdminEvents = React.lazy(() => import('@/components/views/UV_AdminEvents'));
 const UV_AdminAboutPage = React.lazy(() => import('@/components/views/UV_AdminAboutPage'));
 const UV_AdminLocations = React.lazy(() => import('@/components/views/UV_AdminLocations'));
+const UV_AdminHomepage = React.lazy(() => import('@/components/views/UV_AdminHomepage'));
 
 // ============================================================================
 // QUERY CLIENT CONFIGURATION
@@ -638,6 +639,15 @@ export const AppRoutes: React.FC = () => {
                 element={
                   <RoleProtectedRoute allowedRoles={['admin']}>
                     <UV_AdminEvents />
+                  </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/admin/homepage" 
+                element={
+                  <RoleProtectedRoute allowedRoles={['admin']}>
+                    <UV_AdminHomepage />
                   </RoleProtectedRoute>
                 } 
               />

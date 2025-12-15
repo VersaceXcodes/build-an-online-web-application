@@ -63,6 +63,22 @@ interface StallEvent {
   updated_at: string;
 }
 
+interface HomepageCorporateSection {
+  id: number;
+  section_title: string;
+  section_subtitle: string | null;
+  card_title: string;
+  card_description: string;
+  card_image_url: string;
+  special_price: string | null;
+  available_until: string | null;
+  cta_text: string;
+  cta_link: string;
+  is_enabled: boolean;
+  updated_at: string;
+  created_at: string;
+}
+
 // ============================================================================
 // API FUNCTIONS
 // ============================================================================
@@ -93,6 +109,20 @@ const fetchStallEvent = async (): Promise<StallEvent | null> => {
     `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/stall-events?is_visible=true`
   );
   return response.data && response.data.length > 0 ? response.data[0] : null;
+};
+
+const fetchCorporateSection = async (): Promise<HomepageCorporateSection | null> => {
+  try {
+    const response = await axios.get<HomepageCorporateSection | null>(
+      `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/api/homepage/corporate-section`
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return null; // No section configured
+    }
+    throw error;
+  }
 };
 
 // ============================================================================
@@ -138,8 +168,20 @@ const UV_Landing: React.FC = () => {
     refetchOnWindowFocus: false,
   });
 
+  // Fetch Corporate Section
+  const {
+    data: corporate_section,
+    isLoading: corporate_loading,
+  } = useQuery({
+    queryKey: ['homepage-corporate-section'],
+    queryFn: fetchCorporateSection,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
+
   // Derived state
   const show_event_section = active_event?.is_visible || false;
+  const show_corporate_section = corporate_section?.is_enabled || false;
 
   // Helper function to convert location name to URL slug
   // This MUST match the same logic in UV_LocationInternal and UV_Menu
@@ -365,130 +407,116 @@ const UV_Landing: React.FC = () => {
       </section>
 
       {/* Corporate & Events Section */}
-      <section className="py-16 lg:py-24 bg-luxury-darkCharcoal">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-luxury-champagne mb-4">
-              Corporate & Event Orders
-            </h2>
-            <p className="font-sans text-lg text-luxury-champagne/80 max-w-2xl mx-auto">
-              Make your special occasions unforgettable with our bespoke dessert offerings
-            </p>
-          </div>
-
-          {/* Loading State for Drop */}
-          {drop_loading && (
-            <div className="glass-luxury rounded-xl shadow-luxury overflow-hidden animate-pulse" role="status" aria-live="polite" aria-label="Loading drop of the month">
-              <div className="grid md:grid-cols-2 gap-0">
-                <div className="h-80 md:h-full bg-gradient-to-br from-luxury-darkCocoa to-luxury-darkCharcoal"></div>
-                <div className="p-8 lg:p-12 space-y-4">
-                  <div className="h-10 bg-luxury-gold-500/20 rounded w-3/4"></div>
-                  <div className="space-y-2">
-                    <div className="h-4 bg-luxury-gold-500/10 rounded w-full"></div>
-                    <div className="h-4 bg-luxury-gold-500/10 rounded w-5/6"></div>
-                    <div className="h-4 bg-luxury-gold-500/10 rounded w-2/3"></div>
-                  </div>
-                  <div className="h-20 bg-luxury-gold-500/10 rounded"></div>
-                  <div className="h-12 bg-luxury-gold-500/20 rounded w-48"></div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Drop of the Month Featured Display */}
-          {!drop_loading && active_drop && (
-            <div className="glass-luxury rounded-xl shadow-luxury-lg overflow-hidden border border-luxury-gold-500/30 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
-              <div className="grid md:grid-cols-2 gap-0">
-                {/* Image */}
-                <div className="relative h-80 md:h-full">
-                  <img
-                    src={active_drop.product_image_url}
-                    alt={active_drop.product_name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute top-4 left-4 gradient-gold text-luxury-darkCharcoal px-4 py-2 rounded-lg font-bold shadow-glow-gold font-sans">
-                    Drop of the Month
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <h3 className="font-serif text-3xl lg:text-4xl font-bold text-luxury-champagne mb-4">
-                    {active_drop.product_name}
-                  </h3>
-                  
-                  <p className="font-sans text-lg text-luxury-champagne/80 mb-6 leading-relaxed">
-                    {active_drop.description}
-                  </p>
-
-                  <div className="glass-luxury-darker border border-luxury-gold-500/30 rounded-lg p-4 mb-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Special Price</p>
-                        <p className="font-serif text-3xl font-bold text-luxury-champagne">
-                          €{Number(active_drop.price).toFixed(2)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Available Until</p>
-                        <p className="font-sans text-lg font-semibold text-luxury-champagne">
-                          {new Date(active_drop.available_until).toLocaleDateString('en-IE', {
-                            month: 'short',
-                            day: 'numeric',
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Link
-                    to="/corporate-order"
-                    className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
-                  >
-                    Pre-order Now
-                    <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Generic Corporate Enquiry (when no active drop) */}
-          {!drop_loading && !active_drop && (
-            <div className="glass-luxury rounded-xl shadow-luxury-lg p-8 lg:p-12 text-center border border-luxury-gold-500/30 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
-              <div className="max-w-2xl mx-auto">
-                <div className="mb-6">
-                  <svg className="w-20 h-20 mx-auto text-luxury-gold-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z" />
-                  </svg>
-                </div>
-                
-                <h3 className="font-serif text-3xl font-bold text-luxury-champagne mb-4">
-                  Corporate & Event Catering
-                </h3>
-                
-                <p className="font-sans text-lg text-luxury-champagne/80 mb-8 leading-relaxed">
-                  Elevate your corporate events, celebrations, and special occasions with our custom dessert solutions. 
-                  From intimate meetings to large gatherings, we create memorable sweet moments.
+      {show_corporate_section && corporate_section && (
+        <section className="py-16 lg:py-24 bg-luxury-darkCharcoal">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="font-serif text-3xl md:text-4xl font-bold text-luxury-champagne mb-4">
+                {corporate_section.section_title}
+              </h2>
+              {corporate_section.section_subtitle && (
+                <p className="font-sans text-lg text-luxury-champagne/80 max-w-2xl mx-auto">
+                  {corporate_section.section_subtitle}
                 </p>
-
-                <Link
-                  to="/corporate-order"
-                  className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
-                >
-                  Enquire About Corporate Orders
-                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </Link>
-              </div>
+              )}
             </div>
-          )}
-        </div>
-      </section>
+
+            {/* Loading State */}
+            {corporate_loading && (
+              <div className="glass-luxury rounded-xl shadow-luxury overflow-hidden animate-pulse" role="status" aria-live="polite" aria-label="Loading corporate section">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div className="h-80 md:h-full bg-gradient-to-br from-luxury-darkCocoa to-luxury-darkCharcoal"></div>
+                  <div className="p-8 lg:p-12 space-y-4">
+                    <div className="h-10 bg-luxury-gold-500/20 rounded w-3/4"></div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-luxury-gold-500/10 rounded w-full"></div>
+                      <div className="h-4 bg-luxury-gold-500/10 rounded w-5/6"></div>
+                      <div className="h-4 bg-luxury-gold-500/10 rounded w-2/3"></div>
+                    </div>
+                    <div className="h-20 bg-luxury-gold-500/10 rounded"></div>
+                    <div className="h-12 bg-luxury-gold-500/20 rounded w-48"></div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Corporate Section Display */}
+            {!corporate_loading && (
+              <div className="glass-luxury rounded-xl shadow-luxury-lg overflow-hidden border border-luxury-gold-500/30 hover:border-luxury-gold-500 hover:shadow-glow-gold-lg transition-all duration-300">
+                <div className="grid md:grid-cols-2 gap-0">
+                  {/* Image */}
+                  <div className="relative h-80 md:h-full">
+                    <img
+                      src={corporate_section.card_image_url}
+                      alt={corporate_section.card_title}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-8 lg:p-12 flex flex-col justify-center">
+                    <h3 className="font-serif text-3xl lg:text-4xl font-bold text-luxury-champagne mb-4">
+                      {corporate_section.card_title}
+                    </h3>
+                    
+                    <p className="font-sans text-lg text-luxury-champagne/80 mb-6 leading-relaxed">
+                      {corporate_section.card_description}
+                    </p>
+
+                    {(corporate_section.special_price || corporate_section.available_until) && (
+                      <div className="glass-luxury-darker border border-luxury-gold-500/30 rounded-lg p-4 mb-6">
+                        <div className="flex items-center justify-between">
+                          {corporate_section.special_price && (
+                            <div>
+                              <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Special Price</p>
+                              <p className="font-serif text-3xl font-bold text-luxury-champagne">
+                                {corporate_section.special_price}
+                              </p>
+                            </div>
+                          )}
+                          {corporate_section.available_until && (
+                            <div className="text-right">
+                              <p className="font-sans text-sm text-luxury-gold-500 font-medium mb-1">Available Until</p>
+                              <p className="font-sans text-lg font-semibold text-luxury-champagne">
+                                {corporate_section.available_until}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {corporate_section.cta_link.startsWith('http') ? (
+                      <a
+                        href={corporate_section.cta_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
+                      >
+                        {corporate_section.cta_text}
+                        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </a>
+                    ) : (
+                      <Link
+                        to={corporate_section.cta_link}
+                        className="inline-flex items-center justify-center gradient-gold text-luxury-darkCharcoal font-semibold px-8 py-4 min-h-[48px] rounded-xl shadow-glow-gold hover:shadow-glow-gold-lg transition-all duration-300 transform hover:scale-105 font-sans"
+                      >
+                        {corporate_section.cta_text}
+                        <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                        </svg>
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Stall/Pop-up Event Section (Conditionally Rendered) */}
       {show_event_section && active_event && (

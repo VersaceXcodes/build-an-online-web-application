@@ -16,7 +16,8 @@ import {
   Calendar,
   MessageSquare,
   Cookie,
-  Sparkles
+  Sparkles,
+  Home
 } from 'lucide-react';
 
 // ============================================================================
@@ -685,6 +686,14 @@ const UV_AdminDashboard: React.FC = () => {
               >
                 <Sparkles className="h-8 w-8 text-indigo-600 mb-2" />
                 <span className="text-sm font-medium text-indigo-900">Event Alerts</span>
+              </Link>
+
+              <Link
+                to="/admin/homepage"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg hover:from-teal-100 hover:to-teal-200 transition-all"
+              >
+                <Home className="h-8 w-8 text-teal-600 mb-2" />
+                <span className="text-sm font-medium text-teal-900">Homepage Content</span>
               </Link>
             </div>
           </div>

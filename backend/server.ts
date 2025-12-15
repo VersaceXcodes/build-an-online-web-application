@@ -2573,6 +2573,108 @@ app.put('/api/stall-events/:event_id', authenticateToken, requireRole(['admin'])
   }
 });
 
+// ============================================================================
+// HOMEPAGE CORPORATE SECTION ENDPOINTS
+// ============================================================================
+
+// Public endpoint - Get homepage corporate section content
+app.get('/api/homepage/corporate-section', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM homepage_corporate_section WHERE id = 1');
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
+    }
+    
+    const section = result.rows[0];
+    
+    // If section is disabled, return null
+    if (!section.is_enabled) {
+      return res.json(null);
+    }
+    
+    res.json(section);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch corporate section', error, 'SECTION_FETCH_ERROR'));
+  }
+});
+
+// Admin endpoint - Get homepage corporate section content (includes disabled sections)
+app.get('/api/admin/homepage/corporate-section', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT * FROM homepage_corporate_section WHERE id = 1');
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch corporate section', error, 'SECTION_FETCH_ERROR'));
+  }
+});
+
+// Admin endpoint - Update homepage corporate section content
+app.put('/api/admin/homepage/corporate-section', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const {
+      section_title,
+      section_subtitle,
+      card_title,
+      card_description,
+      card_image_url,
+      special_price,
+      available_until,
+      cta_text,
+      cta_link,
+      is_enabled
+    } = req.body;
+    
+    // Validate required fields
+    if (!card_title || !card_description || !card_image_url || !cta_text || !cta_link) {
+      return res.status(400).json(createErrorResponse('Missing required fields', null, 'VALIDATION_ERROR'));
+    }
+    
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      `UPDATE homepage_corporate_section 
+       SET section_title = $1, 
+           section_subtitle = $2, 
+           card_title = $3, 
+           card_description = $4, 
+           card_image_url = $5, 
+           special_price = $6, 
+           available_until = $7, 
+           cta_text = $8, 
+           cta_link = $9, 
+           is_enabled = $10, 
+           updated_at = $11 
+       WHERE id = 1 
+       RETURNING *`,
+      [section_title, section_subtitle, card_title, card_description, card_image_url, special_price, available_until, cta_text, cta_link, is_enabled, now]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Corporate section not found', null, 'SECTION_NOT_FOUND'));
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update corporate section', error, 'SECTION_UPDATE_ERROR'));
+  }
+});
+
 app.get('/api/event-alerts/drop-of-the-month', async (req, res) => {
   const client = await pool.connect();
   try {
