@@ -144,9 +144,6 @@ const UV_Checkout_Step3: React.FC = () => {
   
   useEffect(() => {
     if (order) {
-      // Clear cart after successful order
-      clearCart();
-      
       // Show success animation
       setShowSuccessAnimation(true);
       
@@ -161,6 +158,12 @@ const UV_Checkout_Step3: React.FC = () => {
           setAccountCreated(true);
         }
       }
+      
+      // Clear cart after order is displayed (delayed to ensure page renders first)
+      // This prevents redirect issues when navigating to confirmation
+      setTimeout(() => {
+        clearCart();
+      }, 500);
     }
   }, [order, clearCart, currentUser]);
   

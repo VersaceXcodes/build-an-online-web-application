@@ -59,6 +59,10 @@ interface CreateOrderPayload {
 }
 
 interface CreateOrderResponse {
+  success: boolean;
+  orderId: string;
+  orderNumber: string;
+  confirmationUrl: string;
   order_id: string;
   order_number: string;
   order_status: string;
@@ -449,14 +453,21 @@ const UV_Checkout_Step2: React.FC = () => {
         }
       }
 
-      // Step 5: Clear cart and session
-      clearCart();
-      sessionStorage.removeItem('kake_checkout_session');
-
-      // Step 6: Navigate to confirmation
+      // Step 5: Navigate to confirmation FIRST (before clearing cart)
+      // Use confirmationUrl from response if available
+      const confirmationPath = orderResponse.confirmationUrl || `/order-confirmation/${orderId}`;
       hideLoading();
       setProcessingPayment(false);
-      navigate(`/order-confirmation/${orderId}`);
+      
+      // Navigate to confirmation page
+      navigate(confirmationPath);
+      
+      // Step 6: Clear cart and session AFTER navigation
+      // This ensures the confirmation page can load properly
+      setTimeout(() => {
+        clearCart();
+        sessionStorage.removeItem('kake_checkout_session');
+      }, 100);
 
     } catch (error: any) {
       console.error('Order placement error:', error);

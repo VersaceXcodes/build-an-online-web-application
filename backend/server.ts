@@ -1239,7 +1239,14 @@ app.post('/api/orders', async (req, res) => {
     const itemsResult = await client.query('SELECT * FROM order_items WHERE order_id = $1', [order_id]);
     client.release();
     io.to(`location_${location_name}_staff`).emit('new_order', { event_type: 'new_order', timestamp: now, order_id, order_number, customer_name, location_name, fulfillment_method, total_amount, item_count: items.length });
-    res.status(201).json({ ...orderResult.rows[0], items: itemsResult.rows });
+    res.status(201).json({ 
+      success: true,
+      orderId: order_id,
+      orderNumber: order_number,
+      confirmationUrl: `/order-confirmation/${order_id}`,
+      ...orderResult.rows[0], 
+      items: itemsResult.rows 
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     client.release();
