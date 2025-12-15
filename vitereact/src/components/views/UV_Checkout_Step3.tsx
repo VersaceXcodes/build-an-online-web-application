@@ -159,11 +159,11 @@ const UV_Checkout_Step3: React.FC = () => {
         }
       }
       
-      // Clear cart after order is displayed (delayed to ensure page renders first)
-      // This prevents redirect issues when navigating to confirmation
+      // Cart is already cleared by the payment page before navigation
+      // But clear it as a safety measure in case user navigates directly to this URL
       setTimeout(() => {
         clearCart();
-      }, 500);
+      }, 100);
     }
   }, [order, clearCart, currentUser]);
   

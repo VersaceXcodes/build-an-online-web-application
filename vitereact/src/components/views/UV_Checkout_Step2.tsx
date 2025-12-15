@@ -138,6 +138,9 @@ const UV_Checkout_Step2: React.FC = () => {
   const [, setOrderIdPending] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<boolean>(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  
+  // Track if order is being placed to prevent cart-empty redirect
+  const orderBeingPlacedRef = React.useRef<boolean>(false);
 
   // Promo code state
   const [promoCodeInput, setPromoCodeInput] = useState<string>('');
@@ -198,9 +201,10 @@ const UV_Checkout_Step2: React.FC = () => {
     }
   }, [navigate, showToast]);
 
-  // Validate cart has items
+  // Validate cart has items (but don't redirect if order is being placed)
   useEffect(() => {
-    if (cartItems.length === 0) {
+    if (cartItems.length === 0 && !orderBeingPlacedRef.current) {
+      console.log('[CHECKOUT STEP 2] Cart empty, redirecting to home');
       showToast('error', 'Your cart is empty');
       navigate('/');
     }
@@ -368,6 +372,9 @@ const UV_Checkout_Step2: React.FC = () => {
       return;
     }
 
+    // Set flag to prevent cart-empty redirect during order placement
+    orderBeingPlacedRef.current = true;
+    
     setProcessingPayment(true);
     setPaymentError(null);
     showLoading('Processing your payment...');
@@ -453,27 +460,28 @@ const UV_Checkout_Step2: React.FC = () => {
         }
       }
 
-      // Step 5: Navigate to confirmation FIRST (before clearing cart)
+      // Step 5: Navigate to confirmation page
       // Use confirmationUrl from response if available
       const confirmationPath = orderResponse.confirmationUrl || `/order-confirmation/${orderId}`;
+      
+      console.log('[ORDER SUCCESS] Navigating to confirmation:', confirmationPath, 'Order ID:', orderId);
+      
       hideLoading();
       setProcessingPayment(false);
       
-      // Navigate to confirmation page
-      navigate(confirmationPath);
+      // Clear cart and session BEFORE navigation to prevent any race conditions
+      clearCart();
+      sessionStorage.removeItem('kake_checkout_session');
       
-      // Step 6: Clear cart and session AFTER navigation
-      // This ensures the confirmation page can load properly
-      setTimeout(() => {
-        clearCart();
-        sessionStorage.removeItem('kake_checkout_session');
-      }, 100);
+      // Navigate to confirmation page using replace to prevent back button issues
+      navigate(confirmationPath, { replace: true });
 
     } catch (error: any) {
       console.error('Order placement error:', error);
       const errorMessage = error.response?.data?.message || 'Payment processing failed. Please try again.';
       setPaymentError(errorMessage);
       setProcessingPayment(false);
+      orderBeingPlacedRef.current = false; // Reset flag on error
       hideLoading();
       showToast('error', errorMessage);
     }
