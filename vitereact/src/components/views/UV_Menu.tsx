@@ -3,6 +3,15 @@ import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { X } from 'lucide-react';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -75,7 +84,7 @@ const UV_Menu: React.FC = () => {
   // ============================================================================
 
   const [view_mode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filter_panel_open, setFilterPanelOpen] = useState(false);
+  const [filter_drawer_open, setFilterDrawerOpen] = useState(false);
   const [search_input, setSearchInput] = useState(searchParams.get('search') || '');
 
   // ============================================================================
@@ -526,26 +535,142 @@ const UV_Menu: React.FC = () => {
         {/* Main Content: Filter Panel + Products Grid */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-            {/* Filter Panel - Mobile Toggle Button */}
+            {/* Filter Panel - Mobile Drawer Button */}
             <div className="lg:hidden mb-4">
-              <button
-                onClick={() => setFilterPanelOpen(!filter_panel_open)}
-                className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                <span>Filters {Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length > 0 && `(${Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length})`}</span>
-                <svg
-                  className={`h-5 w-5 transition-transform ${filter_panel_open ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+              <Drawer open={filter_drawer_open} onOpenChange={setFilterDrawerOpen}>
+                <DrawerTrigger asChild>
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="flex items-center gap-2">
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                      </svg>
+                      Filters {Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length > 0 && `(${Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length})`}
+                    </span>
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </DrawerTrigger>
+                <DrawerContent>
+                  <DrawerHeader>
+                    <div className="flex items-center justify-between">
+                      <DrawerTitle>Filter Products</DrawerTitle>
+                      <DrawerClose asChild>
+                        <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                          <X className="h-5 w-5" />
+                        </button>
+                      </DrawerClose>
+                    </div>
+                  </DrawerHeader>
+                  <div className="overflow-y-auto max-h-[70vh] px-4 pb-6">
+                    {/* Mobile Filter Content */}
+                    <div className="space-y-6">
+                      {Object.values(active_filters).some(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)) && (
+                        <button
+                          onClick={clearAllFilters}
+                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                        >
+                          Clear All Filters
+                        </button>
+                      )}
+
+                      {/* Category Filter */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Category</h3>
+                        <div className="space-y-2">
+                          {['pastries', 'breads', 'cakes', 'corporate'].map((cat) => (
+                            <label key={cat} className="flex items-center cursor-pointer">
+                              <input
+                                type="radio"
+                                name="category-mobile"
+                                checked={active_filters.category === cat}
+                                onChange={() => updateFilter('category', active_filters.category === cat ? null : cat)}
+                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                              />
+                              <span className="ml-3 text-sm text-gray-700 capitalize">{cat}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Price Range Filter */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Price Range</h3>
+                        <div className="space-y-3">
+                          <div>
+                            <label htmlFor="price_min_mobile" className="text-xs text-gray-600 block mb-1">
+                              Min Price (€)
+                            </label>
+                            <input
+                              type="number"
+                              id="price_min_mobile"
+                              min="0"
+                              step="0.5"
+                              value={active_filters.price_min || ''}
+                              onChange={(e) => updateFilter('price_min', e.target.value ? parseFloat(e.target.value) : null)}
+                              placeholder="0.00"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="price_max_mobile" className="text-xs text-gray-600 block mb-1">
+                              Max Price (€)
+                            </label>
+                            <input
+                              type="number"
+                              id="price_max_mobile"
+                              min="0"
+                              step="0.5"
+                              value={active_filters.price_max || ''}
+                              onChange={(e) => updateFilter('price_max', e.target.value ? parseFloat(e.target.value) : null)}
+                              placeholder="100.00"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Dietary Tags Filter */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Dietary Preferences</h3>
+                        <div className="space-y-2">
+                          {dietary_tag_options.map((tag) => (
+                            <label key={tag.value} className="flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={active_filters.dietary_tags.includes(tag.value)}
+                                onChange={() => toggleDietaryTag(tag.value)}
+                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <span className="ml-3 text-sm text-gray-700">{tag.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Availability Filter */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Availability</h3>
+                        <label className="flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={active_filters.availability_status === 'in_stock'}
+                            onChange={() => updateFilter('availability_status', active_filters.availability_status === 'in_stock' ? null : 'in_stock')}
+                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <span className="ml-3 text-sm text-gray-700">Hide Out of Stock</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </DrawerContent>
+              </Drawer>
             </div>
 
-            {/* Filter Panel - Sidebar */}
-            <aside className={`lg:col-span-1 ${filter_panel_open ? 'block' : 'hidden lg:block'}`}>
+            {/* Filter Panel - Desktop Sidebar */}
+            <aside className="hidden lg:block lg:col-span-1">
               <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 sticky top-4">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
@@ -713,7 +838,7 @@ const UV_Menu: React.FC = () => {
                   <div
                     className={
                       view_mode === 'grid'
-                        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'
+                        ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6'
                         : 'space-y-4'
                     }
                   >
@@ -736,12 +861,12 @@ const UV_Menu: React.FC = () => {
                           key={product.product_id}
                           className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transition-all hover:shadow-xl ${
                             is_out_of_stock ? 'opacity-60' : ''
-                          } ${view_mode === 'list' ? 'flex' : ''}`}
+                          } ${view_mode === 'list' ? 'flex' : 'flex flex-col'}`}
                         >
                           {/* Product Image */}
                           <Link
                             to={`/location/${location_slug}/product/${product.product_id}`}
-                            className={`block ${view_mode === 'list' ? 'w-48 flex-shrink-0' : ''}`}
+                            className={`block ${view_mode === 'list' ? 'w-48 flex-shrink-0' : 'w-full'}`}
                           >
                             <div className="relative">
                               <img
@@ -749,7 +874,7 @@ const UV_Menu: React.FC = () => {
                                 alt={product.product_name}
                                 loading="lazy"
                                 className={`w-full object-cover ${
-                                  view_mode === 'list' ? 'h-full' : 'h-56'
+                                  view_mode === 'list' ? 'h-full' : 'aspect-square'
                                 }`}
                               />
                               {product.is_featured && (
@@ -768,13 +893,13 @@ const UV_Menu: React.FC = () => {
                           </Link>
 
                           {/* Product Info */}
-                          <div className={`p-6 ${view_mode === 'list' ? 'flex-1 flex flex-col justify-between' : ''}`}>
-                            <div>
+                          <div className={`p-4 flex flex-col ${view_mode === 'list' ? 'flex-1 justify-between' : 'flex-1'}`}>
+                            <div className="flex-1">
                               <Link
                                 to={`/location/${location_slug}/product/${product.product_id}`}
                                 className="block"
                               >
-                                <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors mb-2">
+                                <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors mb-1 line-clamp-1">
                                   {product.product_name}
                                 </h3>
                               </Link>
@@ -785,33 +910,33 @@ const UV_Menu: React.FC = () => {
 
                               {/* Dietary Tags */}
                               {dietary_tags_array.length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                  {dietary_tags_array.slice(0, 3).map((tag) => (
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                  {dietary_tags_array.slice(0, 2).map((tag) => (
                                     <span
                                       key={tag}
-                                      className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium"
+                                      className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium"
                                     >
                                       {tag.replace('_', ' ')}
                                     </span>
                                   ))}
-                                  {dietary_tags_array.length > 3 && (
-                                    <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-                                      +{dietary_tags_array.length - 3}
+                                  {dietary_tags_array.length > 2 && (
+                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                                      +{dietary_tags_array.length - 2}
                                     </span>
                                   )}
                                 </div>
                               )}
                             </div>
 
-                            {/* Price & Add to Cart */}
-                            <div className={`flex items-center ${view_mode === 'list' ? 'justify-between' : 'justify-between'} mt-4`}>
-                              <div>
-                                <div className="flex items-baseline space-x-2">
-                                  <span className="text-2xl font-bold text-gray-900">
+                            {/* Price & Add to Cart Button - Same Line */}
+                            <div className="flex items-center justify-between gap-3 mt-auto pt-3 border-t border-gray-100">
+                              <div className="flex flex-col">
+                                <div className="flex items-baseline gap-1.5">
+                                  <span className="text-xl font-bold text-gray-900">
                                     €{product.price.toFixed(2)}
                                   </span>
                                   {product.compare_at_price && (
-                                    <span className="text-sm text-gray-500 line-through">
+                                    <span className="text-xs text-gray-500 line-through">
                                       €{product.compare_at_price.toFixed(2)}
                                     </span>
                                   )}
@@ -820,10 +945,10 @@ const UV_Menu: React.FC = () => {
 
                               <Link
                                 to={is_out_of_stock ? '#' : `/location/${location_slug}/product/${product.product_id}`}
-                                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-block text-center ${
+                                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 inline-flex items-center justify-center whitespace-nowrap min-h-[44px] ${
                                   is_out_of_stock
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transform hover:scale-105'
+                                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
                                 }`}
                                 onClick={(e) => {
                                   if (is_out_of_stock) {
@@ -831,7 +956,7 @@ const UV_Menu: React.FC = () => {
                                   }
                                 }}
                               >
-                                {is_out_of_stock ? 'Out of Stock' : 'Choose Toppings & Sauces'}
+                                {is_out_of_stock ? 'Out of Stock' : 'Select'}
                               </Link>
                             </div>
                           </div>
