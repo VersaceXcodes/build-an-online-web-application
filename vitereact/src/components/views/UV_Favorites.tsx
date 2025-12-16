@@ -235,23 +235,16 @@ const UV_Favorites: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleAddToCart(favorite)}
-                      disabled={favorite.availability_status !== 'in_stock'}
+                    <Link
+                      to={`/location/${selectedLocation || 'london-flagship'}/product/${favorite.product_id}`}
                       className={`flex-1 inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg transition-colors ${
                         favorite.availability_status === 'in_stock'
                           ? 'text-white bg-purple-600 hover:bg-purple-700'
-                          : 'text-gray-400 bg-gray-100 cursor-not-allowed'
+                          : 'text-gray-400 bg-gray-100 cursor-not-allowed pointer-events-none'
                       }`}
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
-                      Add to Cart
-                    </button>
-                    <Link
-                      to={`/location/${selectedLocation || 'london-flagship'}/product/${favorite.product_id}`}
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-                    >
-                      View
+                      Choose Toppings & Sauces
                     </Link>
                   </div>
                 </div>

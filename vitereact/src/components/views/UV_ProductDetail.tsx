@@ -372,6 +372,17 @@ const UV_ProductDetail: React.FC = () => {
       return;
     }
 
+    // Validate required selections
+    if (availableToppings.length > 0 && selectedToppings.length === 0) {
+      showToast('error', 'Please select at least one topping');
+      return;
+    }
+
+    if (availableSauces.length > 0 && selectedSauces.length === 0) {
+      showToast('error', 'Please select at least one sauce');
+      return;
+    }
+
     // Calculate total including toppings
     const toppingsCost = selectedToppings.reduce((sum, toppingId) => {
       const topping = toppingsData.find(t => t.topping_id === toppingId);
@@ -762,8 +773,11 @@ const UV_ProductDetail: React.FC = () => {
               {availableToppings.length > 0 && (
                 <div className="space-y-3">
                   <label className="block text-sm font-semibold text-kake-chocolate-500">
-                    Choose Toppings (Optional)
+                    Choose Toppings <span className="text-red-500">*</span>
                   </label>
+                  <p className="text-xs text-kake-chocolate-500/70">
+                    One topping included free with your order
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     {availableToppings.map((topping) => (
                       <button
@@ -795,8 +809,11 @@ const UV_ProductDetail: React.FC = () => {
               {availableSauces.length > 0 && (
                 <div className="space-y-3">
                   <label className="block text-sm font-semibold text-kake-chocolate-500">
-                    Choose Sauces (Optional)
+                    Choose Sauces <span className="text-red-500">*</span>
                   </label>
+                  <p className="text-xs text-kake-chocolate-500/70">
+                    One sauce included free with your order
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     {availableSauces.map((sauce) => (
                       <button

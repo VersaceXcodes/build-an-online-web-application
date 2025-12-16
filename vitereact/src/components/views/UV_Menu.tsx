@@ -818,17 +818,21 @@ const UV_Menu: React.FC = () => {
                                 </div>
                               </div>
 
-                              <button
-                                onClick={() => handleAddToCart(product)}
-                                disabled={is_out_of_stock}
-                                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+                              <Link
+                                to={is_out_of_stock ? '#' : `/location/${location_slug}/product/${product.product_id}`}
+                                className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 inline-block text-center ${
                                   is_out_of_stock
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transform hover:scale-105'
                                 }`}
+                                onClick={(e) => {
+                                  if (is_out_of_stock) {
+                                    e.preventDefault();
+                                  }
+                                }}
                               >
-                                {is_out_of_stock ? 'Out of Stock' : 'Add to Cart'}
-                              </button>
+                                {is_out_of_stock ? 'Out of Stock' : 'Choose Toppings & Sauces'}
+                              </Link>
                             </div>
                           </div>
                         </div>
