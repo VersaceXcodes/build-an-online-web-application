@@ -95,8 +95,12 @@ const UV_ProductDetail: React.FC = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [additionalImagesArray, setAdditionalImagesArray] = useState<string[]>([]);
   const [customerName, setCustomerName] = useState('');
-  const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
-  const [selectedSauces, setSelectedSauces] = useState<string[]>([]);
+  // Base selections (single select - included in price)
+  const [selectedTopping, setSelectedTopping] = useState<string>('');
+  const [selectedSauce, setSelectedSauce] = useState<string>('');
+  // Extra selections (multi-select - additional cost)
+  const [extraToppings, setExtraToppings] = useState<string[]>([]);
+  const [extraSauces, setExtraSauces] = useState<string[]>([]);
 
   // ============================================================================
   // API CALLS - FETCH PRODUCT DETAILS
@@ -372,29 +376,23 @@ const UV_ProductDetail: React.FC = () => {
       return;
     }
 
-    // Validate required selections
-    if (availableToppings.length > 0 && selectedToppings.length === 0) {
-      showToast('error', 'Please select at least one topping');
+    // Validate required base selections
+    if (availableToppings.length > 0 && !selectedTopping) {
+      showToast('error', 'Please select a topping');
       return;
     }
 
-    if (availableSauces.length > 0 && selectedSauces.length === 0) {
-      showToast('error', 'Please select at least one sauce');
+    if (availableSauces.length > 0 && !selectedSauce) {
+      showToast('error', 'Please select a sauce');
       return;
     }
 
-    // Calculate total including toppings
-    const toppingsCost = selectedToppings.reduce((sum, toppingId) => {
-      const topping = toppingsData.find(t => t.topping_id === toppingId);
-      return sum + (topping?.price || 0);
-    }, 0);
+    // Calculate total including extras (€1.00 per extra item)
+    const EXTRA_ITEM_COST = 1.00;
+    const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
+    const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
 
-    const saucesCost = selectedSauces.reduce((sum, sauceId) => {
-      const sauce = toppingsData.find(t => t.topping_id === sauceId);
-      return sum + (sauce?.price || 0);
-    }, 0);
-
-    const totalPrice = product.price + toppingsCost + saucesCost;
+    const totalPrice = product.price + extraToppingsCost + extraSaucesCost;
 
     const cartItem = {
       product_id: product.product_id,
@@ -404,20 +402,42 @@ const UV_ProductDetail: React.FC = () => {
       subtotal: totalPrice * selectedQuantity,
       primary_image_url: product.primary_image_url,
       customer_name: customerName.trim() || undefined,
-      selected_toppings: selectedToppings.map(id => {
+      selected_toppings: selectedTopping ? [{
+        topping_id: selectedTopping,
+        topping_name: toppingsData.find(t => t.topping_id === selectedTopping)?.topping_name || '',
+        price: 0 // Base topping is included
+      }, ...extraToppings.map(id => {
         const topping = toppingsData.find(t => t.topping_id === id);
         return {
           topping_id: id,
           topping_name: topping?.topping_name || '',
-          price: topping?.price || 0
+          price: EXTRA_ITEM_COST
+        };
+      })] : extraToppings.map(id => {
+        const topping = toppingsData.find(t => t.topping_id === id);
+        return {
+          topping_id: id,
+          topping_name: topping?.topping_name || '',
+          price: EXTRA_ITEM_COST
         };
       }),
-      selected_sauces: selectedSauces.map(id => {
+      selected_sauces: selectedSauce ? [{
+        topping_id: selectedSauce,
+        topping_name: toppingsData.find(t => t.topping_id === selectedSauce)?.topping_name || '',
+        price: 0 // Base sauce is included
+      }, ...extraSauces.map(id => {
         const sauce = toppingsData.find(t => t.topping_id === id);
         return {
           topping_id: id,
           topping_name: sauce?.topping_name || '',
-          price: sauce?.price || 0
+          price: EXTRA_ITEM_COST
+        };
+      })] : extraSauces.map(id => {
+        const sauce = toppingsData.find(t => t.topping_id === id);
+        return {
+          topping_id: id,
+          topping_name: sauce?.topping_name || '',
+          price: EXTRA_ITEM_COST
         };
       })
     };
@@ -427,8 +447,10 @@ const UV_ProductDetail: React.FC = () => {
     // Reset selections
     setSelectedQuantity(1);
     setCustomerName('');
-    setSelectedToppings([]);
-    setSelectedSauces([]);
+    setSelectedTopping('');
+    setSelectedSauce('');
+    setExtraToppings([]);
+    setExtraSauces([]);
     
     // Optional: Auto-open cart panel
     setTimeout(() => {
@@ -771,72 +793,198 @@ const UV_ProductDetail: React.FC = () => {
 
               {/* Toppings Selection */}
               {availableToppings.length > 0 && (
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-kake-chocolate-500">
-                    Choose Toppings <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-kake-chocolate-500/70">
-                    One topping included free with your order
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableToppings.map((topping) => (
-                      <button
-                        key={topping.topping_id}
-                        type="button"
-                        onClick={() => {
-                          if (selectedToppings.includes(topping.topping_id)) {
-                            setSelectedToppings(prev => prev.filter(id => id !== topping.topping_id));
-                          } else {
-                            setSelectedToppings(prev => [...prev, topping.topping_id]);
-                          }
-                        }}
-                        disabled={isOutOfStock}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                          selectedToppings.includes(topping.topping_id)
-                            ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
-                            : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        {topping.topping_name}
-                        {topping.price > 0 && ` (+€${topping.price.toFixed(2)})`}
-                      </button>
-                    ))}
+                <div className="space-y-4">
+                  {/* Base Topping - Single Select (Radio) */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-kake-chocolate-500">
+                      Choose Toppings <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-kake-chocolate-500/70">
+                      One topping included free with your order
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableToppings.map((topping) => (
+                        <button
+                          key={topping.topping_id}
+                          type="button"
+                          onClick={() => setSelectedTopping(topping.topping_id)}
+                          disabled={isOutOfStock}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                            selectedTopping === topping.topping_id
+                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                              : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span className="flex items-center justify-center gap-1">
+                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              selectedTopping === topping.topping_id 
+                                ? 'border-white' 
+                                : 'border-kake-chocolate-500/30'
+                            }`}>
+                              {selectedTopping === topping.topping_id && (
+                                <span className="w-2 h-2 rounded-full bg-white" />
+                              )}
+                            </span>
+                            <span>{topping.topping_name}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Extra Toppings - Multi-Select (Checkbox) */}
+                  <div className="space-y-3 pt-2 border-t border-kake-caramel-500/10">
+                    <label className="block text-sm font-semibold text-kake-chocolate-500">
+                      Add Extra Toppings
+                    </label>
+                    <p className="text-xs text-kake-chocolate-500/70">
+                      +€1.00 per extra topping
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableToppings.map((topping) => {
+                        const isBaseSelection = selectedTopping === topping.topping_id;
+                        const isExtraSelected = extraToppings.includes(topping.topping_id);
+                        
+                        return (
+                          <button
+                            key={`extra-${topping.topping_id}`}
+                            type="button"
+                            onClick={() => {
+                              if (isExtraSelected) {
+                                setExtraToppings(prev => prev.filter(id => id !== topping.topping_id));
+                              } else {
+                                setExtraToppings(prev => [...prev, topping.topping_id]);
+                              }
+                            }}
+                            disabled={isOutOfStock}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                              isExtraSelected
+                                ? 'border-green-500 bg-green-500 text-white shadow-lg'
+                                : isBaseSelection
+                                ? 'border-kake-cream-200 bg-kake-cream-50 text-kake-chocolate-500/40'
+                                : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            <span className="flex items-center justify-center gap-1">
+                              <span className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                isExtraSelected 
+                                  ? 'border-white bg-white' 
+                                  : isBaseSelection
+                                  ? 'border-kake-chocolate-500/20'
+                                  : 'border-kake-chocolate-500/30'
+                              }`}>
+                                {isExtraSelected && (
+                                  <span className="text-green-500 font-bold text-xs">✓</span>
+                                )}
+                              </span>
+                              <span>{topping.topping_name}</span>
+                              {isBaseSelection && (
+                                <span className="text-xs opacity-60">(base)</span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Sauces Selection */}
               {availableSauces.length > 0 && (
-                <div className="space-y-3">
-                  <label className="block text-sm font-semibold text-kake-chocolate-500">
-                    Choose Sauces <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-kake-chocolate-500/70">
-                    One sauce included free with your order
-                  </p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableSauces.map((sauce) => (
-                      <button
-                        key={sauce.topping_id}
-                        type="button"
-                        onClick={() => {
-                          if (selectedSauces.includes(sauce.topping_id)) {
-                            setSelectedSauces(prev => prev.filter(id => id !== sauce.topping_id));
-                          } else {
-                            setSelectedSauces(prev => [...prev, sauce.topping_id]);
-                          }
-                        }}
-                        disabled={isOutOfStock}
-                        className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                          selectedSauces.includes(sauce.topping_id)
-                            ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
-                            : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
-                        } disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        {sauce.topping_name}
-                        {sauce.price > 0 && ` (+€${sauce.price.toFixed(2)})`}
-                      </button>
-                    ))}
+                <div className="space-y-4">
+                  {/* Base Sauce - Single Select (Radio) */}
+                  <div className="space-y-3">
+                    <label className="block text-sm font-semibold text-kake-chocolate-500">
+                      Choose Sauces <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-kake-chocolate-500/70">
+                      One sauce included free with your order
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableSauces.map((sauce) => (
+                        <button
+                          key={sauce.topping_id}
+                          type="button"
+                          onClick={() => setSelectedSauce(sauce.topping_id)}
+                          disabled={isOutOfStock}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                            selectedSauce === sauce.topping_id
+                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                              : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          <span className="flex items-center justify-center gap-1">
+                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                              selectedSauce === sauce.topping_id 
+                                ? 'border-white' 
+                                : 'border-kake-chocolate-500/30'
+                            }`}>
+                              {selectedSauce === sauce.topping_id && (
+                                <span className="w-2 h-2 rounded-full bg-white" />
+                              )}
+                            </span>
+                            <span>{sauce.topping_name}</span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Extra Sauces - Multi-Select (Checkbox) */}
+                  <div className="space-y-3 pt-2 border-t border-kake-caramel-500/10">
+                    <label className="block text-sm font-semibold text-kake-chocolate-500">
+                      Add Extra Sauces
+                    </label>
+                    <p className="text-xs text-kake-chocolate-500/70">
+                      +€1.00 per extra sauce
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableSauces.map((sauce) => {
+                        const isBaseSelection = selectedSauce === sauce.topping_id;
+                        const isExtraSelected = extraSauces.includes(sauce.topping_id);
+                        
+                        return (
+                          <button
+                            key={`extra-${sauce.topping_id}`}
+                            type="button"
+                            onClick={() => {
+                              if (isExtraSelected) {
+                                setExtraSauces(prev => prev.filter(id => id !== sauce.topping_id));
+                              } else {
+                                setExtraSauces(prev => [...prev, sauce.topping_id]);
+                              }
+                            }}
+                            disabled={isOutOfStock}
+                            className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                              isExtraSelected
+                                ? 'border-green-500 bg-green-500 text-white shadow-lg'
+                                : isBaseSelection
+                                ? 'border-kake-cream-200 bg-kake-cream-50 text-kake-chocolate-500/40'
+                                : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50'
+                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                          >
+                            <span className="flex items-center justify-center gap-1">
+                              <span className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                isExtraSelected 
+                                  ? 'border-white bg-white' 
+                                  : isBaseSelection
+                                  ? 'border-kake-chocolate-500/20'
+                                  : 'border-kake-chocolate-500/30'
+                              }`}>
+                                {isExtraSelected && (
+                                  <span className="text-green-500 font-bold text-xs">✓</span>
+                                )}
+                              </span>
+                              <span>{sauce.topping_name}</span>
+                              {isBaseSelection && (
+                                <span className="text-xs opacity-60">(base)</span>
+                              )}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}
@@ -873,15 +1021,10 @@ const UV_ProductDetail: React.FC = () => {
                     <span className="text-kake-chocolate-500/70 text-sm">
                       Total: <span className="font-bold text-kake-chocolate-500">
                         €{(() => {
-                          const toppingsCost = selectedToppings.reduce((sum, id) => {
-                            const topping = toppingsData.find(t => t.topping_id === id);
-                            return sum + (topping?.price || 0);
-                          }, 0);
-                          const saucesCost = selectedSauces.reduce((sum, id) => {
-                            const sauce = toppingsData.find(t => t.topping_id === id);
-                            return sum + (sauce?.price || 0);
-                          }, 0);
-                          return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                          const EXTRA_ITEM_COST = 1.00;
+                          const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
+                          const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                          return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                         })()}
                       </span>
                     </span>
@@ -907,15 +1050,10 @@ const UV_ProductDetail: React.FC = () => {
                       <span>Add to Cart</span>
                       <span className="text-sm opacity-90">
                         €{(() => {
-                          const toppingsCost = selectedToppings.reduce((sum, id) => {
-                            const topping = toppingsData.find(t => t.topping_id === id);
-                            return sum + (topping?.price || 0);
-                          }, 0);
-                          const saucesCost = selectedSauces.reduce((sum, id) => {
-                            const sauce = toppingsData.find(t => t.topping_id === id);
-                            return sum + (sauce?.price || 0);
-                          }, 0);
-                          return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                          const EXTRA_ITEM_COST = 1.00;
+                          const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
+                          const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                          return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                         })()}
                       </span>
                     </span>
@@ -1035,15 +1173,10 @@ const UV_ProductDetail: React.FC = () => {
                     <span>Add to Cart</span>
                     <span className="text-sm">
                       €{(() => {
-                        const toppingsCost = selectedToppings.reduce((sum, id) => {
-                          const topping = toppingsData.find(t => t.topping_id === id);
-                          return sum + (topping?.price || 0);
-                        }, 0);
-                        const saucesCost = selectedSauces.reduce((sum, id) => {
-                          const sauce = toppingsData.find(t => t.topping_id === id);
-                          return sum + (sauce?.price || 0);
-                        }, 0);
-                        return ((product.price + toppingsCost + saucesCost) * selectedQuantity).toFixed(2);
+                        const EXTRA_ITEM_COST = 1.00;
+                        const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
+                        const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                        return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                       })()}
                     </span>
                   </span>
