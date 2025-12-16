@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useAppStore } from '@/store/main';
 import { Heart, Plus, Minus, ChevronLeft, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -794,35 +795,35 @@ const UV_ProductDetail: React.FC = () => {
               {/* Toppings Selection */}
               {availableToppings.length > 0 && (
                 <div className="space-y-4">
-                  {/* Base Topping - Single Select (Radio) */}
+                  {/* Base Topping - Single Select (Radio) - MAIN CHOICE */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-kake-chocolate-500">
-                      Choose Toppings <span className="text-red-500">*</span>
+                    <label className="block text-base font-bold text-kake-chocolate-500">
+                      Choose Your Topping <span className="text-red-500">*</span>
                     </label>
-                    <p className="text-xs text-kake-chocolate-500/70">
+                    <p className="text-sm text-kake-chocolate-500/70 font-medium">
                       One topping included free with your order
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {availableToppings.map((topping) => (
                         <button
                           key={topping.topping_id}
                           type="button"
                           onClick={() => setSelectedTopping(topping.topping_id)}
                           disabled={isOutOfStock}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                          className={`px-4 py-3 rounded-xl text-base font-bold border-2 transition-all ${
                             selectedTopping === topping.topping_id
-                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel scale-105'
                               : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                          <span className="flex items-center justify-center gap-1">
-                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          <span className="flex items-center justify-center gap-2">
+                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                               selectedTopping === topping.topping_id 
                                 ? 'border-white' 
                                 : 'border-kake-chocolate-500/30'
                             }`}>
                               {selectedTopping === topping.topping_id && (
-                                <span className="w-2 h-2 rounded-full bg-white" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-white" />
                               )}
                             </span>
                             <span>{topping.topping_name}</span>
@@ -831,97 +832,41 @@ const UV_ProductDetail: React.FC = () => {
                       ))}
                     </div>
                   </div>
-
-                  {/* Extra Toppings - Multi-Select (Checkbox) */}
-                  <div className="space-y-3 pt-2 border-t border-kake-caramel-500/10">
-                    <label className="block text-sm font-semibold text-kake-chocolate-500">
-                      Add Extra Toppings
-                    </label>
-                    <p className="text-xs text-kake-chocolate-500/70">
-                      +€1.00 per extra topping
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableToppings.map((topping) => {
-                        const isBaseSelection = selectedTopping === topping.topping_id;
-                        const isExtraSelected = extraToppings.includes(topping.topping_id);
-                        
-                        return (
-                          <button
-                            key={`extra-${topping.topping_id}`}
-                            type="button"
-                            onClick={() => {
-                              if (isExtraSelected) {
-                                setExtraToppings(prev => prev.filter(id => id !== topping.topping_id));
-                              } else {
-                                setExtraToppings(prev => [...prev, topping.topping_id]);
-                              }
-                            }}
-                            disabled={isOutOfStock}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                              isExtraSelected
-                                ? 'border-green-500 bg-green-500 text-white shadow-lg'
-                                : isBaseSelection
-                                ? 'border-kake-cream-200 bg-kake-cream-50 text-kake-chocolate-500/40'
-                                : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          >
-                            <span className="flex items-center justify-center gap-1">
-                              <span className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                                isExtraSelected 
-                                  ? 'border-white bg-white' 
-                                  : isBaseSelection
-                                  ? 'border-kake-chocolate-500/20'
-                                  : 'border-kake-chocolate-500/30'
-                              }`}>
-                                {isExtraSelected && (
-                                  <span className="text-green-500 font-bold text-xs">✓</span>
-                                )}
-                              </span>
-                              <span>{topping.topping_name}</span>
-                              {isBaseSelection && (
-                                <span className="text-xs opacity-60">(base)</span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
               )}
 
               {/* Sauces Selection */}
               {availableSauces.length > 0 && (
                 <div className="space-y-4">
-                  {/* Base Sauce - Single Select (Radio) */}
+                  {/* Base Sauce - Single Select (Radio) - MAIN CHOICE */}
                   <div className="space-y-3">
-                    <label className="block text-sm font-semibold text-kake-chocolate-500">
-                      Choose Sauces <span className="text-red-500">*</span>
+                    <label className="block text-base font-bold text-kake-chocolate-500">
+                      Choose Your Sauce <span className="text-red-500">*</span>
                     </label>
-                    <p className="text-xs text-kake-chocolate-500/70">
+                    <p className="text-sm text-kake-chocolate-500/70 font-medium">
                       One sauce included free with your order
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {availableSauces.map((sauce) => (
                         <button
                           key={sauce.topping_id}
                           type="button"
                           onClick={() => setSelectedSauce(sauce.topping_id)}
                           disabled={isOutOfStock}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
+                          className={`px-4 py-3 rounded-xl text-base font-bold border-2 transition-all ${
                             selectedSauce === sauce.topping_id
-                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel'
+                              ? 'border-kake-caramel-500 bg-kake-caramel-500 text-white shadow-caramel scale-105'
                               : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-kake-caramel-500/50'
                           } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
-                          <span className="flex items-center justify-center gap-1">
-                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                          <span className="flex items-center justify-center gap-2">
+                            <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                               selectedSauce === sauce.topping_id 
                                 ? 'border-white' 
                                 : 'border-kake-chocolate-500/30'
                             }`}>
                               {selectedSauce === sauce.topping_id && (
-                                <span className="w-2 h-2 rounded-full bg-white" />
+                                <span className="w-2.5 h-2.5 rounded-full bg-white" />
                               )}
                             </span>
                             <span>{sauce.topping_name}</span>
@@ -930,62 +875,161 @@ const UV_ProductDetail: React.FC = () => {
                       ))}
                     </div>
                   </div>
+                </div>
+              )}
 
-                  {/* Extra Sauces - Multi-Select (Checkbox) */}
-                  <div className="space-y-3 pt-2 border-t border-kake-caramel-500/10">
-                    <label className="block text-sm font-semibold text-kake-chocolate-500">
-                      Add Extra Sauces
-                    </label>
-                    <p className="text-xs text-kake-chocolate-500/70">
-                      +€1.00 per extra sauce
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {availableSauces.map((sauce) => {
-                        const isBaseSelection = selectedSauce === sauce.topping_id;
-                        const isExtraSelected = extraSauces.includes(sauce.topping_id);
-                        
-                        return (
-                          <button
-                            key={`extra-${sauce.topping_id}`}
-                            type="button"
-                            onClick={() => {
-                              if (isExtraSelected) {
-                                setExtraSauces(prev => prev.filter(id => id !== sauce.topping_id));
-                              } else {
-                                setExtraSauces(prev => [...prev, sauce.topping_id]);
-                              }
-                            }}
-                            disabled={isOutOfStock}
-                            className={`px-3 py-2 rounded-lg text-sm font-medium border-2 transition-all ${
-                              isExtraSelected
-                                ? 'border-green-500 bg-green-500 text-white shadow-lg'
-                                : isBaseSelection
-                                ? 'border-kake-cream-200 bg-kake-cream-50 text-kake-chocolate-500/40'
-                                : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
-                          >
-                            <span className="flex items-center justify-center gap-1">
-                              <span className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
-                                isExtraSelected 
-                                  ? 'border-white bg-white' 
-                                  : isBaseSelection
-                                  ? 'border-kake-chocolate-500/20'
-                                  : 'border-kake-chocolate-500/30'
-                              }`}>
-                                {isExtraSelected && (
-                                  <span className="text-green-500 font-bold text-xs">✓</span>
-                                )}
-                              </span>
-                              <span>{sauce.topping_name}</span>
-                              {isBaseSelection && (
-                                <span className="text-xs opacity-60">(base)</span>
-                              )}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+              {/* EXTRAS SECTION - Accordion Wrapped */}
+              {(availableToppings.length > 0 || availableSauces.length > 0) && (
+                <div className="bg-gradient-to-br from-kake-cream-50 to-kake-cream-100 rounded-xl border-2 border-kake-caramel-500/20 shadow-soft overflow-hidden">
+                  <Accordion type="single" collapsible defaultValue="extras">
+                    <AccordionItem value="extras" className="border-none">
+                      <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-kake-cream-200/50 transition-colors">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-kake-chocolate-500">
+                            Want more? Add extras
+                          </span>
+                          <span className="text-xs font-medium px-2 py-1 bg-kake-caramel-500/20 text-kake-caramel-600 rounded-full">
+                            +€1.00 each
+                          </span>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-5 pb-4">
+                        <div className="space-y-4">
+                          {/* Extra Toppings List */}
+                          {availableToppings.length > 0 && (
+                            <div className="space-y-2">
+                              <h4 className="text-sm font-semibold text-kake-chocolate-500 mb-3">
+                                Extra Toppings
+                              </h4>
+                              <div className="space-y-2">
+                                {availableToppings.map((topping) => {
+                                  const isBaseSelection = selectedTopping === topping.topping_id;
+                                  const isExtraSelected = extraToppings.includes(topping.topping_id);
+                                  
+                                  return (
+                                    <button
+                                      key={`extra-${topping.topping_id}`}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isExtraSelected) {
+                                          setExtraToppings(prev => prev.filter(id => id !== topping.topping_id));
+                                        } else {
+                                          setExtraToppings(prev => [...prev, topping.topping_id]);
+                                        }
+                                      }}
+                                      disabled={isOutOfStock || isBaseSelection}
+                                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                                        isExtraSelected
+                                          ? 'border-green-500 bg-green-500 text-white shadow-md'
+                                          : isBaseSelection
+                                          ? 'border-kake-cream-300 bg-kake-cream-200 text-kake-chocolate-500/40 cursor-not-allowed'
+                                          : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50 hover:bg-green-50'
+                                      } disabled:opacity-50`}
+                                    >
+                                      <span className="flex items-center gap-3">
+                                        <span className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                          isExtraSelected 
+                                            ? 'border-white bg-white' 
+                                            : isBaseSelection
+                                            ? 'border-kake-chocolate-500/20'
+                                            : 'border-kake-chocolate-500/30'
+                                        }`}>
+                                          {isExtraSelected && (
+                                            <span className="text-green-500 font-bold text-sm">✓</span>
+                                          )}
+                                        </span>
+                                        <span className="font-medium">{topping.topping_name}</span>
+                                        {isBaseSelection && (
+                                          <span className="text-xs px-2 py-0.5 bg-kake-chocolate-500/10 rounded-full">
+                                            included
+                                          </span>
+                                        )}
+                                      </span>
+                                      {!isBaseSelection && (
+                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                          isExtraSelected 
+                                            ? 'bg-white/20 text-white' 
+                                            : 'bg-kake-caramel-500/10 text-kake-caramel-600'
+                                        }`}>
+                                          + €1.00
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Extra Sauces List */}
+                          {availableSauces.length > 0 && (
+                            <div className="space-y-2 pt-3 border-t border-kake-caramel-500/20">
+                              <h4 className="text-sm font-semibold text-kake-chocolate-500 mb-3">
+                                Extra Sauces
+                              </h4>
+                              <div className="space-y-2">
+                                {availableSauces.map((sauce) => {
+                                  const isBaseSelection = selectedSauce === sauce.topping_id;
+                                  const isExtraSelected = extraSauces.includes(sauce.topping_id);
+                                  
+                                  return (
+                                    <button
+                                      key={`extra-${sauce.topping_id}`}
+                                      type="button"
+                                      onClick={() => {
+                                        if (isExtraSelected) {
+                                          setExtraSauces(prev => prev.filter(id => id !== sauce.topping_id));
+                                        } else {
+                                          setExtraSauces(prev => [...prev, sauce.topping_id]);
+                                        }
+                                      }}
+                                      disabled={isOutOfStock || isBaseSelection}
+                                      className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${
+                                        isExtraSelected
+                                          ? 'border-green-500 bg-green-500 text-white shadow-md'
+                                          : isBaseSelection
+                                          ? 'border-kake-cream-300 bg-kake-cream-200 text-kake-chocolate-500/40 cursor-not-allowed'
+                                          : 'border-kake-cream-300 bg-white text-kake-chocolate-500 hover:border-green-500/50 hover:bg-green-50'
+                                      } disabled:opacity-50`}
+                                    >
+                                      <span className="flex items-center gap-3">
+                                        <span className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                                          isExtraSelected 
+                                            ? 'border-white bg-white' 
+                                            : isBaseSelection
+                                            ? 'border-kake-chocolate-500/20'
+                                            : 'border-kake-chocolate-500/30'
+                                        }`}>
+                                          {isExtraSelected && (
+                                            <span className="text-green-500 font-bold text-sm">✓</span>
+                                          )}
+                                        </span>
+                                        <span className="font-medium">{sauce.topping_name}</span>
+                                        {isBaseSelection && (
+                                          <span className="text-xs px-2 py-0.5 bg-kake-chocolate-500/10 rounded-full">
+                                            included
+                                          </span>
+                                        )}
+                                      </span>
+                                      {!isBaseSelection && (
+                                        <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                                          isExtraSelected 
+                                            ? 'bg-white/20 text-white' 
+                                            : 'bg-kake-caramel-500/10 text-kake-caramel-600'
+                                        }`}>
+                                          + €1.00
+                                        </span>
+                                      )}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               )}
 
