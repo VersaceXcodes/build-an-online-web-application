@@ -18,7 +18,8 @@ import {
   Cookie,
   Sparkles,
   Home,
-  Scale
+  Scale,
+  GraduationCap
 } from 'lucide-react';
 
 // ============================================================================
@@ -703,6 +704,14 @@ const UV_AdminDashboard: React.FC = () => {
               >
                 <Scale className="h-8 w-8 text-slate-600 mb-2" />
                 <span className="text-sm font-medium text-slate-900">Legal Pages</span>
+              </Link>
+
+              <Link
+                to="/admin/training"
+                className="flex flex-col items-center p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg hover:from-emerald-100 hover:to-emerald-200 transition-all"
+              >
+                <GraduationCap className="h-8 w-8 text-emerald-600 mb-2" />
+                <span className="text-sm font-medium text-emerald-900">Training</span>
               </Link>
             </div>
           </div>

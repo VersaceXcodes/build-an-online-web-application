@@ -4256,6 +4256,661 @@ app.get('/api/internal-users', authenticateToken, requireRole(['admin']), async 
   }
 });
 
+// ============================================================================
+// ADMIN TRAINING MANAGEMENT ENDPOINTS
+// ============================================================================
+
+// GET /api/admin/training/courses - Get all training courses with filters
+app.get('/api/admin/training/courses', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { category, is_active, is_required_global, query: searchQuery } = req.query;
+    const limit = parseInt(String(req.query.limit || 50));
+    const offset = parseInt(String(req.query.offset || 0));
+    
+    let sqlQuery = `
+      SELECT tc.*, 
+        (SELECT COUNT(*) FROM staff_training_assignments sta WHERE sta.course_id = tc.id) as assigned_staff_count,
+        (SELECT COUNT(*) FROM staff_training_assignments sta WHERE sta.course_id = tc.id AND sta.status = 'completed') as completed_count
+      FROM admin_training_courses tc
+      WHERE 1=1
+    `;
+    const values: any[] = [];
+    let idx = 1;
+    
+    if (category) {
+      sqlQuery += ` AND tc.category = $${idx++}`;
+      values.push(category);
+    }
+    
+    if (is_active !== undefined) {
+      sqlQuery += ` AND tc.is_active = $${idx++}`;
+      values.push(String(is_active) === 'true');
+    }
+    
+    if (is_required_global !== undefined) {
+      sqlQuery += ` AND tc.is_required_global = $${idx++}`;
+      values.push(String(is_required_global) === 'true');
+    }
+    
+    if (searchQuery) {
+      sqlQuery += ` AND (tc.title ILIKE $${idx} OR tc.description ILIKE $${idx})`;
+      values.push(`%${searchQuery}%`);
+      idx++;
+    }
+    
+    sqlQuery += ` ORDER BY tc.created_at DESC LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
+    
+    const result = await client.query(sqlQuery, values);
+    
+    // Get count
+    const countQuery = sqlQuery.split('ORDER BY')[0].replace(/SELECT tc\.\*, .*FROM/, 'SELECT COUNT(*) FROM');
+    const countResult = await client.query(countQuery, values.slice(0, -2));
+    
+    client.release();
+    
+    const courses = result.rows.map(c => ({
+      ...c,
+      assigned_staff_count: parseInt(c.assigned_staff_count || 0),
+      completed_count: parseInt(c.completed_count || 0),
+      completion_rate: c.assigned_staff_count > 0 
+        ? Math.round((parseInt(c.completed_count) / parseInt(c.assigned_staff_count)) * 100) 
+        : 0
+    }));
+    
+    res.json({
+      data: courses,
+      total: parseInt(countResult.rows[0].count),
+      limit,
+      offset,
+      has_more: (offset + limit) < parseInt(countResult.rows[0].count)
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch training courses', error, 'TRAINING_COURSES_FETCH_ERROR'));
+  }
+});
+
+// GET /api/admin/training/courses/:courseId - Get single course with details
+app.get('/api/admin/training/courses/:courseId', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { courseId } = req.params;
+    
+    const courseResult = await client.query('SELECT * FROM admin_training_courses WHERE id = $1', [courseId]);
+    
+    if (courseResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
+    }
+    
+    // Get assignment stats
+    const statsResult = await client.query(`
+      SELECT 
+        COUNT(*) as total_assigned,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_count,
+        COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress_count,
+        COUNT(CASE WHEN status = 'not_started' THEN 1 END) as not_started_count
+      FROM staff_training_assignments 
+      WHERE course_id = $1
+    `, [courseId]);
+    
+    client.release();
+    
+    const course = courseResult.rows[0];
+    const stats = statsResult.rows[0];
+    
+    res.json({
+      ...course,
+      stats: {
+        total_assigned: parseInt(stats.total_assigned),
+        completed_count: parseInt(stats.completed_count),
+        in_progress_count: parseInt(stats.in_progress_count),
+        not_started_count: parseInt(stats.not_started_count),
+        completion_rate: stats.total_assigned > 0 
+          ? Math.round((parseInt(stats.completed_count) / parseInt(stats.total_assigned)) * 100) 
+          : 0
+      }
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch course', error, 'COURSE_FETCH_ERROR'));
+  }
+});
+
+// POST /api/admin/training/courses - Create a new course
+app.post('/api/admin/training/courses', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const { 
+      title, description, category, duration_minutes, 
+      is_required_global, is_active, content_type, content_url, content_body 
+    } = req.body;
+    
+    if (!title) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(400).json(createErrorResponse('Title is required', null, 'MISSING_TITLE'));
+    }
+    
+    const id = `tc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const now = new Date().toISOString();
+    
+    await client.query(
+      `INSERT INTO admin_training_courses 
+       (id, title, description, category, duration_minutes, is_required_global, is_active, content_type, content_url, content_body, created_at, updated_at) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+      [id, title, description || null, category || 'general', duration_minutes || null, 
+       is_required_global || false, is_active !== false, content_type || 'text', 
+       content_url || null, content_body || null, now, now]
+    );
+    
+    // If course is marked as required_global, auto-assign to all active staff
+    if (is_required_global) {
+      const staffResult = await client.query(
+        `SELECT user_id FROM users WHERE user_type IN ('staff', 'manager') AND account_status = 'active'`
+      );
+      
+      for (const staff of staffResult.rows) {
+        const assignmentId = `sta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await client.query(
+          `INSERT INTO staff_training_assignments 
+           (id, staff_user_id, course_id, is_required, status, progress_percent, created_at, updated_at) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (staff_user_id, course_id) DO UPDATE SET is_required = true, updated_at = $8`,
+          [assignmentId, staff.user_id, id, true, 'not_started', 0, now, now]
+        );
+      }
+    }
+    
+    await client.query('COMMIT');
+    
+    const result = await client.query('SELECT * FROM admin_training_courses WHERE id = $1', [id]);
+    client.release();
+    
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to create course', error, 'COURSE_CREATE_ERROR'));
+  }
+});
+
+// PUT /api/admin/training/courses/:courseId - Update a course
+app.put('/api/admin/training/courses/:courseId', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const { courseId } = req.params;
+    const { 
+      title, description, category, duration_minutes, 
+      is_required_global, is_active, content_type, content_url, content_body 
+    } = req.body;
+    
+    // Check course exists
+    const existingResult = await client.query('SELECT * FROM admin_training_courses WHERE id = $1', [courseId]);
+    if (existingResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
+    }
+    
+    const existing = existingResult.rows[0];
+    const now = new Date().toISOString();
+    
+    await client.query(
+      `UPDATE admin_training_courses SET 
+       title = COALESCE($1, title),
+       description = $2,
+       category = COALESCE($3, category),
+       duration_minutes = $4,
+       is_required_global = COALESCE($5, is_required_global),
+       is_active = COALESCE($6, is_active),
+       content_type = COALESCE($7, content_type),
+       content_url = $8,
+       content_body = $9,
+       updated_at = $10
+       WHERE id = $11`,
+      [title, description, category, duration_minutes, is_required_global, is_active, 
+       content_type, content_url, content_body, now, courseId]
+    );
+    
+    // If course is now required_global and wasn't before, auto-assign to all staff
+    if (is_required_global && !existing.is_required_global) {
+      const staffResult = await client.query(
+        `SELECT user_id FROM users WHERE user_type IN ('staff', 'manager') AND account_status = 'active'`
+      );
+      
+      for (const staff of staffResult.rows) {
+        const assignmentId = `sta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        await client.query(
+          `INSERT INTO staff_training_assignments 
+           (id, staff_user_id, course_id, is_required, status, progress_percent, created_at, updated_at) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (staff_user_id, course_id) DO UPDATE SET is_required = true, updated_at = $8`,
+          [assignmentId, staff.user_id, courseId, true, 'not_started', 0, now, now]
+        );
+      }
+    }
+    
+    await client.query('COMMIT');
+    
+    const result = await client.query('SELECT * FROM admin_training_courses WHERE id = $1', [courseId]);
+    client.release();
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update course', error, 'COURSE_UPDATE_ERROR'));
+  }
+});
+
+// DELETE /api/admin/training/courses/:courseId - Archive (soft delete) a course
+app.delete('/api/admin/training/courses/:courseId', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { courseId } = req.params;
+    const now = new Date().toISOString();
+    
+    const result = await client.query(
+      'UPDATE admin_training_courses SET is_active = false, updated_at = $1 WHERE id = $2 RETURNING *',
+      [now, courseId]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
+    }
+    
+    res.json({ success: true, message: 'Course archived successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to archive course', error, 'COURSE_ARCHIVE_ERROR'));
+  }
+});
+
+// GET /api/admin/training/courses/:courseId/assignments - Get all assignments for a course
+app.get('/api/admin/training/courses/:courseId/assignments', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { courseId } = req.params;
+    const { status, is_required } = req.query;
+    
+    let sqlQuery = `
+      SELECT sta.*, 
+        u.first_name, u.last_name, u.email, u.user_type,
+        (SELECT sa.location_name FROM staff_assignments sa WHERE sa.user_id = sta.staff_user_id LIMIT 1) as location
+      FROM staff_training_assignments sta
+      JOIN users u ON sta.staff_user_id = u.user_id
+      WHERE sta.course_id = $1
+    `;
+    const values: any[] = [courseId];
+    let idx = 2;
+    
+    if (status) {
+      sqlQuery += ` AND sta.status = $${idx++}`;
+      values.push(status);
+    }
+    
+    if (is_required !== undefined) {
+      sqlQuery += ` AND sta.is_required = $${idx++}`;
+      values.push(String(is_required) === 'true');
+    }
+    
+    sqlQuery += ' ORDER BY u.first_name, u.last_name';
+    
+    const result = await client.query(sqlQuery, values);
+    client.release();
+    
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch assignments', error, 'ASSIGNMENTS_FETCH_ERROR'));
+  }
+});
+
+// POST /api/admin/training/courses/:courseId/assign - Assign course to staff members
+app.post('/api/admin/training/courses/:courseId/assign', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    const { courseId } = req.params;
+    const { staffUserIds, isRequired } = req.body;
+    
+    if (!Array.isArray(staffUserIds) || staffUserIds.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(400).json(createErrorResponse('staffUserIds array is required', null, 'MISSING_STAFF_IDS'));
+    }
+    
+    // Check course exists
+    const courseResult = await client.query('SELECT id FROM admin_training_courses WHERE id = $1', [courseId]);
+    if (courseResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not found', null, 'COURSE_NOT_FOUND'));
+    }
+    
+    const now = new Date().toISOString();
+    const created = [];
+    
+    for (const staffUserId of staffUserIds) {
+      // Check user exists and is staff/manager
+      const userResult = await client.query(
+        `SELECT user_id FROM users WHERE user_id = $1 AND user_type IN ('staff', 'manager')`,
+        [staffUserId]
+      );
+      
+      if (userResult.rows.length === 0) continue;
+      
+      const assignmentId = `sta_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      await client.query(
+        `INSERT INTO staff_training_assignments 
+         (id, staff_user_id, course_id, is_required, status, progress_percent, created_at, updated_at) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         ON CONFLICT (staff_user_id, course_id) 
+         DO UPDATE SET is_required = COALESCE($4, staff_training_assignments.is_required), updated_at = $8`,
+        [assignmentId, staffUserId, courseId, isRequired || false, 'not_started', 0, now, now]
+      );
+      
+      created.push(staffUserId);
+    }
+    
+    await client.query('COMMIT');
+    client.release();
+    
+    res.json({ success: true, assigned_count: created.length, staff_user_ids: created });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to assign course', error, 'COURSE_ASSIGN_ERROR'));
+  }
+});
+
+// DELETE /api/admin/training/assignments/:assignmentId - Remove an assignment
+app.delete('/api/admin/training/assignments/:assignmentId', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { assignmentId } = req.params;
+    
+    const result = await client.query(
+      'DELETE FROM staff_training_assignments WHERE id = $1 RETURNING *',
+      [assignmentId]
+    );
+    
+    client.release();
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json(createErrorResponse('Assignment not found', null, 'ASSIGNMENT_NOT_FOUND'));
+    }
+    
+    res.json({ success: true, message: 'Assignment removed successfully' });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to remove assignment', error, 'ASSIGNMENT_DELETE_ERROR'));
+  }
+});
+
+// GET /api/admin/training/staff/:staffUserId - Get staff member's training data
+app.get('/api/admin/training/staff/:staffUserId', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { staffUserId } = req.params;
+    
+    // Get user info
+    const userResult = await client.query(
+      `SELECT user_id, email, first_name, last_name, user_type FROM users WHERE user_id = $1`,
+      [staffUserId]
+    );
+    
+    if (userResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('User not found', null, 'USER_NOT_FOUND'));
+    }
+    
+    // Get location
+    const locationResult = await client.query(
+      'SELECT location_name FROM staff_assignments WHERE user_id = $1 LIMIT 1',
+      [staffUserId]
+    );
+    
+    // Get assignments
+    const assignmentsResult = await client.query(
+      `SELECT sta.*, tc.title as course_title, tc.category, tc.duration_minutes
+       FROM staff_training_assignments sta
+       JOIN admin_training_courses tc ON sta.course_id = tc.id
+       WHERE sta.staff_user_id = $1
+       ORDER BY sta.is_required DESC, tc.title`,
+      [staffUserId]
+    );
+    
+    client.release();
+    
+    const user = userResult.rows[0];
+    const assignments = assignmentsResult.rows;
+    const requiredAssignments = assignments.filter(a => a.is_required);
+    const completedRequired = requiredAssignments.filter(a => a.status === 'completed');
+    
+    res.json({
+      staff: {
+        ...user,
+        location: locationResult.rows[0]?.location_name || null
+      },
+      assignments: assignments,
+      summary: {
+        total_assignments: assignments.length,
+        required_count: requiredAssignments.length,
+        required_completed: completedRequired.length,
+        overall_completion_percent: assignments.length > 0
+          ? Math.round((assignments.filter(a => a.status === 'completed').length / assignments.length) * 100)
+          : 0
+      }
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch staff training data', error, 'STAFF_TRAINING_FETCH_ERROR'));
+  }
+});
+
+// GET /api/admin/training/staff - Get all staff with their training progress
+app.get('/api/admin/training/staff', authenticateToken, requireRole(['admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { search, location } = req.query;
+    const limit = parseInt(String(req.query.limit || 50));
+    const offset = parseInt(String(req.query.offset || 0));
+    
+    let sqlQuery = `
+      SELECT 
+        u.user_id, u.email, u.first_name, u.last_name, u.user_type,
+        (SELECT sa.location_name FROM staff_assignments sa WHERE sa.user_id = u.user_id LIMIT 1) as location,
+        (SELECT COUNT(*) FROM staff_training_assignments sta WHERE sta.staff_user_id = u.user_id AND sta.is_required = true) as required_count,
+        (SELECT COUNT(*) FROM staff_training_assignments sta WHERE sta.staff_user_id = u.user_id AND sta.is_required = true AND sta.status = 'completed') as required_completed,
+        (SELECT COALESCE(AVG(sta.progress_percent), 0) FROM staff_training_assignments sta WHERE sta.staff_user_id = u.user_id) as overall_progress
+      FROM users u
+      WHERE u.user_type IN ('staff', 'manager') AND u.account_status = 'active'
+    `;
+    const values: any[] = [];
+    let idx = 1;
+    
+    if (search) {
+      sqlQuery += ` AND (u.first_name ILIKE $${idx} OR u.last_name ILIKE $${idx} OR u.email ILIKE $${idx})`;
+      values.push(`%${search}%`);
+      idx++;
+    }
+    
+    if (location) {
+      sqlQuery += ` AND EXISTS (SELECT 1 FROM staff_assignments sa WHERE sa.user_id = u.user_id AND sa.location_name = $${idx++})`;
+      values.push(location);
+    }
+    
+    sqlQuery += ` ORDER BY u.first_name, u.last_name LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
+    
+    const result = await client.query(sqlQuery, values);
+    
+    // Get count
+    const countQuery = sqlQuery.split('ORDER BY')[0].replace(/SELECT\s+u\.user_id[\s\S]*?FROM/, 'SELECT COUNT(*) FROM');
+    const countResult = await client.query(countQuery, values.slice(0, -2));
+    
+    client.release();
+    
+    const staff = result.rows.map(s => ({
+      ...s,
+      required_count: parseInt(s.required_count),
+      required_completed: parseInt(s.required_completed),
+      overall_progress: Math.round(parseFloat(s.overall_progress))
+    }));
+    
+    res.json({
+      data: staff,
+      total: parseInt(countResult.rows[0].count),
+      limit,
+      offset,
+      has_more: (offset + limit) < parseInt(countResult.rows[0].count)
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch staff training list', error, 'STAFF_TRAINING_LIST_ERROR'));
+  }
+});
+
+// ============================================================================
+// STAFF TRAINING CONSUMPTION ENDPOINTS
+// ============================================================================
+
+// GET /api/staff/training/courses - Get assigned courses for logged-in staff
+app.get('/api/staff/training/courses', authenticateToken, requireRole(['staff', 'manager', 'admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const staffUserId = req.user.user_id;
+    
+    const result = await client.query(
+      `SELECT sta.*, tc.title, tc.description, tc.category, tc.duration_minutes, 
+              tc.content_type, tc.content_url, tc.content_body
+       FROM staff_training_assignments sta
+       JOIN admin_training_courses tc ON sta.course_id = tc.id
+       WHERE sta.staff_user_id = $1 AND tc.is_active = true
+       ORDER BY sta.is_required DESC, tc.title`,
+      [staffUserId]
+    );
+    
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch training courses', error, 'STAFF_TRAINING_FETCH_ERROR'));
+  }
+});
+
+// GET /api/staff/training/courses/:courseId - Get specific course content for logged-in staff
+app.get('/api/staff/training/courses/:courseId', authenticateToken, requireRole(['staff', 'manager', 'admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const staffUserId = req.user.user_id;
+    const { courseId } = req.params;
+    
+    // Check assignment exists
+    const assignmentResult = await client.query(
+      `SELECT sta.*, tc.title, tc.description, tc.category, tc.duration_minutes, 
+              tc.content_type, tc.content_url, tc.content_body
+       FROM staff_training_assignments sta
+       JOIN admin_training_courses tc ON sta.course_id = tc.id
+       WHERE sta.staff_user_id = $1 AND sta.course_id = $2 AND tc.is_active = true`,
+      [staffUserId, courseId]
+    );
+    
+    if (assignmentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not assigned to you', null, 'COURSE_NOT_ASSIGNED'));
+    }
+    
+    // Update last_viewed_at
+    const now = new Date().toISOString();
+    await client.query(
+      'UPDATE staff_training_assignments SET last_viewed_at = $1, updated_at = $2 WHERE staff_user_id = $3 AND course_id = $4',
+      [now, now, staffUserId, courseId]
+    );
+    
+    client.release();
+    res.json(assignmentResult.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch course', error, 'COURSE_FETCH_ERROR'));
+  }
+});
+
+// POST /api/staff/training/courses/:courseId/progress - Update progress for a course
+app.post('/api/staff/training/courses/:courseId/progress', authenticateToken, requireRole(['staff', 'manager', 'admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const staffUserId = req.user.user_id;
+    const { courseId } = req.params;
+    const { status, progressPercent } = req.body;
+    
+    // Check assignment exists
+    const assignmentResult = await client.query(
+      'SELECT * FROM staff_training_assignments WHERE staff_user_id = $1 AND course_id = $2',
+      [staffUserId, courseId]
+    );
+    
+    if (assignmentResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Course not assigned to you', null, 'COURSE_NOT_ASSIGNED'));
+    }
+    
+    const assignment = assignmentResult.rows[0];
+    const now = new Date().toISOString();
+    
+    const updates: string[] = ['updated_at = $1', 'last_viewed_at = $2'];
+    const values: any[] = [now, now];
+    let idx = 3;
+    
+    if (status) {
+      updates.push(`status = $${idx++}`);
+      values.push(status);
+      
+      // Set started_at when first transitioning from not_started
+      if (status === 'in_progress' && assignment.status === 'not_started' && !assignment.started_at) {
+        updates.push(`started_at = $${idx++}`);
+        values.push(now);
+      }
+      
+      // Set completed_at when transitioning to completed
+      if (status === 'completed') {
+        updates.push(`completed_at = $${idx++}`);
+        values.push(now);
+      }
+    }
+    
+    if (progressPercent !== undefined) {
+      updates.push(`progress_percent = $${idx++}`);
+      values.push(Math.min(100, Math.max(0, parseInt(progressPercent))));
+    }
+    
+    values.push(staffUserId, courseId);
+    
+    const result = await client.query(
+      `UPDATE staff_training_assignments SET ${updates.join(', ')} WHERE staff_user_id = $${idx++} AND course_id = $${idx} RETURNING *`,
+      values
+    );
+    
+    client.release();
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update progress', error, 'PROGRESS_UPDATE_ERROR'));
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
