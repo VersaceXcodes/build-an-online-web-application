@@ -242,7 +242,16 @@ const GV_TopNav: React.FC = () => {
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <BarChart3 className="w-4 h-4 mr-3" />
-                  Staff Dashboard
+                  Order Management
+                </Link>
+                
+                <Link
+                  to="/staff/inventory"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Package className="w-4 h-4 mr-3" />
+                  Stock Management
                 </Link>
                 
                 <Link
@@ -515,11 +524,29 @@ const GV_TopNav: React.FC = () => {
           <div className="space-y-1">
             <Link
               to="/staff/dashboard"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-md transition-colors"
+              className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <BarChart3 className="w-4 h-4 mr-3" />
-              Staff Dashboard
+              <BarChart3 className="w-5 h-5 mr-3" />
+              Order Management
+            </Link>
+            
+            <Link
+              to="/staff/inventory"
+              className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <Package className="w-5 h-5 mr-3" />
+              Stock Management
+            </Link>
+            
+            <Link
+              to="/staff/training"
+              className="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <BookOpen className="w-5 h-5 mr-3" />
+              Training
             </Link>
             
             <Link
@@ -563,57 +590,30 @@ const GV_TopNav: React.FC = () => {
           
           <div className="space-y-1">
             <Link
-              to="/admin/dashboard"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
+              to="/staff/dashboard"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <BarChart3 className="w-4 h-4 mr-3" />
-              Dashboard
+              Order Management
             </Link>
             
             <Link
-              to="/admin/orders"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
+              to="/staff/inventory"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Package className="w-4 h-4 mr-3" />
-              Orders
+              Stock Management
             </Link>
             
             <Link
-              to="/admin/products"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
+              to="/staff/training"
+              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-md transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <Package className="w-4 h-4 mr-3" />
-              Products
-            </Link>
-            
-            <Link
-              to="/admin/promo_codes"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Ticket className="w-4 h-4 mr-3" />
-              Promo Codes
-            </Link>
-            
-            <Link
-              to="/admin/about-page"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <FileText className="w-4 h-4 mr-3" />
-              About Page
-            </Link>
-            
-            <Link
-              to="/admin/settings"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-600 rounded-md transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <Settings className="w-4 h-4 mr-3" />
-              Settings
+              <BookOpen className="w-4 h-4 mr-3" />
+              Training
             </Link>
             
             <button

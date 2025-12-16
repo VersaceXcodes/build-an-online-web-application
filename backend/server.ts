@@ -926,6 +926,155 @@ app.delete('/api/products/:product_id', authenticateToken, requireRole(['admin']
 });
 
 // ============================================
+// STAFF INVENTORY ENDPOINTS
+// ============================================
+
+// Get inventory for staff's assigned location(s)
+app.get('/api/staff/inventory', authenticateToken, requireRole(['staff', 'admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location_name, category, search, availability_status } = req.query;
+    const limit = parseInt(String(req.query.limit || 100));
+    const offset = parseInt(String(req.query.offset || 0));
+    
+    // Get staff's assigned locations
+    let allowedLocations: string[] = [];
+    if (req.user.user_type === 'staff') {
+      const assignmentsResult = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [req.user.user_id]);
+      allowedLocations = assignmentsResult.rows.map(r => r.location_name);
+      
+      if (allowedLocations.length === 0) {
+        client.release();
+        return res.status(403).json(createErrorResponse('No location assigned. Please contact your administrator.', null, 'NO_LOCATION_ASSIGNED'));
+      }
+    }
+    
+    // Build query
+    let sqlQuery = `SELECT DISTINCT p.*, pl.location_name 
+                    FROM products p 
+                    INNER JOIN product_locations pl ON p.product_id = pl.product_id 
+                    WHERE p.is_archived = false`;
+    const values = [];
+    let idx = 1;
+    
+    // Filter by staff's assigned locations (if staff role)
+    if (req.user.user_type === 'staff') {
+      sqlQuery += ` AND pl.location_name = ANY($${idx++})`;
+      values.push(allowedLocations);
+    }
+    
+    // Additional filters
+    if (location_name) {
+      sqlQuery += ` AND pl.location_name = $${idx++}`;
+      values.push(location_name);
+    }
+    
+    if (category) {
+      sqlQuery += ` AND p.category = $${idx++}`;
+      values.push(category);
+    }
+    
+    if (availability_status) {
+      sqlQuery += ` AND p.availability_status = $${idx++}`;
+      values.push(availability_status);
+    }
+    
+    if (search) {
+      sqlQuery += ` AND (p.product_name ILIKE $${idx} OR p.short_description ILIKE $${idx})`;
+      values.push(`%${search}%`);
+      idx++;
+    }
+    
+    sqlQuery += ` ORDER BY p.product_name ASC LIMIT $${idx++} OFFSET $${idx++}`;
+    values.push(limit, offset);
+    
+    const result = await client.query(sqlQuery, values);
+    
+    // Count total
+    const countQuery = sqlQuery.replace(/SELECT DISTINCT p\.\*, pl\.location_name/, 'SELECT COUNT(DISTINCT p.product_id)').split('ORDER BY')[0];
+    const countResult = await client.query(countQuery, values.slice(0, -2));
+    
+    client.release();
+    
+    res.json({ 
+      data: result.rows.map(p => ({ 
+        ...p, 
+        price: parseFloat(p.price), 
+        compare_at_price: p.compare_at_price ? parseFloat(p.compare_at_price) : null, 
+        stock_quantity: p.stock_quantity ? parseFloat(p.stock_quantity) : null, 
+        low_stock_threshold: p.low_stock_threshold ? parseFloat(p.low_stock_threshold) : null 
+      })), 
+      total: parseInt(countResult.rows[0].count), 
+      limit, 
+      offset, 
+      has_more: (offset + limit) < parseInt(countResult.rows[0].count) 
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch inventory', error, 'INVENTORY_FETCH_ERROR'));
+  }
+});
+
+// Update product inventory (staff can only update availability and stock for their location)
+app.patch('/api/staff/inventory/:product_id', authenticateToken, requireRole(['staff', 'admin']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { location_name, availability_status, stock_quantity } = req.body;
+    
+    // Verify staff has access to this location
+    if (req.user.user_type === 'staff') {
+      const assignmentCheck = await client.query('SELECT COUNT(*) FROM staff_assignments WHERE user_id = $1 AND location_name = $2', [req.user.user_id, location_name]);
+      if (parseInt(assignmentCheck.rows[0].count) === 0) {
+        client.release();
+        return res.status(403).json(createErrorResponse('Cannot update inventory for this location', null, 'FORBIDDEN'));
+      }
+    }
+    
+    // Verify product exists at this location
+    const productLocationCheck = await client.query('SELECT COUNT(*) FROM product_locations WHERE product_id = $1 AND location_name = $2', [req.params.product_id, location_name]);
+    if (parseInt(productLocationCheck.rows[0].count) === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Product not found at this location', null, 'PRODUCT_NOT_FOUND'));
+    }
+    
+    // Update only allowed fields
+    const updates = [];
+    const values = [];
+    let idx = 1;
+    
+    if (availability_status !== undefined) {
+      updates.push(`availability_status = $${idx++}`);
+      values.push(availability_status);
+    }
+    
+    if (stock_quantity !== undefined) {
+      updates.push(`stock_quantity = $${idx++}`);
+      values.push(stock_quantity);
+    }
+    
+    if (updates.length === 0) {
+      client.release();
+      return res.status(400).json(createErrorResponse('No fields to update', null, 'NO_UPDATES'));
+    }
+    
+    const now = new Date().toISOString();
+    updates.push(`updated_at = $${idx++}`);
+    values.push(now);
+    values.push(req.params.product_id);
+    
+    await client.query(`UPDATE products SET ${updates.join(', ')} WHERE product_id = $${idx}`, values);
+    
+    const result = await client.query('SELECT * FROM products WHERE product_id = $1', [req.params.product_id]);
+    client.release();
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to update inventory', error, 'INVENTORY_UPDATE_ERROR'));
+  }
+});
+
+// ============================================
 // TOPPINGS ENDPOINTS
 // ============================================
 

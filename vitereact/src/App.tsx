@@ -43,6 +43,7 @@ const UV_UnifiedFeedbackSubmit = React.lazy(() => import('@/components/views/UV_
 
 // Lazy-loaded Views - Staff Protected
 const UV_StaffDashboard = React.lazy(() => import('@/components/views/UV_StaffDashboard'));
+const UV_StaffInventory = React.lazy(() => import('@/components/views/UV_StaffInventory'));
 const UV_StaffInventoryAlerts = React.lazy(() => import('@/components/views/UV_StaffInventoryAlerts'));
 const UV_StaffTraining = React.lazy(() => import('@/components/views/UV_StaffTraining'));
 const UV_StaffFeedbackSubmission = React.lazy(() => import('@/components/views/UV_StaffFeedbackSubmission'));
@@ -426,6 +427,15 @@ export const AppRoutes: React.FC = () => {
                 element={
                   <RoleProtectedRoute allowedRoles={['staff', 'manager', 'admin']}>
                     <UV_StaffDashboard />
+                  </RoleProtectedRoute>
+                } 
+              />
+              
+              <Route 
+                path="/staff/inventory" 
+                element={
+                  <RoleProtectedRoute allowedRoles={['staff', 'manager', 'admin']}>
+                    <UV_StaffInventory />
                   </RoleProtectedRoute>
                 } 
               />
