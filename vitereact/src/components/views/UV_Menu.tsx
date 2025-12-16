@@ -396,54 +396,54 @@ const UV_Menu: React.FC = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-kake-cream-50">
         {/* Header Section */}
-        <div className="bg-white border-b border-gray-200">
+        <div className="bg-white border-b border-kake-caramel-200">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Breadcrumb */}
-            <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-4">
-              <Link to="/" className="hover:text-blue-600 transition-colors">
+            <nav className="flex items-center space-x-2 text-sm text-kake-chocolate-400 mb-4">
+              <Link to="/" className="hover:text-kake-caramel-500 transition-colors">
                 Home
               </Link>
               <span>/</span>
-              <Link to={`/location/${location_slug}`} className="hover:text-blue-600 transition-colors">
+              <Link to={`/location/${location_slug}`} className="hover:text-kake-caramel-500 transition-colors">
                 {current_location_name.charAt(0).toUpperCase() + current_location_name.slice(1)}
               </Link>
               <span>/</span>
-              <span className="text-gray-900 font-medium">Menu</span>
+              <span className="text-kake-chocolate-500 font-medium">Menu</span>
             </nav>
 
             {/* Title & View Toggle */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="font-serif text-3xl font-bold text-kake-chocolate-500">
                   {current_location_name.charAt(0).toUpperCase() + current_location_name.slice(1)} Menu
                 </h1>
                 {current_fulfillment_method && (
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-kake-chocolate-400 mt-1">
                     {current_fulfillment_method === 'delivery' ? '🚚 Delivery' : '🏪 Collection'}
                   </p>
                 )}
               </div>
 
               {/* View Mode Toggle */}
-              <div className="flex items-center space-x-2 bg-gray-100 rounded-lg p-1">
+              <div className="flex items-center space-x-2 bg-kake-cream-100 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     view_mode === 'grid'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-kake-chocolate-500 shadow-soft'
+                      : 'text-kake-chocolate-400 hover:text-kake-chocolate-500'
                   }`}
                 >
                   Grid
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     view_mode === 'list'
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-kake-chocolate-500 shadow-soft'
+                      : 'text-kake-chocolate-400 hover:text-kake-chocolate-500'
                   }`}
                 >
                   List
@@ -459,10 +459,10 @@ const UV_Menu: React.FC = () => {
                   placeholder="Search for desserts..."
                   value={search_input}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  className="w-full px-4 py-3 pl-12 bg-gray-50 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:outline-none transition-all"
+                  className="w-full px-4 py-3 pl-12 bg-kake-cream-50 border-2 border-kake-cream-300 rounded-xl focus:border-kake-caramel-500 focus:ring-4 focus:ring-kake-caramel-100 focus:outline-none transition-all text-kake-chocolate-500 placeholder:text-kake-chocolate-300"
                 />
                 <svg
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-kake-chocolate-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -480,7 +480,7 @@ const UV_Menu: React.FC = () => {
                       setSearchInput('');
                       updateFilter('search', '');
                     }}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-kake-chocolate-300 hover:text-kake-chocolate-500"
                   >
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -492,15 +492,15 @@ const UV_Menu: React.FC = () => {
 
             {/* Results Count & Sort */}
             <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-kake-chocolate-400">
                 {productsLoading || assignmentsLoading ? (
                   <span>Loading products...</span>
                 ) : (
                   <span>
-                    Showing <span className="font-semibold">{products.length}</span> of{' '}
-                    <span className="font-semibold">{total_products_count}</span> products
+                    Showing <span className="font-semibold text-kake-chocolate-500">{products.length}</span> of{' '}
+                    <span className="font-semibold text-kake-chocolate-500">{total_products_count}</span> products
                     {active_filters.search_query && (
-                      <> for &quot;<span className="font-semibold">{active_filters.search_query}</span>&quot;</>
+                      <> for &quot;<span className="font-semibold text-kake-chocolate-500">{active_filters.search_query}</span>&quot;</>
                     )}
                   </span>
                 )}
@@ -508,7 +508,7 @@ const UV_Menu: React.FC = () => {
 
               {/* Sort Dropdown */}
               <div className="flex items-center space-x-2">
-                <label htmlFor="sort" className="text-sm text-gray-600 hidden sm:block">
+                <label htmlFor="sort" className="text-sm text-kake-chocolate-400 hidden sm:block">
                   Sort by:
                 </label>
                 <select
@@ -519,7 +519,7 @@ const UV_Menu: React.FC = () => {
                     updateFilter('sort_by', sortBy);
                     updateFilter('sort_order', sortOrder);
                   }}
-                  className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                  className="px-3 py-2 bg-white border border-kake-cream-300 rounded-lg text-sm text-kake-chocolate-500 focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-100 focus:outline-none"
                 >
                   <option value="created_at_desc">Newest First</option>
                   <option value="product_name_asc">Name (A-Z)</option>
@@ -540,10 +540,10 @@ const UV_Menu: React.FC = () => {
               <Drawer open={filter_drawer_open} onOpenChange={setFilterDrawerOpen}>
                 <DrawerTrigger asChild>
                   <button
-                    className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center justify-between px-4 py-3 bg-white border border-kake-cream-300 rounded-xl text-sm font-medium text-kake-chocolate-500 hover:bg-kake-cream-50 transition-colors shadow-soft"
                   >
                     <span className="flex items-center gap-2">
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-5 w-5 text-kake-caramel-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                       </svg>
                       Filters {Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length > 0 && `(${Object.values(active_filters).filter(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)).length})`}
@@ -570,7 +570,7 @@ const UV_Menu: React.FC = () => {
                       {Object.values(active_filters).some(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)) && (
                         <button
                           onClick={clearAllFilters}
-                          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                          className="w-full px-4 py-2 bg-kake-caramel-500 text-white rounded-xl hover:bg-kake-caramel-600 transition-colors font-medium shadow-caramel"
                         >
                           Clear All Filters
                         </button>
@@ -578,7 +578,7 @@ const UV_Menu: React.FC = () => {
 
                       {/* Category Filter */}
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Category</h3>
+                        <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Category</h3>
                         <div className="space-y-2">
                           {['pastries', 'breads', 'cakes', 'corporate'].map((cat) => (
                             <label key={cat} className="flex items-center cursor-pointer">
@@ -587,9 +587,9 @@ const UV_Menu: React.FC = () => {
                                 name="category-mobile"
                                 checked={active_filters.category === cat}
                                 onChange={() => updateFilter('category', active_filters.category === cat ? null : cat)}
-                                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 focus:ring-kake-caramel-500"
                               />
-                              <span className="ml-3 text-sm text-gray-700 capitalize">{cat}</span>
+                              <span className="ml-3 text-sm text-kake-chocolate-400 capitalize">{cat}</span>
                             </label>
                           ))}
                         </div>
@@ -597,10 +597,10 @@ const UV_Menu: React.FC = () => {
 
                       {/* Price Range Filter */}
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Price Range</h3>
+                        <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Price Range</h3>
                         <div className="space-y-3">
                           <div>
-                            <label htmlFor="price_min_mobile" className="text-xs text-gray-600 block mb-1">
+                            <label htmlFor="price_min_mobile" className="text-xs text-kake-chocolate-400 block mb-1">
                               Min Price (€)
                             </label>
                             <input
@@ -611,11 +611,11 @@ const UV_Menu: React.FC = () => {
                               value={active_filters.price_min || ''}
                               onChange={(e) => updateFilter('price_min', e.target.value ? parseFloat(e.target.value) : null)}
                               placeholder="0.00"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                              className="w-full px-3 py-2 border border-kake-cream-300 rounded-lg text-sm text-kake-chocolate-500 focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-100 focus:outline-none"
                             />
                           </div>
                           <div>
-                            <label htmlFor="price_max_mobile" className="text-xs text-gray-600 block mb-1">
+                            <label htmlFor="price_max_mobile" className="text-xs text-kake-chocolate-400 block mb-1">
                               Max Price (€)
                             </label>
                             <input
@@ -626,7 +626,7 @@ const UV_Menu: React.FC = () => {
                               value={active_filters.price_max || ''}
                               onChange={(e) => updateFilter('price_max', e.target.value ? parseFloat(e.target.value) : null)}
                               placeholder="100.00"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                              className="w-full px-3 py-2 border border-kake-cream-300 rounded-lg text-sm text-kake-chocolate-500 focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-100 focus:outline-none"
                             />
                           </div>
                         </div>
@@ -634,7 +634,7 @@ const UV_Menu: React.FC = () => {
 
                       {/* Dietary Tags Filter */}
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Dietary Preferences</h3>
+                        <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Dietary Preferences</h3>
                         <div className="space-y-2">
                           {dietary_tag_options.map((tag) => (
                             <label key={tag.value} className="flex items-center cursor-pointer">
@@ -642,9 +642,9 @@ const UV_Menu: React.FC = () => {
                                 type="checkbox"
                                 checked={active_filters.dietary_tags.includes(tag.value)}
                                 onChange={() => toggleDietaryTag(tag.value)}
-                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 rounded focus:ring-kake-caramel-500"
                               />
-                              <span className="ml-3 text-sm text-gray-700">{tag.label}</span>
+                              <span className="ml-3 text-sm text-kake-chocolate-400">{tag.label}</span>
                             </label>
                           ))}
                         </div>
@@ -652,15 +652,15 @@ const UV_Menu: React.FC = () => {
 
                       {/* Availability Filter */}
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-3">Availability</h3>
+                        <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Availability</h3>
                         <label className="flex items-center cursor-pointer">
                           <input
                             type="checkbox"
                             checked={active_filters.availability_status === 'in_stock'}
                             onChange={() => updateFilter('availability_status', active_filters.availability_status === 'in_stock' ? null : 'in_stock')}
-                            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 rounded focus:ring-kake-caramel-500"
                           />
-                          <span className="ml-3 text-sm text-gray-700">Hide Out of Stock</span>
+                          <span className="ml-3 text-sm text-kake-chocolate-400">Hide Out of Stock</span>
                         </label>
                       </div>
                     </div>
@@ -671,13 +671,13 @@ const UV_Menu: React.FC = () => {
 
             {/* Filter Panel - Desktop Sidebar */}
             <aside className="hidden lg:block lg:col-span-1">
-              <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 sticky top-4">
+              <div className="bg-white rounded-2xl shadow-soft-lg border border-kake-cream-200 p-6 sticky top-4">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                  <h2 className="font-serif text-lg font-semibold text-kake-chocolate-500">Filters</h2>
                   {Object.values(active_filters).some(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)) && (
                     <button
                       onClick={clearAllFilters}
-                      className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                      className="text-sm text-kake-caramel-500 hover:text-kake-caramel-600 font-medium"
                     >
                       Clear All
                     </button>
@@ -686,7 +686,7 @@ const UV_Menu: React.FC = () => {
 
                 {/* Category Filter */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Category</h3>
+                  <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Category</h3>
                   <div className="space-y-2">
                     {['pastries', 'breads', 'cakes', 'corporate'].map((cat) => (
                       <label key={cat} className="flex items-center cursor-pointer">
@@ -695,9 +695,9 @@ const UV_Menu: React.FC = () => {
                           name="category"
                           checked={active_filters.category === cat}
                           onChange={() => updateFilter('category', active_filters.category === cat ? null : cat)}
-                          className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 focus:ring-kake-caramel-500"
                         />
-                        <span className="ml-3 text-sm text-gray-700 capitalize">{cat}</span>
+                        <span className="ml-3 text-sm text-kake-chocolate-400 capitalize">{cat}</span>
                       </label>
                     ))}
                   </div>
@@ -705,10 +705,10 @@ const UV_Menu: React.FC = () => {
 
                 {/* Price Range Filter */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Price Range</h3>
+                  <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Price Range</h3>
                   <div className="space-y-3">
                     <div>
-                      <label htmlFor="price_min" className="text-xs text-gray-600 block mb-1">
+                      <label htmlFor="price_min" className="text-xs text-kake-chocolate-400 block mb-1">
                         Min Price (€)
                       </label>
                       <input
@@ -719,11 +719,11 @@ const UV_Menu: React.FC = () => {
                         value={active_filters.price_min || ''}
                         onChange={(e) => updateFilter('price_min', e.target.value ? parseFloat(e.target.value) : null)}
                         placeholder="0.00"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                        className="w-full px-3 py-2 border border-kake-cream-300 rounded-lg text-sm text-kake-chocolate-500 focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-100 focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label htmlFor="price_max" className="text-xs text-gray-600 block mb-1">
+                      <label htmlFor="price_max" className="text-xs text-kake-chocolate-400 block mb-1">
                         Max Price (€)
                       </label>
                       <input
@@ -734,7 +734,7 @@ const UV_Menu: React.FC = () => {
                         value={active_filters.price_max || ''}
                         onChange={(e) => updateFilter('price_max', e.target.value ? parseFloat(e.target.value) : null)}
                         placeholder="100.00"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+                        className="w-full px-3 py-2 border border-kake-cream-300 rounded-lg text-sm text-kake-chocolate-500 focus:border-kake-caramel-500 focus:ring-2 focus:ring-kake-caramel-100 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -742,7 +742,7 @@ const UV_Menu: React.FC = () => {
 
                 {/* Dietary Tags Filter */}
                 <div className="mb-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Dietary Preferences</h3>
+                  <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Dietary Preferences</h3>
                   <div className="space-y-2">
                     {dietary_tag_options.map((tag) => (
                       <label key={tag.value} className="flex items-center cursor-pointer">
@@ -750,9 +750,9 @@ const UV_Menu: React.FC = () => {
                           type="checkbox"
                           checked={active_filters.dietary_tags.includes(tag.value)}
                           onChange={() => toggleDietaryTag(tag.value)}
-                          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 rounded focus:ring-kake-caramel-500"
                         />
-                        <span className="ml-3 text-sm text-gray-700">{tag.label}</span>
+                        <span className="ml-3 text-sm text-kake-chocolate-400">{tag.label}</span>
                       </label>
                     ))}
                   </div>
@@ -760,15 +760,15 @@ const UV_Menu: React.FC = () => {
 
                 {/* Availability Filter */}
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Availability</h3>
+                  <h3 className="text-sm font-semibold text-kake-chocolate-500 mb-3">Availability</h3>
                   <label className="flex items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={active_filters.availability_status === 'in_stock'}
                       onChange={() => updateFilter('availability_status', active_filters.availability_status === 'in_stock' ? null : 'in_stock')}
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      className="h-4 w-4 text-kake-caramel-500 border-kake-cream-300 rounded focus:ring-kake-caramel-500"
                     />
-                    <span className="ml-3 text-sm text-gray-700">Hide Out of Stock</span>
+                    <span className="ml-3 text-sm text-kake-chocolate-400">Hide Out of Stock</span>
                   </label>
                 </div>
               </div>
@@ -780,19 +780,19 @@ const UV_Menu: React.FC = () => {
               {(productsLoading || assignmentsLoading) && (
                 <div className="flex items-center justify-center py-16">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading delicious treats...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-kake-caramel-500 mx-auto mb-4"></div>
+                    <p className="text-kake-chocolate-400">Loading delicious treats...</p>
                   </div>
                 </div>
               )}
 
               {/* Error State */}
               {productsError && !productsLoading && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
                   <p className="text-red-700 mb-4">Failed to load products. Please try again.</p>
                   <button
                     onClick={() => refetchProducts()}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
                   >
                     Retry
                   </button>
@@ -801,9 +801,9 @@ const UV_Menu: React.FC = () => {
 
               {/* Empty State */}
               {!productsLoading && !assignmentsLoading && !productsError && products.length === 0 && (
-                <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-12 text-center">
+                <div className="bg-white rounded-2xl shadow-soft-lg border border-kake-cream-200 p-12 text-center">
                   <svg
-                    className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                    className="mx-auto h-16 w-16 text-kake-chocolate-300 mb-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -815,8 +815,8 @@ const UV_Menu: React.FC = () => {
                       d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No desserts found</h3>
-                  <p className="text-gray-600 mb-4">
+                  <h3 className="font-serif text-lg font-semibold text-kake-chocolate-500 mb-2">No desserts found</h3>
+                  <p className="text-kake-chocolate-400 mb-4">
                     {active_filters.search_query
                       ? `No results for "${active_filters.search_query}"`
                       : 'Try adjusting your filters'}
@@ -824,7 +824,7 @@ const UV_Menu: React.FC = () => {
                   {Object.values(active_filters).some(v => v !== null && v !== '' && (!Array.isArray(v) || v.length > 0)) && (
                     <button
                       onClick={clearAllFilters}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                      className="px-6 py-2 bg-kake-caramel-500 text-white rounded-xl hover:bg-kake-caramel-600 transition-colors font-medium shadow-caramel"
                     >
                       Clear Filters
                     </button>
@@ -859,7 +859,7 @@ const UV_Menu: React.FC = () => {
                       return (
                         <div
                           key={product.product_id}
-                          className={`bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden transition-all hover:shadow-xl ${
+                          className={`bg-white rounded-2xl shadow-soft-lg border border-kake-cream-200 overflow-hidden transition-all hover:shadow-caramel ${
                             is_out_of_stock ? 'opacity-60' : ''
                           } ${view_mode === 'list' ? 'flex' : 'flex flex-col'}`}
                         >
@@ -899,28 +899,35 @@ const UV_Menu: React.FC = () => {
                                 to={`/location/${location_slug}/product/${product.product_id}`}
                                 className="block"
                               >
-                                <h3 className="text-base font-semibold text-gray-900 hover:text-blue-600 transition-colors mb-1 line-clamp-1">
+                                <h3 className="font-serif text-base font-semibold text-kake-chocolate-500 hover:text-kake-caramel-500 transition-colors mb-1 line-clamp-1">
                                   {product.product_name}
                                 </h3>
                               </Link>
 
-                              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              <p className="text-sm text-kake-chocolate-400 mb-3 line-clamp-2">
                                 {product.short_description}
                               </p>
 
                               {/* Dietary Tags */}
                               {dietary_tags_array.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 mb-3">
-                                  {dietary_tags_array.slice(0, 2).map((tag) => (
-                                    <span
-                                      key={tag}
-                                      className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full font-medium"
-                                    >
-                                      {tag.replace('_', ' ')}
-                                    </span>
-                                  ))}
+                                  {dietary_tags_array.slice(0, 2).map((tag, idx) => {
+                                    // Soft pastel colors for different dietary tags
+                                    const badgeColors = [
+                                      'bg-green-50 text-green-700 border border-green-200', // sage green
+                                      'bg-pink-50 text-pink-700 border border-pink-200',   // soft pink
+                                    ];
+                                    return (
+                                      <span
+                                        key={tag}
+                                        className={`px-2 py-0.5 ${badgeColors[idx % badgeColors.length]} text-xs rounded-full font-medium`}
+                                      >
+                                        {tag.replace('_', ' ')}
+                                      </span>
+                                    );
+                                  })}
                                   {dietary_tags_array.length > 2 && (
-                                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                                    <span className="px-2 py-0.5 bg-kake-cream-100 text-kake-chocolate-400 border border-kake-cream-200 text-xs rounded-full font-medium">
                                       +{dietary_tags_array.length - 2}
                                     </span>
                                   )}
@@ -929,14 +936,14 @@ const UV_Menu: React.FC = () => {
                             </div>
 
                             {/* Price & Add to Cart Button - Same Line */}
-                            <div className="flex items-center justify-between gap-3 mt-auto pt-3 border-t border-gray-100">
+                            <div className="flex items-center justify-between gap-3 mt-auto pt-3 border-t border-kake-cream-200">
                               <div className="flex flex-col">
                                 <div className="flex items-baseline gap-1.5">
-                                  <span className="text-xl font-bold text-gray-900">
+                                  <span className="text-xl font-bold text-kake-chocolate-500">
                                     €{product.price.toFixed(2)}
                                   </span>
                                   {product.compare_at_price && (
-                                    <span className="text-xs text-gray-500 line-through">
+                                    <span className="text-xs text-kake-chocolate-300 line-through">
                                       €{product.compare_at_price.toFixed(2)}
                                     </span>
                                   )}
@@ -945,10 +952,10 @@ const UV_Menu: React.FC = () => {
 
                               <Link
                                 to={is_out_of_stock ? '#' : `/location/${location_slug}/product/${product.product_id}`}
-                                className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 inline-flex items-center justify-center whitespace-nowrap min-h-[44px] ${
+                                className={`px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 inline-flex items-center justify-center whitespace-nowrap min-h-[44px] ${
                                   is_out_of_stock
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                    : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md active:scale-95'
+                                    : 'bg-kake-caramel-500 text-white hover:bg-kake-caramel-600 shadow-caramel hover:shadow-caramel-lg active:scale-95'
                                 }`}
                                 onClick={(e) => {
                                   if (is_out_of_stock) {
@@ -971,7 +978,7 @@ const UV_Menu: React.FC = () => {
                       <button
                         onClick={() => goToPage(pagination_state.current_page - 1)}
                         disabled={!has_previous}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 bg-white border border-kake-cream-300 rounded-xl text-sm font-medium text-kake-chocolate-500 hover:bg-kake-cream-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Previous
                       </button>
@@ -993,10 +1000,10 @@ const UV_Menu: React.FC = () => {
                             <button
                               key={page_num}
                               onClick={() => goToPage(page_num)}
-                              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                                 pagination_state.current_page === page_num
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                                  ? 'bg-kake-caramel-500 text-white shadow-caramel'
+                                  : 'bg-white border border-kake-cream-300 text-kake-chocolate-500 hover:bg-kake-cream-50'
                               }`}
                             >
                               {page_num}
@@ -1008,7 +1015,7 @@ const UV_Menu: React.FC = () => {
                       <button
                         onClick={() => goToPage(pagination_state.current_page + 1)}
                         disabled={!has_next}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        className="px-4 py-2 bg-white border border-kake-cream-300 rounded-xl text-sm font-medium text-kake-chocolate-500 hover:bg-kake-cream-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         Next
                       </button>
