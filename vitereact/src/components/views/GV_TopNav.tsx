@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/store/main';
-import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare, Cookie, FileText } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, Home, Info, Package, Award, Settings, BookOpen, BarChart3, Heart, Ticket, MessageSquare, Cookie, FileText, Clock } from 'lucide-react';
 import kakeLogo from '@/assets/images/kake-logo.png';
 
 const GV_TopNav: React.FC = () => {
@@ -237,12 +237,21 @@ const GV_TopNav: React.FC = () => {
               
               <div className="py-2">
                 <Link
-                  to="/staff/dashboard"
+                  to="/admin/orders"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
                   onClick={() => setAccountDropdownOpen(false)}
                 >
                   <BarChart3 className="w-4 h-4 mr-3" />
                   Order Management
+                </Link>
+                
+                <Link
+                  to="/staff/dashboard"
+                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                  onClick={() => setAccountDropdownOpen(false)}
+                >
+                  <Clock className="w-4 h-4 mr-3" />
+                  Today's Orders
                 </Link>
                 
                 <Link

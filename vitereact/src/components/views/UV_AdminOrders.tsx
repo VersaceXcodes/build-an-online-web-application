@@ -311,14 +311,30 @@ const UV_AdminOrders: React.FC = () => {
   
   // Zustand store access - CRITICAL: Individual selectors
   const authToken = useAppStore(state => state.authentication_state.auth_token);
+  const currentUser = useAppStore(state => state.authentication_state.current_user);
   const showToast = useAppStore(state => state.show_toast);
   const showConfirmation = useAppStore(state => state.show_confirmation);
   const hideConfirmation = useAppStore(state => state.hide_confirmation);
   
+  // Determine if user is staff (not admin)
+  const isStaff = currentUser?.user_type === 'staff' || currentUser?.user_type === 'manager';
+  const isAdmin = currentUser?.user_type === 'admin';
+  
+  // Get staff's assigned locations
+  const assignedLocations = useMemo(() => {
+    if (currentUser && 'assigned_locations' in currentUser && Array.isArray((currentUser as any).assigned_locations)) {
+      return (currentUser as any).assigned_locations as string[];
+    }
+    return [];
+  }, [currentUser]);
+  
   // URL-driven filter state
   const activeTab = searchParams.get('tab') || 'all';
   const statusFilter = searchParams.get('status') || '';
-  const locationFilter = searchParams.get('location') || '';
+  // For staff, use their assigned location(s) instead of URL param
+  const locationFilter = isStaff && assignedLocations.length > 0 
+    ? assignedLocations[0] 
+    : searchParams.get('location') || '';
   const dateFromFilter = searchParams.get('date_from') || '';
   const dateToFilter = searchParams.get('date_to') || '';
   const fulfillmentFilter = searchParams.get('fulfillment') || '';
@@ -578,6 +594,21 @@ const UV_AdminOrders: React.FC = () => {
   // RENDER
   // ============================================================================
   
+  // Show message if staff has no assigned location
+  if (isStaff && assignedLocations.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 max-w-md text-center">
+          <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">No Location Assigned</h2>
+          <p className="text-gray-600">
+            You are not assigned to a location. Please contact an administrator to be assigned to a location before you can manage orders.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <>
       <div className="min-h-screen bg-gray-50">
@@ -588,27 +619,33 @@ const UV_AdminOrders: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Order Management</h1>
                 <p className="mt-1 text-sm text-gray-600">
-                  Manage and track all orders across locations
+                  {isStaff 
+                    ? `Manage orders for ${assignedLocations.join(', ')}`
+                    : 'Manage and track all orders across locations'
+                  }
                 </p>
               </div>
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleExportCSV}
-                  disabled={exportMutation.isPending}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                >
-                  {exportMutation.isPending ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                      Exporting...
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 mr-2" />
-                      Export CSV
-                    </>
-                  )}
-                </button>
+                {/* Export CSV - Admin only */}
+                {isAdmin && (
+                  <button
+                    onClick={handleExportCSV}
+                    disabled={exportMutation.isPending}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {exportMutation.isPending ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export CSV
+                      </>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => queryClient.invalidateQueries({ queryKey: ['admin-orders'] })}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
@@ -693,21 +730,35 @@ const UV_AdminOrders: React.FC = () => {
                   </select>
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Location
-                  </label>
-                  <select
-                    value={locationFilter}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-                  >
-                    <option value="">All Locations</option>
-                    <option value="Blanchardstown">Blanchardstown</option>
-                    <option value="Tallaght">Tallaght</option>
-                    <option value="Glasnevin">Glasnevin</option>
-                  </select>
-                </div>
+                {/* Location filter - only shown for admins */}
+                {isAdmin && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Location
+                    </label>
+                    <select
+                      value={locationFilter}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    >
+                      <option value="">All Locations</option>
+                      <option value="Blanchardstown">Blanchardstown</option>
+                      <option value="Tallaght">Tallaght</option>
+                      <option value="Glasnevin">Glasnevin</option>
+                    </select>
+                  </div>
+                )}
+                {/* Show location badge for staff */}
+                {isStaff && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Location
+                    </label>
+                    <div className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700">
+                      {assignedLocations.join(', ')}
+                    </div>
+                  </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1016,14 +1067,18 @@ const UV_AdminOrders: React.FC = () => {
                             
                             {/* Quick Actions */}
                             <div className="flex flex-wrap gap-3">
-                              <button
-                                onClick={handleOpenRefundModal}
-                                disabled={orderDetail.payment_status === 'refunded'}
-                                className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-lg text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                              >
-                                <RotateCcw className="w-4 h-4 mr-2" />
-                                Issue Refund
-                              </button>
+                              {/* Refund button - Admin only */}
+                              {isAdmin && (
+                                <button
+                                  onClick={handleOpenRefundModal}
+                                  disabled={orderDetail.payment_status === 'refunded'}
+                                  className="inline-flex items-center px-4 py-2 border border-orange-300 rounded-lg text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                                >
+                                  <RotateCcw className="w-4 h-4 mr-2" />
+                                  Issue Refund
+                                </button>
+                              )}
+                              {/* Status update dropdown - different options for staff vs admin */}
                               <select
                                 value=""
                                 onChange={(e) => {
@@ -1034,14 +1089,50 @@ const UV_AdminOrders: React.FC = () => {
                                 className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                               >
                                 <option value="">Update Status...</option>
-                                <option value="payment_confirmed">Payment Confirmed</option>
-                                <option value="preparing">Preparing</option>
-                                <option value="ready_for_collection">Ready for Collection</option>
-                                <option value="out_for_delivery">Out for Delivery</option>
-                                <option value="delivered">Delivered</option>
-                                <option value="collected">Collected</option>
-                                <option value="completed">Completed</option>
-                                <option value="cancelled">Cancelled</option>
+                                {isAdmin ? (
+                                  <>
+                                    <option value="payment_confirmed">Payment Confirmed</option>
+                                    <option value="preparing">Preparing</option>
+                                    <option value="ready_for_collection">Ready for Collection</option>
+                                    <option value="out_for_delivery">Out for Delivery</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="collected">Collected</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="cancelled">Cancelled</option>
+                                  </>
+                                ) : (
+                                  /* Staff sees context-appropriate options based on current status */
+                                  <>
+                                    {orderDetail.order_status === 'payment_confirmed' && (
+                                      <>
+                                        <option value="preparing">Start Preparing</option>
+                                        <option value="cancelled">Cancel Order</option>
+                                      </>
+                                    )}
+                                    {orderDetail.order_status === 'preparing' && (
+                                      <>
+                                        <option value="ready_for_collection">Ready for Collection</option>
+                                        <option value="out_for_delivery">Out for Delivery</option>
+                                        <option value="cancelled">Cancel Order</option>
+                                      </>
+                                    )}
+                                    {orderDetail.order_status === 'ready_for_collection' && (
+                                      <>
+                                        <option value="collected">Mark as Collected</option>
+                                        <option value="cancelled">Cancel Order</option>
+                                      </>
+                                    )}
+                                    {orderDetail.order_status === 'out_for_delivery' && (
+                                      <>
+                                        <option value="delivered">Mark as Delivered</option>
+                                        <option value="cancelled">Cancel Order</option>
+                                      </>
+                                    )}
+                                    {(orderDetail.order_status === 'delivered' || orderDetail.order_status === 'collected') && (
+                                      <option value="completed">Mark as Completed</option>
+                                    )}
+                                  </>
+                                )}
                               </select>
                             </div>
                           </div>

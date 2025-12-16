@@ -1486,7 +1486,7 @@ app.get('/api/orders', authenticateToken, async (req: AuthRequest, res: Response
   }
 });
 
-app.get('/api/orders/:order_id', async (req, res) => {
+app.get('/api/orders/:order_id', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
   try {
     const orderResult = await client.query('SELECT * FROM orders WHERE order_id = $1', [req.params.order_id]);
@@ -1495,6 +1495,23 @@ app.get('/api/orders/:order_id', async (req, res) => {
       return res.status(404).json(createErrorResponse('Order not found', null, 'ORDER_NOT_FOUND'));
     }
     const order = orderResult.rows[0];
+    
+    // Staff can only view orders for their assigned locations
+    if (req.user.user_type === 'staff') {
+      const assignmentCheck = await client.query('SELECT location_name FROM staff_assignments WHERE user_id = $1', [req.user.user_id]);
+      const assignedLocations = assignmentCheck.rows.map(r => r.location_name);
+      if (!assignedLocations.includes(order.location_name)) {
+        client.release();
+        return res.status(403).json(createErrorResponse('Cannot view orders for this location', null, 'FORBIDDEN'));
+      }
+    }
+    
+    // Customers can only view their own orders
+    if (req.user.user_type === 'customer' && order.user_id !== req.user.user_id) {
+      client.release();
+      return res.status(403).json(createErrorResponse('Cannot view this order', null, 'FORBIDDEN'));
+    }
+    
     const itemsResult = await client.query('SELECT * FROM order_items WHERE order_id = $1', [req.params.order_id]);
     const historyResult = await client.query('SELECT oh.*, u.first_name, u.last_name FROM order_status_history oh LEFT JOIN users u ON oh.changed_by_user_id = u.user_id WHERE oh.order_id = $1 ORDER BY oh.changed_at ASC', [req.params.order_id]);
     client.release();
@@ -1523,6 +1540,23 @@ app.put('/api/orders/:order_id/status', authenticateToken, requireRole(['staff',
         await client.query('ROLLBACK');
         client.release();
         return res.status(403).json(createErrorResponse('Cannot update orders for this location', null, 'FORBIDDEN'));
+      }
+      
+      // Staff can only perform normal operational status transitions
+      const staffAllowedTransitions: { [key: string]: string[] } = {
+        'payment_confirmed': ['preparing', 'cancelled'],
+        'preparing': ['ready_for_collection', 'out_for_delivery', 'cancelled'],
+        'ready_for_collection': ['collected', 'cancelled'],
+        'out_for_delivery': ['delivered', 'cancelled'],
+        'delivered': ['completed'],
+        'collected': ['completed'],
+      };
+      
+      const allowedNextStatuses = staffAllowedTransitions[order.order_status] || [];
+      if (!allowedNextStatuses.includes(order_status)) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(400).json(createErrorResponse(`Invalid status transition from ${order.order_status} to ${order_status}`, null, 'INVALID_STATUS_TRANSITION'));
       }
     }
     const now = new Date().toISOString();
@@ -1702,6 +1736,17 @@ app.post('/api/orders/:order_id/cancel', authenticateToken, async (req: AuthRequ
       client.release();
       return res.status(403).json(createErrorResponse('Cannot cancel this order', null, 'FORBIDDEN'));
     }
+    
+    // Staff can only cancel orders for their assigned locations
+    if (req.user.user_type === 'staff') {
+      const assignmentCheck = await client.query('SELECT COUNT(*) FROM staff_assignments WHERE user_id = $1 AND location_name = $2', [req.user.user_id, order.location_name]);
+      if (parseInt(assignmentCheck.rows[0].count) === 0) {
+        await client.query('ROLLBACK');
+        client.release();
+        return res.status(403).json(createErrorResponse('Cannot cancel orders for this location', null, 'FORBIDDEN'));
+      }
+    }
+    
     if (!['paid_awaiting_confirmation', 'payment_confirmed', 'accepted_in_preparation'].includes(order.order_status)) {
       await client.query('ROLLBACK');
       client.release();
