@@ -486,7 +486,7 @@ const UV_AdminToppings: React.FC = () => {
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         placeholder="0.00"
                       />
-                      <p className="mt-1 text-xs text-gray-500">Set to 0 for free</p>
+                      <p className="mt-1 text-xs text-gray-500">Price charged when added as an extra. Set to 0 for free.</p>
                     </div>
 
                     <div>

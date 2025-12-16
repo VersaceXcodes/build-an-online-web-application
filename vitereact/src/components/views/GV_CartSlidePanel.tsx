@@ -396,12 +396,16 @@ const GV_CartSlidePanel: React.FC = () => {
                       )}
                       {(item.selected_toppings && item.selected_toppings.length > 0) && (
                         <p className="text-xs text-gray-600 mt-1">
-                          🍫 {item.selected_toppings.map(t => t.topping_name).join(', ')}
+                          🍫 {item.selected_toppings.map(t => 
+                            t.price > 0 ? `${t.topping_name} (+€${t.price.toFixed(2)})` : t.topping_name
+                          ).join(', ')}
                         </p>
                       )}
                       {(item.selected_sauces && item.selected_sauces.length > 0) && (
                         <p className="text-xs text-gray-600 mt-1">
-                          🍯 {item.selected_sauces.map(s => s.topping_name).join(', ')}
+                          🍯 {item.selected_sauces.map(s => 
+                            s.price > 0 ? `${s.topping_name} (+€${s.price.toFixed(2)})` : s.topping_name
+                          ).join(', ')}
                         </p>
                       )}
                       <p className="text-sm text-gray-600 mt-1">

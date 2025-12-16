@@ -388,10 +388,15 @@ const UV_ProductDetail: React.FC = () => {
       return;
     }
 
-    // Calculate total including extras (€1.00 per extra item)
-    const EXTRA_ITEM_COST = 1.00;
-    const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
-    const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+    // Calculate total including extras (use per-item prices from admin)
+    const extraToppingsCost = extraToppings.reduce((sum, id) => {
+      const topping = toppingsData.find(t => t.topping_id === id);
+      return sum + (topping?.price || 0);
+    }, 0);
+    const extraSaucesCost = extraSauces.reduce((sum, id) => {
+      const sauce = toppingsData.find(t => t.topping_id === id);
+      return sum + (sauce?.price || 0);
+    }, 0);
 
     const totalPrice = product.price + extraToppingsCost + extraSaucesCost;
 
@@ -412,14 +417,14 @@ const UV_ProductDetail: React.FC = () => {
         return {
           topping_id: id,
           topping_name: topping?.topping_name || '',
-          price: EXTRA_ITEM_COST
+          price: topping?.price || 0
         };
       })] : extraToppings.map(id => {
         const topping = toppingsData.find(t => t.topping_id === id);
         return {
           topping_id: id,
           topping_name: topping?.topping_name || '',
-          price: EXTRA_ITEM_COST
+          price: topping?.price || 0
         };
       }),
       selected_sauces: selectedSauce ? [{
@@ -431,14 +436,14 @@ const UV_ProductDetail: React.FC = () => {
         return {
           topping_id: id,
           topping_name: sauce?.topping_name || '',
-          price: EXTRA_ITEM_COST
+          price: sauce?.price || 0
         };
       })] : extraSauces.map(id => {
         const sauce = toppingsData.find(t => t.topping_id === id);
         return {
           topping_id: id,
           topping_name: sauce?.topping_name || '',
-          price: EXTRA_ITEM_COST
+          price: sauce?.price || 0
         };
       })
     };
@@ -889,7 +894,7 @@ const UV_ProductDetail: React.FC = () => {
                             Want more? Add extras
                           </span>
                           <span className="text-xs font-medium px-2 py-1 bg-kake-caramel-500/20 text-kake-caramel-600 rounded-full">
-                            +€1.00 each
+                            Prices shown per item
                           </span>
                         </div>
                       </AccordionTrigger>
@@ -951,7 +956,7 @@ const UV_ProductDetail: React.FC = () => {
                                             ? 'bg-white/20 text-white' 
                                             : 'bg-kake-caramel-500/10 text-kake-caramel-600'
                                         }`}>
-                                          + €1.00
+                                          {topping.price === 0 ? 'Free' : `+ €${topping.price.toFixed(2)}`}
                                         </span>
                                       )}
                                     </button>
@@ -1017,7 +1022,7 @@ const UV_ProductDetail: React.FC = () => {
                                             ? 'bg-white/20 text-white' 
                                             : 'bg-kake-caramel-500/10 text-kake-caramel-600'
                                         }`}>
-                                          + €1.00
+                                          {sauce.price === 0 ? 'Free' : `+ €${sauce.price.toFixed(2)}`}
                                         </span>
                                       )}
                                     </button>
@@ -1065,9 +1070,14 @@ const UV_ProductDetail: React.FC = () => {
                     <span className="text-kake-chocolate-500/70 text-sm">
                       Total: <span className="font-bold text-kake-chocolate-500">
                         €{(() => {
-                          const EXTRA_ITEM_COST = 1.00;
-                          const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
-                          const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                          const extraToppingsCost = extraToppings.reduce((sum, id) => {
+                            const topping = toppingsData.find(t => t.topping_id === id);
+                            return sum + (topping?.price || 0);
+                          }, 0);
+                          const extraSaucesCost = extraSauces.reduce((sum, id) => {
+                            const sauce = toppingsData.find(t => t.topping_id === id);
+                            return sum + (sauce?.price || 0);
+                          }, 0);
                           return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                         })()}
                       </span>
@@ -1094,9 +1104,14 @@ const UV_ProductDetail: React.FC = () => {
                       <span>Add to Cart</span>
                       <span className="text-sm opacity-90">
                         €{(() => {
-                          const EXTRA_ITEM_COST = 1.00;
-                          const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
-                          const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                          const extraToppingsCost = extraToppings.reduce((sum, id) => {
+                            const topping = toppingsData.find(t => t.topping_id === id);
+                            return sum + (topping?.price || 0);
+                          }, 0);
+                          const extraSaucesCost = extraSauces.reduce((sum, id) => {
+                            const sauce = toppingsData.find(t => t.topping_id === id);
+                            return sum + (sauce?.price || 0);
+                          }, 0);
                           return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                         })()}
                       </span>
@@ -1217,9 +1232,14 @@ const UV_ProductDetail: React.FC = () => {
                     <span>Add to Cart</span>
                     <span className="text-sm">
                       €{(() => {
-                        const EXTRA_ITEM_COST = 1.00;
-                        const extraToppingsCost = extraToppings.length * EXTRA_ITEM_COST;
-                        const extraSaucesCost = extraSauces.length * EXTRA_ITEM_COST;
+                        const extraToppingsCost = extraToppings.reduce((sum, id) => {
+                          const topping = toppingsData.find(t => t.topping_id === id);
+                          return sum + (topping?.price || 0);
+                        }, 0);
+                        const extraSaucesCost = extraSauces.reduce((sum, id) => {
+                          const sauce = toppingsData.find(t => t.topping_id === id);
+                          return sum + (sauce?.price || 0);
+                        }, 0);
                         return ((product.price + extraToppingsCost + extraSaucesCost) * selectedQuantity).toFixed(2);
                       })()}
                     </span>
