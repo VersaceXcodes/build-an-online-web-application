@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
@@ -631,6 +632,32 @@ const UV_AdminProducts: React.FC = () => {
     }
   };
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (productFormModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [productFormModalOpen]);
+
+  // Handle ESC key to close modal
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape' && productFormModalOpen) {
+      setProductFormModalOpen(false);
+    }
+  }, [productFormModalOpen]);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
   // Memoized products list
   const products = useMemo(() => productsData?.products || [], [productsData]);
   const totalCount = useMemo(() => productsData?.total || 0, [productsData]);
@@ -1002,474 +1029,479 @@ const UV_AdminProducts: React.FC = () => {
           )}
         </div>
 
-        {/* Product Form Modal */}
-        {productFormModalOpen && (
-          <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-              {/* Backdrop */}
-              <div 
-                className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-                onClick={() => setProductFormModalOpen(false)}
-              />
+        {/* Product Form Modal - Rendered via Portal */}
+        {productFormModalOpen && createPortal(
+          <div 
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="product-modal-title"
+          >
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              onClick={() => setProductFormModalOpen(false)}
+            />
 
-              {/* Modal Panel */}
-              <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                {/* Modal Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-white">
-                      {productFormMode === 'create' ? 'Add New Product' : 'Edit Product'}
-                    </h3>
-                    <button
-                      onClick={() => setProductFormModalOpen(false)}
-                      className="text-white hover:text-gray-200 transition-colors"
-                    >
-                      <X className="w-6 h-6" />
-                    </button>
-                  </div>
+            {/* Modal Panel - Centered in viewport */}
+            <div className="relative z-10 bg-white rounded-xl text-left overflow-hidden shadow-xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 flex-shrink-0">
+                <div className="flex items-center justify-between">
+                  <h3 id="product-modal-title" className="text-xl font-semibold text-white">
+                    {productFormMode === 'create' ? 'Add New Product' : 'Edit Product'}
+                  </h3>
+                  <button
+                    onClick={() => setProductFormModalOpen(false)}
+                    className="text-white hover:text-gray-200 transition-colors"
+                    aria-label="Close modal"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
                 </div>
+              </div>
 
-                {/* Modal Body */}
-                <form onSubmit={handleSubmitProductForm} className="px-6 py-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-                  <div className="space-y-6">
-                    {/* Basic Information */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Product Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={productFormData.product_name}
-                            onChange={(e) => handleProductFormChange('product_name', e.target.value)}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                              productFormErrors.product_name ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            placeholder="e.g., Classic Croissant"
-                          />
-                          {productFormErrors.product_name && (
-                            <p className="mt-1 text-sm text-red-600">{productFormErrors.product_name}</p>
+              {/* Modal Body */}
+              <form onSubmit={handleSubmitProductForm} className="px-6 py-6 overflow-y-auto flex-1">
+                <div className="space-y-6">
+                  {/* Basic Information */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Product Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={productFormData.product_name}
+                          onChange={(e) => handleProductFormChange('product_name', e.target.value)}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                            productFormErrors.product_name ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="e.g., Classic Croissant"
+                        />
+                        {productFormErrors.product_name && (
+                          <p className="mt-1 text-sm text-red-600">{productFormErrors.product_name}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Short Description <span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                          value={productFormData.short_description}
+                          onChange={(e) => handleProductFormChange('short_description', e.target.value)}
+                          rows={2}
+                          maxLength={500}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                            productFormErrors.short_description ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="Brief product description for listings"
+                        />
+                        <div className="flex items-center justify-between mt-1">
+                          {productFormErrors.short_description && (
+                            <p className="text-sm text-red-600">{productFormErrors.short_description}</p>
                           )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Short Description <span className="text-red-500">*</span>
-                          </label>
-                          <textarea
-                            value={productFormData.short_description}
-                            onChange={(e) => handleProductFormChange('short_description', e.target.value)}
-                            rows={2}
-                            maxLength={500}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                              productFormErrors.short_description ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            placeholder="Brief product description for listings"
-                          />
-                          <div className="flex items-center justify-between mt-1">
-                            {productFormErrors.short_description && (
-                              <p className="text-sm text-red-600">{productFormErrors.short_description}</p>
-                            )}
-                            <span className="text-xs text-gray-500">
-                              {productFormData.short_description.length}/500
-                            </span>
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Long Description
-                          </label>
-                          <textarea
-                            value={productFormData.long_description}
-                            onChange={(e) => handleProductFormChange('long_description', e.target.value)}
-                            rows={4}
-                            maxLength={2000}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Detailed product description for product detail page"
-                          />
                           <span className="text-xs text-gray-500">
-                            {productFormData.long_description.length}/2000
+                            {productFormData.short_description.length}/500
                           </span>
                         </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Category <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={productFormData.category}
-                              onChange={(e) => handleProductFormChange('category', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="pastries">Pastries</option>
-                              <option value="breads">Breads</option>
-                              <option value="cakes">Cakes</option>
-                              <option value="corporate">Corporate</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Availability <span className="text-red-500">*</span>
-                            </label>
-                            <select
-                              value={productFormData.availability_status}
-                              onChange={(e) => handleProductFormChange('availability_status', e.target.value)}
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            >
-                              <option value="in_stock">In Stock</option>
-                              <option value="out_of_stock">Out of Stock</option>
-                              <option value="discontinued">Discontinued</option>
-                            </select>
-                          </div>
-                        </div>
                       </div>
-                    </div>
 
-                    {/* Pricing */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Pricing</h4>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Long Description
+                        </label>
+                        <textarea
+                          value={productFormData.long_description}
+                          onChange={(e) => handleProductFormChange('long_description', e.target.value)}
+                          rows={4}
+                          maxLength={2000}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="Detailed product description for product detail page"
+                        />
+                        <span className="text-xs text-gray-500">
+                          {productFormData.long_description.length}/2000
+                        </span>
+                      </div>
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Price (€) <span className="text-red-500">*</span>
+                            Category <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={productFormData.price}
-                            onChange={(e) => handleProductFormChange('price', parseFloat(e.target.value) || 0)}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
-                              productFormErrors.price ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                            placeholder="0.00"
-                          />
-                          {productFormErrors.price && (
-                            <p className="mt-1 text-sm text-red-600">{productFormErrors.price}</p>
-                          )}
+                          <select
+                            value={productFormData.category}
+                            onChange={(e) => handleProductFormChange('category', e.target.value)}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="pastries">Pastries</option>
+                            <option value="breads">Breads</option>
+                            <option value="cakes">Cakes</option>
+                            <option value="corporate">Corporate</option>
+                          </select>
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Compare at Price (€)
+                            Availability <span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={productFormData.compare_at_price || ''}
-                            onChange={(e) => handleProductFormChange('compare_at_price', e.target.value ? parseFloat(e.target.value) : null)}
+                          <select
+                            value={productFormData.availability_status}
+                            onChange={(e) => handleProductFormChange('availability_status', e.target.value)}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="0.00"
-                          />
-                          <p className="mt-1 text-xs text-gray-500">Show as discounted if higher than price</p>
+                          >
+                            <option value="in_stock">In Stock</option>
+                            <option value="out_of_stock">Out of Stock</option>
+                            <option value="discontinued">Discontinued</option>
+                          </select>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Images */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Product Images</h4>
-                      
-                      {/* Primary Image */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Primary Image <span className="text-red-500">*</span>
+                  {/* Pricing */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Pricing</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Price (€) <span className="text-red-500">*</span>
                         </label>
-                        <div className="flex items-start space-x-4">
-                          {productFormData.primary_image_url && (
-                            <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
-                              <img
-                                src={productFormData.primary_image_url}
-                                alt="Primary"
-                                className="w-full h-full object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleProductFormChange('primary_image_url', '')}
-                                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          )}
-                          <div className="flex-1">
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={productFormData.price}
+                          onChange={(e) => handleProductFormChange('price', parseFloat(e.target.value) || 0)}
+                          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                            productFormErrors.price ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="0.00"
+                        />
+                        {productFormErrors.price && (
+                          <p className="mt-1 text-sm text-red-600">{productFormErrors.price}</p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Compare at Price (€)
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={productFormData.compare_at_price || ''}
+                          onChange={(e) => handleProductFormChange('compare_at_price', e.target.value ? parseFloat(e.target.value) : null)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="0.00"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">Show as discounted if higher than price</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Images */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Product Images</h4>
+                    
+                    {/* Primary Image */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Primary Image <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-start space-x-4">
+                        {productFormData.primary_image_url && (
+                          <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-200">
+                            <img
+                              src={productFormData.primary_image_url}
+                              alt="Primary"
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleProductFormChange('primary_image_url', '')}
+                              className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(e, true)}
+                            className="hidden"
+                            id="primary-image-upload"
+                          />
+                          <label
+                            htmlFor="primary-image-upload"
+                            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            {imageUploadProgress.uploading ? `Uploading... ${imageUploadProgress.progress}%` : 'Upload Image'}
+                          </label>
+                          <p className="mt-1 text-xs text-gray-500">JPG, PNG up to 5MB</p>
+                        </div>
+                      </div>
+                      {productFormErrors.primary_image_url && (
+                        <p className="mt-2 text-sm text-red-600">{productFormErrors.primary_image_url}</p>
+                      )}
+                    </div>
+
+                    {/* Additional Images */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Additional Images
+                      </label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {productFormData.additional_images.map((url, index) => (
+                          <div key={index} className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                            <img
+                              src={url}
+                              alt={`Additional ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeAdditionalImage(index)}
+                              className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        {productFormData.additional_images.length < 4 && (
+                          <div>
                             <input
                               type="file"
                               accept="image/*"
-                              onChange={(e) => handleImageUpload(e, true)}
+                              onChange={(e) => handleImageUpload(e, false)}
                               className="hidden"
-                              id="primary-image-upload"
+                              id="additional-image-upload"
                             />
                             <label
-                              htmlFor="primary-image-upload"
-                              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                              htmlFor="additional-image-upload"
+                              className="flex items-center justify-center w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer transition-colors"
                             >
-                              <Upload className="w-4 h-4 mr-2" />
-                              {imageUploadProgress.uploading ? `Uploading... ${imageUploadProgress.progress}%` : 'Upload Image'}
+                              <Plus className="w-8 h-8 text-gray-400" />
                             </label>
-                            <p className="mt-1 text-xs text-gray-500">JPG, PNG up to 5MB</p>
                           </div>
-                        </div>
-                        {productFormErrors.primary_image_url && (
-                          <p className="mt-2 text-sm text-red-600">{productFormErrors.primary_image_url}</p>
                         )}
                       </div>
+                    </div>
+                  </div>
 
-                      {/* Additional Images */}
+                  {/* Stock Management */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Stock Management</h4>
+                    <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Additional Images
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Stock Quantity
                         </label>
-                        <div className="grid grid-cols-4 gap-2">
-                          {productFormData.additional_images.map((url, index) => (
-                            <div key={index} className="relative w-full aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
-                              <img
-                                src={url}
-                                alt={`Additional ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
+                        <input
+                          type="number"
+                          min="0"
+                          value={productFormData.stock_quantity || ''}
+                          onChange={(e) => handleProductFormChange('stock_quantity', e.target.value ? parseInt(e.target.value) : null)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="Leave blank for unlimited"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Low Stock Threshold
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={productFormData.low_stock_threshold || ''}
+                          onChange={(e) => handleProductFormChange('low_stock_threshold', e.target.value ? parseInt(e.target.value) : null)}
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                          placeholder="Alert when stock is low"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Dietary Tags */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Dietary Tags</h4>
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        {commonDietaryTags.map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => 
+                              productFormData.dietary_tags.includes(tag)
+                                ? removeDietaryTag(tag)
+                                : addDietaryTag(tag)
+                            }
+                            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                              productFormData.dietary_tags.includes(tag)
+                                ? 'bg-green-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                          >
+                            {tag.replace('_', ' ')}
+                          </button>
+                        ))}
+                      </div>
+                      
+                      {productFormData.dietary_tags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+                          <span className="text-sm font-medium text-gray-700">Selected:</span>
+                          {productFormData.dietary_tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800"
+                            >
+                              {tag}
                               <button
                                 type="button"
-                                onClick={() => removeAdditionalImage(index)}
-                                className="absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
+                                onClick={() => removeDietaryTag(tag)}
+                                className="ml-1.5 hover:text-green-900"
                               >
                                 <X className="w-3 h-3" />
                               </button>
-                            </div>
-                          ))}
-                          {productFormData.additional_images.length < 4 && (
-                            <div>
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleImageUpload(e, false)}
-                                className="hidden"
-                                id="additional-image-upload"
-                              />
-                              <label
-                                htmlFor="additional-image-upload"
-                                className="flex items-center justify-center w-full aspect-square border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer transition-colors"
-                              >
-                                <Plus className="w-8 h-8 text-gray-400" />
-                              </label>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stock Management */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Stock Management</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Stock Quantity
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={productFormData.stock_quantity || ''}
-                            onChange={(e) => handleProductFormChange('stock_quantity', e.target.value ? parseInt(e.target.value) : null)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Leave blank for unlimited"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Low Stock Threshold
-                          </label>
-                          <input
-                            type="number"
-                            min="0"
-                            value={productFormData.low_stock_threshold || ''}
-                            onChange={(e) => handleProductFormChange('low_stock_threshold', e.target.value ? parseInt(e.target.value) : null)}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                            placeholder="Alert when stock is low"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Dietary Tags */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Dietary Tags</h4>
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap gap-2">
-                          {commonDietaryTags.map((tag) => (
-                            <button
-                              key={tag}
-                              type="button"
-                              onClick={() => 
-                                productFormData.dietary_tags.includes(tag)
-                                  ? removeDietaryTag(tag)
-                                  : addDietaryTag(tag)
-                              }
-                              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                                productFormData.dietary_tags.includes(tag)
-                                  ? 'bg-green-600 text-white'
-                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                              }`}
-                            >
-                              {tag.replace('_', ' ')}
-                            </button>
+                            </span>
                           ))}
                         </div>
-                        
-                        {productFormData.dietary_tags.length > 0 && (
-                          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
-                            <span className="text-sm font-medium text-gray-700">Selected:</span>
-                            {productFormData.dietary_tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800"
-                              >
-                                {tag}
-                                <button
-                                  type="button"
-                                  onClick={() => removeDietaryTag(tag)}
-                                  className="ml-1.5 hover:text-green-900"
-                                >
-                                  <X className="w-3 h-3" />
-                                </button>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
+                  </div>
 
-                    {/* Location Assignments */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                        Location Assignment <span className="text-red-500">*</span>
-                      </h4>
-                      <p className="text-sm text-gray-600 mb-3">
-                        Select which locations will display this product on their menu
+                  {/* Location Assignments */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                      Location Assignment <span className="text-red-500">*</span>
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Select which locations will display this product on their menu
+                    </p>
+                    <div className="space-y-2">
+                      {availableLocations.map((location) => (
+                        <label
+                          key={location.location_id}
+                          className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={productFormData.location_assignments.includes(location.location_name)}
+                            onChange={() => toggleLocationAssignment(location.location_name)}
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                          />
+                          <span className="ml-3 text-sm font-medium text-gray-900">
+                            {location.location_name}
+                          </span>
+                          <span className="ml-auto text-xs text-gray-500">
+                            {location.city}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    {productFormErrors.location_assignments && (
+                      <p className="mt-2 text-sm text-red-600">{productFormErrors.location_assignments}</p>
+                    )}
+                  </div>
+
+                  {/* Available Toppings & Sauces */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Available Customizations</h4>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <p className="text-sm text-blue-900 mb-2">
+                        <strong>Note:</strong> All available toppings and sauces can be selected by customers when ordering this product.
                       </p>
-                      <div className="space-y-2">
-                        {availableLocations.map((location) => (
-                          <label
-                            key={location.location_id}
-                            className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={productFormData.location_assignments.includes(location.location_name)}
-                              onChange={() => toggleLocationAssignment(location.location_name)}
-                              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="ml-3 text-sm font-medium text-gray-900">
-                              {location.location_name}
-                            </span>
-                            <span className="ml-auto text-xs text-gray-500">
-                              {location.city}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                      {productFormErrors.location_assignments && (
-                        <p className="mt-2 text-sm text-red-600">{productFormErrors.location_assignments}</p>
-                      )}
-                    </div>
-
-                    {/* Available Toppings & Sauces */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Available Customizations</h4>
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <p className="text-sm text-blue-900 mb-2">
-                          <strong>Note:</strong> All available toppings and sauces can be selected by customers when ordering this product.
-                        </p>
-                        <p className="text-xs text-blue-700">
-                          To manage the list of available toppings and sauces, use the Toppings Management page in the admin menu.
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Options */}
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-4">Options</h4>
-                      <div className="space-y-3">
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={productFormData.is_visible}
-                            onChange={(e) => handleProductFormChange('is_visible', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <span className="ml-3 text-sm font-medium text-gray-900">
-                            Visible to Customers
-                          </span>
-                          <span className="ml-2 text-xs text-gray-500">
-                            (Unchecking will hide this product from customers)
-                          </span>
-                        </label>
-
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={productFormData.is_featured}
-                            onChange={(e) => handleProductFormChange('is_featured', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <span className="ml-3 text-sm font-medium text-gray-900">
-                            Featured Product
-                          </span>
-                        </label>
-
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={productFormData.available_for_corporate}
-                            onChange={(e) => handleProductFormChange('available_for_corporate', e.target.checked)}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          />
-                          <span className="ml-3 text-sm font-medium text-gray-900">
-                            Available for Corporate Orders
-                          </span>
-                        </label>
-                      </div>
+                      <p className="text-xs text-blue-700">
+                        To manage the list of available toppings and sauces, use the Toppings Management page in the admin menu.
+                      </p>
                     </div>
                   </div>
 
-                  {/* Modal Footer */}
-                  <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setProductFormModalOpen(false)}
-                      className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={createProductMutation.isPending || updateProductMutation.isPending}
-                      className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {(createProductMutation.isPending || updateProductMutation.isPending) ? (
-                        <span className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          {productFormMode === 'create' ? 'Creating...' : 'Updating...'}
+                  {/* Options */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Options</h4>
+                    <div className="space-y-3">
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={productFormData.is_visible}
+                          onChange={(e) => handleProductFormChange('is_visible', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-3 text-sm font-medium text-gray-900">
+                          Visible to Customers
                         </span>
-                      ) : (
-                        productFormMode === 'create' ? 'Create Product' : 'Update Product'
-                      )}
-                    </button>
+                        <span className="ml-2 text-xs text-gray-500">
+                          (Unchecking will hide this product from customers)
+                        </span>
+                      </label>
+
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={productFormData.is_featured}
+                          onChange={(e) => handleProductFormChange('is_featured', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-3 text-sm font-medium text-gray-900">
+                          Featured Product
+                        </span>
+                      </label>
+
+                      <label className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={productFormData.available_for_corporate}
+                          onChange={(e) => handleProductFormChange('available_for_corporate', e.target.checked)}
+                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="ml-3 text-sm font-medium text-gray-900">
+                          Available for Corporate Orders
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                </form>
-              </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="mt-8 pt-6 border-t border-gray-200 flex items-center justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setProductFormModalOpen(false)}
+                    className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createProductMutation.isPending || updateProductMutation.isPending}
+                    className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {(createProductMutation.isPending || updateProductMutation.isPending) ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        {productFormMode === 'create' ? 'Creating...' : 'Updating...'}
+                      </span>
+                    ) : (
+                      productFormMode === 'create' ? 'Create Product' : 'Update Product'
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </>
