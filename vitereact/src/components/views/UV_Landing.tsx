@@ -10,6 +10,13 @@ import kakeWatermarkLogo from '@/assets/images/kake-watermark-logo.png';
 // TYPE DEFINITIONS (from Zod schemas)
 // ============================================================================
 
+interface ExternalProvider {
+  name: string;
+  url: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 interface Location {
   location_id: string;
   location_name: string;
@@ -29,6 +36,8 @@ interface Location {
   allow_scheduled_pickups: boolean;
   just_eat_url: string | null;
   deliveroo_url: string | null;
+  external_providers: string | null; // JSON string of ExternalProvider[]
+  ordering_mode: 'internal' | 'external_only'; // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: string;
   created_at: string;
   updated_at: string;
@@ -189,16 +198,48 @@ const UV_Landing: React.FC = () => {
     return name.toLowerCase().trim().replace(/\s+/g, '-');
   };
 
+  // Helper function to parse external providers from JSON
+  const parseExternalProviders = (location: Location): ExternalProvider[] => {
+    if (location.external_providers) {
+      try {
+        const parsed = JSON.parse(location.external_providers);
+        if (Array.isArray(parsed)) {
+          return parsed.filter((p: ExternalProvider) => p.is_active && p.name && p.url);
+        }
+      } catch {
+        // Fall through to legacy conversion
+      }
+    }
+    // Fallback to legacy fields
+    const providers: ExternalProvider[] = [];
+    if (location.just_eat_url) {
+      providers.push({ name: 'Just Eat', url: location.just_eat_url, display_order: 1, is_active: true });
+    }
+    if (location.deliveroo_url) {
+      providers.push({ name: 'Deliveroo', url: location.deliveroo_url, display_order: 2, is_active: true });
+    }
+    return providers;
+  };
+
   // Helper function to get location description based on available services
   const getLocationDescription = (location: Location): string => {
+    // Check if this is an external-only location
+    if (location.ordering_mode === 'external_only') {
+      const providers = parseExternalProviders(location);
+      if (providers.length > 0) {
+        const providerNames = providers.map(p => p.name).join(' & ');
+        return `Order via ${providerNames}`;
+      }
+      return 'Coming soon';
+    }
+    
+    // Internal ordering mode
     if (location.is_collection_enabled && location.is_delivery_enabled) {
       return 'Collection & Delivery available';
     } else if (location.is_collection_enabled) {
       return 'Collection available';
     } else if (location.is_delivery_enabled) {
       return 'Delivery available';
-    } else if (location.just_eat_url || location.deliveroo_url) {
-      return 'Order via Just Eat & Deliveroo';
     } else {
       return 'Coming soon';
     }

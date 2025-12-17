@@ -8,6 +8,13 @@ import { ExternalLink, MapPin, Phone, Mail, Clock, ChevronDown, ChevronUp } from
 // TYPE DEFINITIONS (from Zod schemas)
 // ============================================================================
 
+interface ExternalProvider {
+  name: string;
+  url: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 interface Location {
   location_id: string;
   location_name: string;
@@ -28,6 +35,8 @@ interface Location {
   allow_scheduled_pickups: boolean;
   just_eat_url: string | null;
   deliveroo_url: string | null;
+  external_providers: string | null; // JSON string of ExternalProvider[]
+  ordering_mode: 'internal' | 'external_only'; // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: string;
   opening_hours_structured?: Array<{
     id: string;
@@ -150,6 +159,31 @@ const UV_LocationExternal: React.FC = () => {
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
+  // Parse external providers from JSON or legacy fields
+  const parseExternalProviders = (location: Location): ExternalProvider[] => {
+    if (location.external_providers) {
+      try {
+        const parsed = JSON.parse(location.external_providers);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .filter((p: ExternalProvider) => p.is_active && p.name && p.url)
+            .sort((a: ExternalProvider, b: ExternalProvider) => a.display_order - b.display_order);
+        }
+      } catch {
+        // Fall through to legacy conversion
+      }
+    }
+    // Fallback to legacy fields
+    const providers: ExternalProvider[] = [];
+    if (location.just_eat_url) {
+      providers.push({ name: 'Just Eat', url: location.just_eat_url, display_order: 1, is_active: true });
+    }
+    if (location.deliveroo_url) {
+      providers.push({ name: 'Deliveroo', url: location.deliveroo_url, display_order: 2, is_active: true });
+    }
+    return providers;
+  };
+
   // Loading state
   if (location_loading) {
     return (
@@ -191,10 +225,9 @@ const UV_LocationExternal: React.FC = () => {
     );
   }
 
-  const external_urls = {
-    just_eat_url: glasnevin_location.just_eat_url,
-    deliveroo_url: glasnevin_location.deliveroo_url,
-  };
+  // Get active external providers
+  const externalProviders = parseExternalProviders(glasnevin_location);
+  const hasProviders = externalProviders.length > 0;
 
   return (
     <>
@@ -294,55 +327,46 @@ const UV_LocationExternal: React.FC = () => {
             </p>
           </div>
 
-          {/* External Platform Buttons */}
-          <div className="grid sm:grid-cols-2 gap-6 mb-12">
-            {/* Just Eat Button */}
-            {external_urls.just_eat_url ? (
-              <button
-                onClick={() => openExternalOrdering(external_urls.just_eat_url, 'Just Eat')}
-                className="group relative bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                <div className="relative p-8 flex items-center justify-center space-x-4">
-                  <div className="text-left flex-1">
-                    <p className="text-sm font-medium text-orange-100 mb-1">Order on</p>
-                    <p className="text-2xl font-bold">Just Eat</p>
+          {/* External Platform Buttons - Dynamic from providers list */}
+          <div className={`grid gap-6 mb-12 ${externalProviders.length === 1 ? 'max-w-md mx-auto' : externalProviders.length === 2 ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
+            {externalProviders.map((provider, index) => {
+              // Assign colors based on provider name or index
+              const colorVariants = [
+                { bg: 'from-orange-500 to-orange-600', text: 'text-orange-100', icon: 'text-orange-200' },
+                { bg: 'from-teal-500 to-cyan-600', text: 'text-teal-100', icon: 'text-teal-200' },
+                { bg: 'from-purple-500 to-indigo-600', text: 'text-purple-100', icon: 'text-purple-200' },
+                { bg: 'from-pink-500 to-rose-600', text: 'text-pink-100', icon: 'text-pink-200' },
+                { bg: 'from-blue-500 to-blue-600', text: 'text-blue-100', icon: 'text-blue-200' },
+              ];
+              // Map known providers to specific colors
+              let colorIndex = index % colorVariants.length;
+              if (provider.name.toLowerCase().includes('just eat')) colorIndex = 0;
+              else if (provider.name.toLowerCase().includes('deliveroo')) colorIndex = 1;
+              else if (provider.name.toLowerCase().includes('uber')) colorIndex = 2;
+              
+              const colors = colorVariants[colorIndex];
+              
+              return (
+                <button
+                  key={index}
+                  onClick={() => openExternalOrdering(provider.url, provider.name)}
+                  className={`group relative bg-gradient-to-r ${colors.bg} text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden`}
+                >
+                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
+                  <div className="relative p-8 flex items-center justify-center space-x-4">
+                    <div className="text-left flex-1">
+                      <p className={`text-sm font-medium ${colors.text} mb-1`}>Order on</p>
+                      <p className="text-2xl font-bold">{provider.name}</p>
+                    </div>
+                    <ExternalLink className={`w-6 h-6 ${colors.icon} group-hover:translate-x-1 transition-transform`} />
                   </div>
-                  <ExternalLink className="w-6 h-6 text-orange-200 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </button>
-            ) : (
-              <div className="bg-gray-100 text-gray-400 rounded-xl p-8 text-center border-2 border-dashed border-gray-300">
-                <p className="text-sm font-medium">Just Eat</p>
-                <p className="text-xs mt-1">Not available</p>
-              </div>
-            )}
-
-            {/* Deliveroo Button */}
-            {external_urls.deliveroo_url ? (
-              <button
-                onClick={() => openExternalOrdering(external_urls.deliveroo_url, 'Deliveroo')}
-                className="group relative bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-                <div className="relative p-8 flex items-center justify-center space-x-4">
-                  <div className="text-left flex-1">
-                    <p className="text-sm font-medium text-teal-100 mb-1">Order on</p>
-                    <p className="text-2xl font-bold">Deliveroo</p>
-                  </div>
-                  <ExternalLink className="w-6 h-6 text-teal-200 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </button>
-            ) : (
-              <div className="bg-gray-100 text-gray-400 rounded-xl p-8 text-center border-2 border-dashed border-gray-300">
-                <p className="text-sm font-medium">Deliveroo</p>
-                <p className="text-xs mt-1">Not available</p>
-              </div>
-            )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Info Notice */}
-          {!external_urls.just_eat_url && !external_urls.deliveroo_url && (
+          {/* Info Notice when no providers */}
+          {!hasProviders && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
               <p className="text-yellow-800 font-medium mb-2">
                 External ordering currently unavailable

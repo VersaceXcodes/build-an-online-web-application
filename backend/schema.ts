@@ -129,6 +129,7 @@ export const locationSchema = z.object({
   just_eat_url: z.string().nullable(),
   deliveroo_url: z.string().nullable(),
   external_providers: z.string().nullable(), // JSON string of ExternalProvider[]
+  ordering_mode: z.enum(['internal', 'external_only']).default('internal'), // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: z.string(), // Legacy JSON field - use opening_hours_structured instead
   slug: z.string().optional(),
   is_active: z.boolean().optional(),
@@ -157,6 +158,7 @@ export const createLocationInputSchema = z.object({
   just_eat_url: z.string().url().nullable(),
   deliveroo_url: z.string().url().nullable(),
   external_providers: z.string().nullable(), // JSON string of ExternalProvider[]
+  ordering_mode: z.enum(['internal', 'external_only']).default('internal'), // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: z.string().default('{}'), // Legacy field, use structured opening_hours table instead
   is_active: z.boolean().default(true)
 });
@@ -183,6 +185,7 @@ export const updateLocationInputSchema = z.object({
   just_eat_url: z.string().url().nullable().optional(),
   deliveroo_url: z.string().url().nullable().optional(),
   external_providers: z.string().nullable().optional(), // JSON string of ExternalProvider[]
+  ordering_mode: z.enum(['internal', 'external_only']).optional(), // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: z.string().optional(), // Legacy field, use structured opening_hours table instead
   is_active: z.boolean().optional()
 });

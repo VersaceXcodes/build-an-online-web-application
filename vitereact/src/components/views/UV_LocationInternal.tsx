@@ -38,6 +38,7 @@ interface Location {
   just_eat_url: string | null;
   deliveroo_url: string | null;
   external_providers: string | null; // JSON string of ExternalProvider[]
+  ordering_mode: 'internal' | 'external_only'; // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: string; // JSON string
   opening_hours_structured?: Array<{
     id: string;
@@ -178,11 +179,11 @@ const UV_LocationInternal: React.FC = () => {
     return opening_hours_parsed[today] || null;
   }, [opening_hours_parsed]);
   
-  // Check if this is Glasnevin location (external providers only)
-  const isGlasnevin = useMemo(() => {
-    if (!location_name) return false;
-    return location_name.toLowerCase() === 'glasnevin';
-  }, [location_name]);
+  // Check if this location uses external ordering only (based on ordering_mode field)
+  const isExternalOnly = useMemo(() => {
+    if (!location_details) return false;
+    return location_details.ordering_mode === 'external_only';
+  }, [location_details]);
   
   // Parse external providers for Glasnevin
   const externalProviders = useMemo((): ExternalProvider[] => {
@@ -223,8 +224,8 @@ const UV_LocationInternal: React.FC = () => {
     return providers;
   }, [location_details]);
   
-  // Check if Glasnevin has active providers
-  const hasActiveProviders = isGlasnevin && externalProviders.length > 0;
+  // Check if external-only location has active providers
+  const hasActiveProviders = isExternalOnly && externalProviders.length > 0;
   
   // Handle fulfillment method selection
   const handleSelectFulfillment = (method: 'collection' | 'delivery') => {
@@ -238,8 +239,8 @@ const UV_LocationInternal: React.FC = () => {
       return;
     }
     
-    // GLASNEVIN SPECIAL BEHAVIOR: Show external provider modal instead of navigating to menu
-    if (isGlasnevin) {
+    // EXTERNAL-ONLY BEHAVIOR: Show external provider modal instead of navigating to menu
+    if (isExternalOnly) {
       if (externalProviders.length === 0) {
         // No providers configured - show error or do nothing
         return;
@@ -501,8 +502,8 @@ const UV_LocationInternal: React.FC = () => {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Collection Card - Only show if Glasnevin has providers OR if not Glasnevin */}
-            {location_details.is_collection_enabled && (!isGlasnevin || hasActiveProviders) && (
+            {/* Collection Card - Only show if external-only location has providers OR if internal ordering */}
+            {location_details.is_collection_enabled && (!isExternalOnly || hasActiveProviders) && (
               <button
                 onClick={() => handleSelectFulfillment('collection')}
                 className="group bg-white rounded-xl shadow-lg border-2 border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-200 p-8 text-left focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -521,7 +522,7 @@ const UV_LocationInternal: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {isGlasnevin ? (
+                  {isExternalOnly ? (
                     <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   ) : (
                     <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
@@ -529,7 +530,7 @@ const UV_LocationInternal: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3 mb-6">
-                  {!isGlasnevin && (
+                  {!isExternalOnly && (
                     <div className="flex items-center text-gray-700">
                       <Clock className="h-5 w-5 mr-2 text-gray-400" />
                       <span className="font-medium">
@@ -546,7 +547,7 @@ const UV_LocationInternal: React.FC = () => {
                 
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    {isGlasnevin 
+                    {isExternalOnly 
                       ? `Order via our delivery partners for collection at ${location_details.location_name}`
                       : `Order now and collect from our ${location_details.location_name} location`
                     }
@@ -556,7 +557,7 @@ const UV_LocationInternal: React.FC = () => {
             )}
             
             {/* Delivery Card - Only show if Glasnevin has providers OR if not Glasnevin */}
-            {location_details.is_delivery_enabled && (!isGlasnevin || hasActiveProviders) && (
+            {location_details.is_delivery_enabled && (!isExternalOnly || hasActiveProviders) && (
               <button
                 onClick={() => handleSelectFulfillment('delivery')}
                 className="group bg-white rounded-xl shadow-lg border-2 border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-200 p-8 text-left focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -575,7 +576,7 @@ const UV_LocationInternal: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  {isGlasnevin ? (
+                  {isExternalOnly ? (
                     <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
                   ) : (
                     <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
@@ -583,7 +584,7 @@ const UV_LocationInternal: React.FC = () => {
                 </div>
                 
                 <div className="space-y-3 mb-6">
-                  {!isGlasnevin && (
+                  {!isExternalOnly && (
                     <div className="flex items-center text-gray-700">
                       <Clock className="h-5 w-5 mr-2 text-gray-400" />
                       <span className="font-medium">
@@ -595,7 +596,7 @@ const UV_LocationInternal: React.FC = () => {
                      </div>
                    )}
                    
-                   {!isGlasnevin && location_details.delivery_fee !== null && (
+                   {!isExternalOnly && location_details.delivery_fee !== null && (
                     <div className="space-y-1">
                       <div className="flex items-center text-gray-700">
                         <span className="font-medium">
@@ -610,7 +611,7 @@ const UV_LocationInternal: React.FC = () => {
                     </div>
                   )}
                   
-                  {isGlasnevin && (
+                  {isExternalOnly && (
                     <div className="flex items-center text-blue-600 font-medium">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       <span>Order via delivery partners</span>
@@ -620,7 +621,7 @@ const UV_LocationInternal: React.FC = () => {
                 
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    {isGlasnevin
+                    {isExternalOnly
                       ? `Order via our delivery partners for delivery from ${location_details.location_name}`
                       : `We deliver within ${location_details.delivery_radius_km || 10}km of ${location_details.location_name}`
                     }
@@ -645,7 +646,7 @@ const UV_LocationInternal: React.FC = () => {
             )}
             
             {/* Glasnevin: Show notice if no external providers configured */}
-            {isGlasnevin && externalProviders.length === 0 && (location_details.is_collection_enabled || location_details.is_delivery_enabled) && (
+            {isExternalOnly && externalProviders.length === 0 && (location_details.is_collection_enabled || location_details.is_delivery_enabled) && (
               <div className="col-span-full bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
                 <AlertCircle className="w-8 h-8 text-amber-600 mx-auto mb-3" />
                 <p className="text-amber-800 font-medium">
@@ -710,7 +711,7 @@ const UV_LocationInternal: React.FC = () => {
         </div>
         
         {/* Admin notice for Glasnevin with no providers configured */}
-        {isGlasnevin && externalProviders.length === 0 && authState.is_authenticated && authState.user?.user_type === 'admin' && (
+        {isExternalOnly && externalProviders.length === 0 && authState.is_authenticated && authState.user?.user_type === 'admin' && (
           <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
@@ -727,7 +728,7 @@ const UV_LocationInternal: React.FC = () => {
       </div>
       
       {/* External Provider Selection Modal (Glasnevin Only) */}
-      {showProviderModal && isGlasnevin && (
+      {showProviderModal && isExternalOnly && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
             {/* Backdrop */}

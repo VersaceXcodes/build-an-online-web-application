@@ -66,6 +66,7 @@ interface Location {
   just_eat_url: string | null;
   deliveroo_url: string | null;
   external_providers: string | null; // JSON string of ExternalProvider[]
+  ordering_mode: 'internal' | 'external_only'; // 'internal' = Kake ordering, 'external_only' = 3rd-party only
   opening_hours: string;
   created_at: string;
   updated_at: string;
@@ -1026,27 +1027,71 @@ const UV_AdminSettings: React.FC = () => {
                                  <div>
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
                                   <div className="space-y-4">
-                                    <div>
-                                      <label className="flex items-center gap-2">
-                                        <input
-                                          type="checkbox"
-                                          checked={currentData.is_collection_enabled || false}
-                                          onChange={(e) => handleLocationFieldChange('is_collection_enabled', e.target.checked)}
-                                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        />
-                                        <span className="text-sm font-medium text-gray-700">Collection Enabled</span>
-                                      </label>
+                                    {/* Ordering Mode */}
+                                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                      <label className="block text-sm font-semibold text-gray-900 mb-2">Ordering Mode</label>
+                                      <div className="space-y-2">
+                                        <label className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-blue-100 transition-colors">
+                                          <input
+                                            type="radio"
+                                            name={`ordering_mode_${location.location_id}`}
+                                            checked={(currentData.ordering_mode || 'internal') === 'internal'}
+                                            onChange={() => handleLocationFieldChange('ordering_mode', 'internal')}
+                                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                          />
+                                          <div>
+                                            <span className="text-sm font-medium text-gray-900">Kake ordering (collection & delivery)</span>
+                                            <p className="text-xs text-gray-500">Customers order through the internal menu</p>
+                                          </div>
+                                        </label>
+                                        <label className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-blue-100 transition-colors">
+                                          <input
+                                            type="radio"
+                                            name={`ordering_mode_${location.location_id}`}
+                                            checked={currentData.ordering_mode === 'external_only'}
+                                            onChange={() => handleLocationFieldChange('ordering_mode', 'external_only')}
+                                            className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                          />
+                                          <div>
+                                            <span className="text-sm font-medium text-gray-900">3rd-party delivery services only</span>
+                                            <p className="text-xs text-gray-500">Customers are redirected to external providers</p>
+                                          </div>
+                                        </label>
+                                      </div>
                                     </div>
-                                    <div>
-                                      <label className="flex items-center gap-2">
-                                        <input
-                                          type="checkbox"
-                                          checked={currentData.is_delivery_enabled || false}
-                                          onChange={(e) => handleLocationFieldChange('is_delivery_enabled', e.target.checked)}
-                                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                        />
-                                        <span className="text-sm font-medium text-gray-700">Delivery Enabled</span>
-                                      </label>
+
+                                    {/* Collection/Delivery toggles - disabled if external_only */}
+                                    <div className={currentData.ordering_mode === 'external_only' ? 'opacity-50' : ''}>
+                                      {currentData.ordering_mode === 'external_only' && (
+                                        <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded mb-3 flex items-center gap-2">
+                                          <AlertCircle className="w-3 h-3" />
+                                          Internal ordering is disabled for this location
+                                        </p>
+                                      )}
+                                      <div>
+                                        <label className="flex items-center gap-2">
+                                          <input
+                                            type="checkbox"
+                                            checked={currentData.is_collection_enabled || false}
+                                            onChange={(e) => handleLocationFieldChange('is_collection_enabled', e.target.checked)}
+                                            disabled={currentData.ordering_mode === 'external_only'}
+                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
+                                          />
+                                          <span className="text-sm font-medium text-gray-700">Collection Enabled</span>
+                                        </label>
+                                      </div>
+                                      <div className="mt-3">
+                                        <label className="flex items-center gap-2">
+                                          <input
+                                            type="checkbox"
+                                            checked={currentData.is_delivery_enabled || false}
+                                            onChange={(e) => handleLocationFieldChange('is_delivery_enabled', e.target.checked)}
+                                            disabled={currentData.ordering_mode === 'external_only'}
+                                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
+                                          />
+                                          <span className="text-sm font-medium text-gray-700">Delivery Enabled</span>
+                                        </label>
+                                      </div>
                                     </div>
                                     <div>
                                       <label className="block text-sm font-medium text-gray-700 mb-1">Preparation Time (minutes)</label>
@@ -1092,10 +1137,23 @@ const UV_AdminSettings: React.FC = () => {
 
                               {/* External Providers List */}
                               <div className="pt-6 border-t border-gray-200">
-                                <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering (Optional)</h3>
+                                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                                  External Ordering {currentData.ordering_mode === 'external_only' ? '(Required)' : '(Optional)'}
+                                </h3>
                                 <p className="text-xs text-gray-500 mb-4">
                                   Add external delivery services for this location. Customers can order through these services instead of the internal menu.
                                 </p>
+                                
+                                {/* Validation error for external_only mode with no providers */}
+                                {currentData.ordering_mode === 'external_only' && 
+                                 parseExternalProviders(currentData).filter(p => p.name && p.url).length === 0 && (
+                                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                                    <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
+                                    <p className="text-sm text-red-700">
+                                      Add at least one delivery service when using 3rd-party ordering mode.
+                                    </p>
+                                  </div>
+                                )}
                                 
                                 {/* Provider List */}
                                 <div className="space-y-3 mb-4">
@@ -1202,7 +1260,19 @@ const UV_AdminSettings: React.FC = () => {
                                  <div>
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Operational Settings</h3>
                                   <div className="space-y-2">
-                                    <div className="flex items-center gap-2">
+                                    {/* Ordering Mode Badge */}
+                                    <div className="mb-3">
+                                      {location.ordering_mode === 'external_only' ? (
+                                        <span className="px-3 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded-full">
+                                          3rd-party ordering only
+                                        </span>
+                                      ) : (
+                                        <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                                          Kake ordering
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className={`flex items-center gap-2 ${location.ordering_mode === 'external_only' ? 'opacity-50' : ''}`}>
                                       {location.is_collection_enabled ? (
                                         <Check className="w-4 h-4 text-green-600" />
                                       ) : (
@@ -1210,7 +1280,7 @@ const UV_AdminSettings: React.FC = () => {
                                       )}
                                       <span className="text-sm text-gray-600">Collection</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className={`flex items-center gap-2 ${location.ordering_mode === 'external_only' ? 'opacity-50' : ''}`}>
                                       {location.is_delivery_enabled ? (
                                         <Check className="w-4 h-4 text-green-600" />
                                       ) : (
@@ -1279,37 +1349,24 @@ const UV_AdminSettings: React.FC = () => {
                                 </p>
                               </div>
 
-                              {/* External URLs (if applicable) */}
-                              {(location.just_eat_url || location.deliveroo_url) && (
+                              {/* External Providers (if applicable) */}
+                              {parseExternalProviders(location).length > 0 && (
                                 <div className="pt-6 border-t border-gray-200">
                                   <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering</h3>
                                   <div className="space-y-2">
-                                    {location.just_eat_url && (
-                                      <p className="text-sm text-gray-600">
-                                        <span className="font-medium">Just Eat:</span>{' '}
+                                    {parseExternalProviders(location).map((provider, index) => (
+                                      <p key={index} className="text-sm text-gray-600">
+                                        <span className="font-medium">{provider.name}:</span>{' '}
                                         <a 
-                                          href={location.just_eat_url} 
+                                          href={provider.url} 
                                           target="_blank" 
                                           rel="noopener noreferrer"
                                           className="text-blue-600 hover:underline"
                                         >
-                                          {location.just_eat_url}
+                                          {provider.url}
                                         </a>
                                       </p>
-                                    )}
-                                    {location.deliveroo_url && (
-                                      <p className="text-sm text-gray-600">
-                                        <span className="font-medium">Deliveroo:</span>{' '}
-                                        <a 
-                                          href={location.deliveroo_url} 
-                                          target="_blank" 
-                                          rel="noopener noreferrer"
-                                          className="text-blue-600 hover:underline"
-                                        >
-                                          {location.deliveroo_url}
-                                        </a>
-                                      </p>
-                                    )}
+                                    ))}
                                   </div>
                                 </div>
                               )}
