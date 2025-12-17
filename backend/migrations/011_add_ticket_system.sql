@@ -33,8 +33,8 @@ BEGIN
             EXIT WHEN NOT EXISTS (SELECT 1 FROM orders WHERE ticket_number = new_ticket_number);
         END LOOP;
         
-        -- Generate ticket token: 32 character random hex string
-        new_ticket_token := encode(gen_random_bytes(16), 'hex');
+        -- Generate ticket token: 48 character random string using md5 and random
+        new_ticket_token := md5(random()::text || clock_timestamp()::text) || md5(random()::text);
         
         UPDATE orders 
         SET ticket_number = new_ticket_number, ticket_token = new_ticket_token 

@@ -166,7 +166,10 @@ CREATE TABLE orders (
     feedback_submitted BOOLEAN NOT NULL DEFAULT false,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
-    completed_at TEXT
+    completed_at TEXT,
+    ticket_number TEXT UNIQUE,
+    ticket_token TEXT UNIQUE,
+    confirmation_viewed_at TEXT
 );
 
 -- ORDER ITEMS TABLE
