@@ -566,6 +566,7 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
       allow_scheduled_pickups, 
       just_eat_url, 
       deliveroo_url, 
+      external_providers,
       opening_hours,
       is_active
     } = req.body;
@@ -609,16 +610,17 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
         allow_scheduled_pickups = COALESCE($16, allow_scheduled_pickups),
         just_eat_url = $17,
         deliveroo_url = $18,
-        opening_hours = COALESCE($19, opening_hours),
-        is_active = COALESCE($20, is_active),
-        updated_at = $21
-      WHERE location_id = $22
+        external_providers = $19,
+        opening_hours = COALESCE($20, opening_hours),
+        is_active = COALESCE($21, is_active),
+        updated_at = $22
+      WHERE location_id = $23
       RETURNING *`,
       [
         location_name, slug, address_line1, address_line2, city, postal_code, phone_number, email,
         is_collection_enabled, is_delivery_enabled, delivery_radius_km, delivery_fee,
         free_delivery_threshold, estimated_delivery_time_minutes, estimated_preparation_time_minutes,
-        allow_scheduled_pickups, just_eat_url, deliveroo_url, opening_hours, is_active, now, location_id
+        allow_scheduled_pickups, just_eat_url, deliveroo_url, external_providers, opening_hours, is_active, now, location_id
       ]
     );
 

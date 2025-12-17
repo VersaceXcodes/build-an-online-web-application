@@ -1,17 +1,25 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import { MapPin, Phone, Mail, Clock, Package, Truck, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Package, Truck, ChevronRight, ExternalLink, X, AlertCircle } from 'lucide-react';
 import { useAppStore } from '@/store/main';
 
 // ============================================================================
 // TYPE DEFINITIONS (from Zod schemas)
 // ============================================================================
 
+interface ExternalProvider {
+  name: string;
+  url: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 interface Location {
   location_id: string;
   location_name: string;
+  slug?: string;
   address_line1: string;
   address_line2: string | null;
   city: string;
@@ -29,6 +37,7 @@ interface Location {
   allow_scheduled_pickups: boolean;
   just_eat_url: string | null;
   deliveroo_url: string | null;
+  external_providers: string | null; // JSON string of ExternalProvider[]
   opening_hours: string; // JSON string
   opening_hours_structured?: Array<{
     id: string;
@@ -100,11 +109,16 @@ const UV_LocationInternal: React.FC = () => {
   const { location_name } = useParams<{ location_name: string }>();
   const navigate = useNavigate();
   
+  // State for external provider modal (Glasnevin only)
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [selectedFulfillmentMethod, setSelectedFulfillmentMethod] = useState<'collection' | 'delivery' | null>(null);
+  
   // Global state access - CRITICAL: Individual selectors only
   const setCurrentLocation = useAppStore(state => state.set_current_location);
   const setCartLocation = useAppStore(state => state.set_cart_location);
   const setFulfillmentMethod = useAppStore(state => state.set_fulfillment_method);
   const setLocationDetails = useAppStore(state => state.set_location_details);
+  const authState = useAppStore(state => state.auth_state);
   
   // Fetch location by slug using react-query
   const { 
@@ -164,6 +178,54 @@ const UV_LocationInternal: React.FC = () => {
     return opening_hours_parsed[today] || null;
   }, [opening_hours_parsed]);
   
+  // Check if this is Glasnevin location (external providers only)
+  const isGlasnevin = useMemo(() => {
+    if (!location_name) return false;
+    return location_name.toLowerCase() === 'glasnevin';
+  }, [location_name]);
+  
+  // Parse external providers for Glasnevin
+  const externalProviders = useMemo((): ExternalProvider[] => {
+    if (!location_details) return [];
+    
+    // First try to parse from external_providers JSON string
+    if (location_details.external_providers) {
+      try {
+        const parsed = JSON.parse(location_details.external_providers);
+        if (Array.isArray(parsed)) {
+          return parsed
+            .filter(p => p.is_active && p.name && p.url)
+            .sort((a, b) => a.display_order - b.display_order);
+        }
+      } catch {
+        // Fall through to legacy conversion
+      }
+    }
+    
+    // Fallback: convert legacy just_eat_url and deliveroo_url to providers format
+    const providers: ExternalProvider[] = [];
+    if (location_details.just_eat_url) {
+      providers.push({
+        name: 'Just Eat',
+        url: location_details.just_eat_url,
+        display_order: 1,
+        is_active: true
+      });
+    }
+    if (location_details.deliveroo_url) {
+      providers.push({
+        name: 'Deliveroo',
+        url: location_details.deliveroo_url,
+        display_order: 2,
+        is_active: true
+      });
+    }
+    return providers;
+  }, [location_details]);
+  
+  // Check if Glasnevin has active providers
+  const hasActiveProviders = isGlasnevin && externalProviders.length > 0;
+  
   // Handle fulfillment method selection
   const handleSelectFulfillment = (method: 'collection' | 'delivery') => {
     if (!location_details) return;
@@ -173,6 +235,18 @@ const UV_LocationInternal: React.FC = () => {
       return;
     }
     if (method === 'delivery' && !location_details.is_delivery_enabled) {
+      return;
+    }
+    
+    // GLASNEVIN SPECIAL BEHAVIOR: Show external provider modal instead of navigating to menu
+    if (isGlasnevin) {
+      if (externalProviders.length === 0) {
+        // No providers configured - show error or do nothing
+        return;
+      }
+      // Show the provider selection modal
+      setSelectedFulfillmentMethod(method);
+      setShowProviderModal(true);
       return;
     }
     
@@ -427,8 +501,8 @@ const UV_LocationInternal: React.FC = () => {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Collection Card */}
-            {location_details.is_collection_enabled && (
+            {/* Collection Card - Only show if Glasnevin has providers OR if not Glasnevin */}
+            {location_details.is_collection_enabled && (!isGlasnevin || hasActiveProviders) && (
               <button
                 onClick={() => handleSelectFulfillment('collection')}
                 className="group bg-white rounded-xl shadow-lg border-2 border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-200 p-8 text-left focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -447,16 +521,22 @@ const UV_LocationInternal: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  {isGlasnevin ? (
+                    <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  ) : (
+                    <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  )}
                 </div>
                 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-gray-700">
-                    <Clock className="h-5 w-5 mr-2 text-gray-400" />
-                    <span className="font-medium">
-                      Ready in {location_details.estimated_preparation_time_minutes} minutes
-                    </span>
-                  </div>
+                  {!isGlasnevin && (
+                    <div className="flex items-center text-gray-700">
+                      <Clock className="h-5 w-5 mr-2 text-gray-400" />
+                      <span className="font-medium">
+                        Ready in {location_details.estimated_preparation_time_minutes} minutes
+                      </span>
+                    </div>
+                  )}
                   
                   <div className="flex items-center text-green-600 font-semibold">
                     <span className="text-lg">FREE</span>
@@ -466,14 +546,17 @@ const UV_LocationInternal: React.FC = () => {
                 
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    Order now and collect from our {location_details.location_name} location
+                    {isGlasnevin 
+                      ? `Order via our delivery partners for collection at ${location_details.location_name}`
+                      : `Order now and collect from our ${location_details.location_name} location`
+                    }
                   </p>
                 </div>
               </button>
             )}
             
-            {/* Delivery Card */}
-            {location_details.is_delivery_enabled && (
+            {/* Delivery Card - Only show if Glasnevin has providers OR if not Glasnevin */}
+            {location_details.is_delivery_enabled && (!isGlasnevin || hasActiveProviders) && (
               <button
                 onClick={() => handleSelectFulfillment('delivery')}
                 className="group bg-white rounded-xl shadow-lg border-2 border-gray-200 hover:border-blue-500 hover:shadow-xl transition-all duration-200 p-8 text-left focus:outline-none focus:ring-4 focus:ring-blue-100"
@@ -492,21 +575,28 @@ const UV_LocationInternal: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  {isGlasnevin ? (
+                    <ExternalLink className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  ) : (
+                    <ChevronRight className="h-6 w-6 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                  )}
                 </div>
                 
                 <div className="space-y-3 mb-6">
-                  <div className="flex items-center text-gray-700">
-                    <Clock className="h-5 w-5 mr-2 text-gray-400" />
-                    <span className="font-medium">
-                      Delivered in {
-                        (location_details.estimated_preparation_time_minutes || 0) + 
-                        (location_details.estimated_delivery_time_minutes || 0)
-                      } minutes
-                    </span>
+                  {!isGlasnevin && (
+                    <div className="flex items-center text-gray-700">
+                      <Clock className="h-5 w-5 mr-2 text-gray-400" />
+                      <span className="font-medium">
+                        Delivered in {
+                          (location_details.estimated_preparation_time_minutes || 0) + 
+                          (location_details.estimated_delivery_time_minutes || 0)
+                        } minutes
+                      </span>
+                    </div>
+                  )}
                   </div>
                   
-                  {location_details.delivery_fee !== null && (
+                  {!isGlasnevin && location_details.delivery_fee !== null && (
                     <div className="space-y-1">
                       <div className="flex items-center text-gray-700">
                         <span className="font-medium">
@@ -520,11 +610,21 @@ const UV_LocationInternal: React.FC = () => {
                       )}
                     </div>
                   )}
+                  
+                  {isGlasnevin && (
+                    <div className="flex items-center text-blue-600 font-medium">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <span>Order via delivery partners</span>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    We deliver within {location_details.delivery_radius_km || 10}km of {location_details.location_name}
+                    {isGlasnevin
+                      ? `Order via our delivery partners for delivery from ${location_details.location_name}`
+                      : `We deliver within ${location_details.delivery_radius_km || 10}km of ${location_details.location_name}`
+                    }
                   </p>
                 </div>
               </button>
@@ -535,6 +635,25 @@ const UV_LocationInternal: React.FC = () => {
               <div className="col-span-full bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <p className="text-yellow-800 font-medium">
                   Ordering is currently unavailable at this location.
+                </p>
+                <Link
+                  to="/"
+                  className="inline-block mt-4 text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  Choose another location →
+                </Link>
+              </div>
+            )}
+            
+            {/* Glasnevin: Show notice if no external providers configured */}
+            {isGlasnevin && externalProviders.length === 0 && (location_details.is_collection_enabled || location_details.is_delivery_enabled) && (
+              <div className="col-span-full bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+                <AlertCircle className="w-8 h-8 text-amber-600 mx-auto mb-3" />
+                <p className="text-amber-800 font-medium">
+                  Online orders for Glasnevin are currently unavailable.
+                </p>
+                <p className="text-sm text-amber-700 mt-2">
+                  Please visit us in store or check back later.
                 </p>
                 <Link
                   to="/"
@@ -590,7 +709,90 @@ const UV_LocationInternal: React.FC = () => {
             Back to all locations
           </Link>
         </div>
+        
+        {/* Admin notice for Glasnevin with no providers configured */}
+        {isGlasnevin && externalProviders.length === 0 && authState.is_authenticated && authState.user?.user_type === 'admin' && (
+          <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-amber-800">Admin Notice</p>
+                <p className="text-sm text-amber-700 mt-1">
+                  No external providers configured for Glasnevin. Customers will not be able to order. 
+                  Please add providers in System Settings → Locations.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+      
+      {/* External Provider Selection Modal (Glasnevin Only) */}
+      {showProviderModal && isGlasnevin && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+              onClick={() => setShowProviderModal(false)}
+            />
+            
+            {/* Modal */}
+            <div className="relative z-10 w-full max-w-md p-6 mx-auto bg-white rounded-xl shadow-2xl">
+              {/* Close button */}
+              <button
+                onClick={() => setShowProviderModal(false)}
+                className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              {/* Modal Header */}
+              <div className="text-center mb-6">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                  <ExternalLink className="h-6 w-6 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900">
+                  Choose your ordering service
+                </h3>
+                <p className="text-sm text-gray-600 mt-2">
+                  {selectedFulfillmentMethod === 'collection' 
+                    ? 'Select a service to place your collection order'
+                    : 'Select a service to place your delivery order'
+                  }
+                </p>
+              </div>
+              
+              {/* Provider Buttons */}
+              <div className="space-y-3">
+                {externalProviders.map((provider, index) => (
+                  <a
+                    key={index}
+                    href={provider.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-between w-full px-4 py-3 bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 rounded-lg transition-all group"
+                    onClick={() => setShowProviderModal(false)}
+                  >
+                    <span className="font-medium text-gray-900 group-hover:text-blue-700">
+                      {provider.name}
+                    </span>
+                    <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                  </a>
+                ))}
+              </div>
+              
+              {/* Cancel button */}
+              <button
+                onClick={() => setShowProviderModal(false)}
+                className="w-full mt-4 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

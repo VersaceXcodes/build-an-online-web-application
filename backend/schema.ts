@@ -98,6 +98,16 @@ export type SearchStaffAssignmentsInput = z.infer<typeof searchStaffAssignmentsI
 // LOCATIONS SCHEMAS
 // ============================================
 
+// External provider type for location external ordering services
+export const externalProviderSchema = z.object({
+  name: z.string(),
+  url: z.string().url(),
+  display_order: z.number().int().nonnegative(),
+  is_active: z.boolean()
+});
+
+export type ExternalProvider = z.infer<typeof externalProviderSchema>;
+
 export const locationSchema = z.object({
   location_id: z.string(),
   location_name: z.string(),
@@ -118,6 +128,7 @@ export const locationSchema = z.object({
   allow_scheduled_pickups: z.boolean(),
   just_eat_url: z.string().nullable(),
   deliveroo_url: z.string().nullable(),
+  external_providers: z.string().nullable(), // JSON string of ExternalProvider[]
   opening_hours: z.string(), // Legacy JSON field - use opening_hours_structured instead
   slug: z.string().optional(),
   is_active: z.boolean().optional(),
@@ -145,6 +156,7 @@ export const createLocationInputSchema = z.object({
   allow_scheduled_pickups: z.boolean().default(true),
   just_eat_url: z.string().url().nullable(),
   deliveroo_url: z.string().url().nullable(),
+  external_providers: z.string().nullable(), // JSON string of ExternalProvider[]
   opening_hours: z.string().default('{}'), // Legacy field, use structured opening_hours table instead
   is_active: z.boolean().default(true)
 });
@@ -170,6 +182,7 @@ export const updateLocationInputSchema = z.object({
   allow_scheduled_pickups: z.boolean().optional(),
   just_eat_url: z.string().url().nullable().optional(),
   deliveroo_url: z.string().url().nullable().optional(),
+  external_providers: z.string().nullable().optional(), // JSON string of ExternalProvider[]
   opening_hours: z.string().optional(), // Legacy field, use structured opening_hours table instead
   is_active: z.boolean().optional()
 });

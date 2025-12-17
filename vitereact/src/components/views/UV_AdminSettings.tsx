@@ -39,6 +39,13 @@ interface SystemSetting {
   updated_at: string;
 }
 
+interface ExternalProvider {
+  name: string;
+  url: string;
+  display_order: number;
+  is_active: boolean;
+}
+
 interface Location {
   location_id: string;
   location_name: string;
@@ -58,6 +65,7 @@ interface Location {
   allow_scheduled_pickups: boolean;
   just_eat_url: string | null;
   deliveroo_url: string | null;
+  external_providers: string | null; // JSON string of ExternalProvider[]
   opening_hours: string;
   created_at: string;
   updated_at: string;
@@ -404,6 +412,70 @@ const UV_AdminSettings: React.FC = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Helper functions for external providers
+  const parseExternalProviders = (location: Partial<Location>): ExternalProvider[] => {
+    // First try to parse from external_providers JSON string
+    if (location.external_providers) {
+      try {
+        const parsed = JSON.parse(location.external_providers);
+        if (Array.isArray(parsed)) {
+          return parsed.sort((a, b) => a.display_order - b.display_order);
+        }
+      } catch {
+        // Fall through to legacy conversion
+      }
+    }
+    
+    // Fallback: convert legacy just_eat_url and deliveroo_url to providers format
+    const providers: ExternalProvider[] = [];
+    if (location.just_eat_url) {
+      providers.push({
+        name: 'Just Eat',
+        url: location.just_eat_url,
+        display_order: 1,
+        is_active: true
+      });
+    }
+    if (location.deliveroo_url) {
+      providers.push({
+        name: 'Deliveroo',
+        url: location.deliveroo_url,
+        display_order: 2,
+        is_active: true
+      });
+    }
+    return providers;
+  };
+
+  const updateExternalProviders = (providers: ExternalProvider[]) => {
+    const sorted = [...providers].sort((a, b) => a.display_order - b.display_order);
+    handleLocationFieldChange('external_providers', JSON.stringify(sorted));
+  };
+
+  const addExternalProvider = () => {
+    const current = parseExternalProviders(editingLocationData);
+    const maxOrder = current.length > 0 ? Math.max(...current.map(p => p.display_order)) : 0;
+    const newProvider: ExternalProvider = {
+      name: '',
+      url: '',
+      display_order: maxOrder + 1,
+      is_active: true
+    };
+    updateExternalProviders([...current, newProvider]);
+  };
+
+  const removeExternalProvider = (index: number) => {
+    const current = parseExternalProviders(editingLocationData);
+    const updated = current.filter((_, i) => i !== index);
+    updateExternalProviders(updated);
+  };
+
+  const updateProviderField = (index: number, field: keyof ExternalProvider, value: any) => {
+    const current = parseExternalProviders(editingLocationData);
+    current[index] = { ...current[index], [field]: value };
+    updateExternalProviders(current);
   };
 
   // Handle social link edit
@@ -1018,31 +1090,76 @@ const UV_AdminSettings: React.FC = () => {
                                 </div>
                               </div>
 
-                              {/* External URLs */}
+                              {/* External Providers List */}
                               <div className="pt-6 border-t border-gray-200">
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3">External Ordering (Optional)</h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Just Eat URL</label>
-                                    <input
-                                      type="url"
-                                      value={currentData.just_eat_url || ''}
-                                      onChange={(e) => handleLocationFieldChange('just_eat_url', e.target.value || null)}
-                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                      placeholder="https://..."
-                                    />
-                                  </div>
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Deliveroo URL</label>
-                                    <input
-                                      type="url"
-                                      value={currentData.deliveroo_url || ''}
-                                      onChange={(e) => handleLocationFieldChange('deliveroo_url', e.target.value || null)}
-                                      className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-500"
-                                      placeholder="https://..."
-                                    />
-                                  </div>
+                                <p className="text-xs text-gray-500 mb-4">
+                                  Add external delivery services for this location. Customers can order through these services instead of the internal menu.
+                                </p>
+                                
+                                {/* Provider List */}
+                                <div className="space-y-3 mb-4">
+                                  {parseExternalProviders(currentData).map((provider, index) => (
+                                    <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                      <div className="flex-1 grid md:grid-cols-3 gap-3">
+                                        <div>
+                                          <label className="block text-xs font-medium text-gray-600 mb-1">Provider Name</label>
+                                          <input
+                                            type="text"
+                                            value={provider.name}
+                                            onChange={(e) => updateProviderField(index, 'name', e.target.value)}
+                                            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                                            placeholder="e.g. Just Eat"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="block text-xs font-medium text-gray-600 mb-1">Provider URL</label>
+                                          <input
+                                            type="url"
+                                            value={provider.url}
+                                            onChange={(e) => updateProviderField(index, 'url', e.target.value)}
+                                            className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                                            placeholder="https://..."
+                                          />
+                                        </div>
+                                        <div className="flex items-end gap-2">
+                                          <div className="flex-1">
+                                            <label className="block text-xs font-medium text-gray-600 mb-1">Order</label>
+                                            <input
+                                              type="number"
+                                              min="1"
+                                              value={provider.display_order}
+                                              onChange={(e) => updateProviderField(index, 'display_order', parseInt(e.target.value) || 1)}
+                                              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500"
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeExternalProvider(index)}
+                                        className="mt-5 p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                                        title="Remove provider"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                  
+                                  {parseExternalProviders(currentData).length === 0 && (
+                                    <p className="text-sm text-gray-400 italic py-2">No external providers configured</p>
+                                  )}
                                 </div>
+                                
+                                {/* Add Provider Button */}
+                                <button
+                                  type="button"
+                                  onClick={addExternalProvider}
+                                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                  Add Provider
+                                </button>
                               </div>
                             </div>
                           ) : (
