@@ -1346,10 +1346,17 @@ app.post('/api/products/:product_id/assign-toppings', authenticateToken, require
 });
 
 app.post('/api/orders', async (req, res) => {
-  const client = await pool.connect();
+  let client;
   try {
+    // Add timeout for database connection
+    client = await Promise.race([
+      pool.connect(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Database connection timeout')), 5000))
+    ]) as any;
+    
     await client.query('BEGIN');
     const { user_id, customer_email, customer_name, customer_phone, location_name, order_type = 'standard', fulfillment_method, delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code, delivery_phone, delivery_instructions, special_instructions, scheduled_for, event_date, guest_count, event_type, company_name, promo_code, loyalty_points_used = 0, payment_method, items } = req.body;
+    
     if (!items || items.length === 0) {
       await client.query('ROLLBACK');
       client.release();
@@ -1470,8 +1477,15 @@ app.post('/api/orders', async (req, res) => {
       items: itemsResult.rows 
     });
   } catch (error) {
-    await client.query('ROLLBACK');
-    client.release();
+    console.error('[POST /api/orders] Error creating order:', error);
+    if (client) {
+      try {
+        await client.query('ROLLBACK');
+        client.release();
+      } catch (rollbackError) {
+        console.error('[POST /api/orders] Error during rollback:', rollbackError);
+      }
+    }
     res.status(500).json(createErrorResponse('Failed to create order', error, 'ORDER_CREATE_ERROR'));
   }
 });

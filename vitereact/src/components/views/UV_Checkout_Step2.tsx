@@ -156,6 +156,7 @@ const UV_Checkout_Step2: React.FC = () => {
     headers: {
       'Content-Type': 'application/json',
     },
+    timeout: 30000, // 30 second timeout
   });
 
   // Add auth token if available
@@ -478,7 +479,26 @@ const UV_Checkout_Step2: React.FC = () => {
 
     } catch (error: any) {
       console.error('Order placement error:', error);
-      const errorMessage = error.response?.data?.message || 'Payment processing failed. Please try again.';
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message,
+        code: error.code
+      });
+      
+      let errorMessage = 'Payment processing failed. Please try again.';
+      
+      if (error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+        errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+      } else if (error.code === 'ERR_BAD_RESPONSE' && error.response?.status === 530) {
+        errorMessage = 'The server is temporarily unavailable. Please try again in a few moments.';
+      } else if (error.response?.status === 500) {
+        errorMessage = error.response?.data?.message || 'Server error. Please try again or contact support.';
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      
       setPaymentError(errorMessage);
       setProcessingPayment(false);
       orderBeingPlacedRef.current = false; // Reset flag on error
