@@ -592,11 +592,10 @@ const UV_LocationInternal: React.FC = () => {
                           (location_details.estimated_delivery_time_minutes || 0)
                         } minutes
                       </span>
-                    </div>
-                  )}
-                  </div>
-                  
-                  {!isGlasnevin && location_details.delivery_fee !== null && (
+                     </div>
+                   )}
+                   
+                   {!isGlasnevin && location_details.delivery_fee !== null && (
                     <div className="space-y-1">
                       <div className="flex items-center text-gray-700">
                         <span className="font-medium">
