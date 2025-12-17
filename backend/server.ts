@@ -103,6 +103,17 @@ function generateCollectionCode() {
   return `COL-${Math.floor(1000 + Math.random() * 9000)}`;
 }
 
+// Generate a unique ticket number for order confirmation (KK-XXXXX)
+function generateTicketNumber() {
+  const num = Math.floor(10000 + Math.random() * 90000);
+  return `KK-${num}`;
+}
+
+// Generate a secure random ticket token for QR code scanning
+function generateTicketToken() {
+  return uuidv4().replace(/-/g, '') + uuidv4().replace(/-/g, '').slice(0, 16);
+}
+
 const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -1407,10 +1418,12 @@ app.post('/api/orders', async (req, res) => {
     const collection_code = fulfillment_method === 'collection' ? generateCollectionCode() : null;
     const order_id = generateId('ord');
     const order_number = generateOrderNumber(order_type);
+    const ticket_number = generateTicketNumber();
+    const ticket_token = generateTicketToken();
     const now = new Date().toISOString();
     const payment_transaction_id = `txn_${Date.now()}`;
     const card_last_four = '4242';
-    await client.query('INSERT INTO orders (order_id, order_number, user_id, customer_email, customer_name, customer_phone, location_name, order_type, fulfillment_method, order_status, delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code, delivery_phone, delivery_instructions, special_instructions, scheduled_for, estimated_ready_time, subtotal, delivery_fee, discount_amount, tax_amount, total_amount, loyalty_points_used, loyalty_points_earned, promo_code, payment_method, payment_status, payment_transaction_id, card_last_four, event_date, guest_count, event_type, company_name, collection_code, feedback_submitted, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39)', [order_id, order_number, user_id, customer_email, customer_name, customer_phone, location_name, order_type, fulfillment_method, 'paid_awaiting_confirmation', delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code, delivery_phone, delivery_instructions, special_instructions, scheduled_for, estimated_ready_time, subtotal, delivery_fee, discount_amount, tax_amount, total_amount, loyalty_points_used, loyalty_points_earned, promo_code, payment_method, 'completed', payment_transaction_id, card_last_four, event_date, guest_count, event_type, company_name, collection_code, false, now, now]);
+    await client.query('INSERT INTO orders (order_id, order_number, user_id, customer_email, customer_name, customer_phone, location_name, order_type, fulfillment_method, order_status, delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code, delivery_phone, delivery_instructions, special_instructions, scheduled_for, estimated_ready_time, subtotal, delivery_fee, discount_amount, tax_amount, total_amount, loyalty_points_used, loyalty_points_earned, promo_code, payment_method, payment_status, payment_transaction_id, card_last_four, event_date, guest_count, event_type, company_name, collection_code, feedback_submitted, created_at, updated_at, ticket_number, ticket_token) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41)', [order_id, order_number, user_id, customer_email, customer_name, customer_phone, location_name, order_type, fulfillment_method, 'paid_awaiting_confirmation', delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code, delivery_phone, delivery_instructions, special_instructions, scheduled_for, estimated_ready_time, subtotal, delivery_fee, discount_amount, tax_amount, total_amount, loyalty_points_used, loyalty_points_earned, promo_code, payment_method, 'completed', payment_transaction_id, card_last_four, event_date, guest_count, event_type, company_name, collection_code, false, now, now, ticket_number, ticket_token]);
     for (const item of validatedItems) {
       const item_id = generateId('item');
       await client.query('INSERT INTO order_items (item_id, order_id, product_id, product_name, price_at_purchase, quantity, subtotal, product_specific_notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [item_id, order_id, item.product_id, item.product_name, item.price_at_purchase, item.quantity, item.subtotal, item.product_specific_notes]);
@@ -1450,6 +1463,8 @@ app.post('/api/orders', async (req, res) => {
       success: true,
       orderId: order_id,
       orderNumber: order_number,
+      ticketNumber: ticket_number,
+      ticketToken: ticket_token,
       confirmationUrl: `/order-confirmation/${order_id}`,
       ...orderResult.rows[0], 
       items: itemsResult.rows 
@@ -1792,6 +1807,190 @@ app.post('/api/orders/:order_id/cancel', authenticateToken, async (req: AuthRequ
     res.status(500).json(createErrorResponse('Failed to cancel order', error, 'ORDER_CANCEL_ERROR'));
   }
 });
+
+// ============================================================================
+// TICKET SYSTEM ENDPOINTS
+// ============================================================================
+
+// Get order confirmation data (public-safe endpoint for confirmation page)
+// This endpoint is accessible without auth if you have the order_id
+app.get('/api/orders/:order_id/confirmation', async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const orderResult = await client.query(
+      `SELECT 
+        order_id, order_number, ticket_number, ticket_token,
+        customer_name, customer_email, customer_phone,
+        location_name, fulfillment_method, order_status,
+        delivery_address_line1, delivery_address_line2, delivery_city, delivery_postal_code,
+        delivery_instructions, special_instructions,
+        estimated_ready_time, scheduled_for,
+        subtotal, delivery_fee, discount_amount, tax_amount, total_amount,
+        promo_code, payment_method, collection_code,
+        created_at, confirmation_viewed_at
+      FROM orders WHERE order_id = $1`,
+      [req.params.order_id]
+    );
+    
+    if (orderResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Order not found', null, 'ORDER_NOT_FOUND'));
+    }
+    
+    const order = orderResult.rows[0];
+    
+    // Get order items
+    const itemsResult = await client.query(
+      'SELECT item_id, product_id, product_name, price_at_purchase, quantity, subtotal, product_specific_notes FROM order_items WHERE order_id = $1',
+      [req.params.order_id]
+    );
+    
+    // Update confirmation_viewed_at if first time viewing
+    if (!order.confirmation_viewed_at) {
+      const now = new Date().toISOString();
+      await client.query(
+        'UPDATE orders SET confirmation_viewed_at = $1 WHERE order_id = $2',
+        [now, req.params.order_id]
+      );
+      order.confirmation_viewed_at = now;
+    }
+    
+    client.release();
+    
+    res.json({
+      success: true,
+      order: {
+        ...order,
+        subtotal: parseFloat(order.subtotal),
+        delivery_fee: parseFloat(order.delivery_fee),
+        discount_amount: parseFloat(order.discount_amount),
+        tax_amount: parseFloat(order.tax_amount),
+        total_amount: parseFloat(order.total_amount),
+      },
+      items: itemsResult.rows.map(item => ({
+        ...item,
+        price_at_purchase: parseFloat(item.price_at_purchase),
+        quantity: parseFloat(item.quantity),
+        subtotal: parseFloat(item.subtotal),
+      })),
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch order confirmation', error, 'CONFIRMATION_FETCH_ERROR'));
+  }
+});
+
+// Get order by ticket number (public-safe, for QR code access)
+app.get('/api/ticket/:ticketNumber', async (req: Request, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const orderResult = await client.query(
+      `SELECT 
+        order_id, order_number, ticket_number, ticket_token,
+        customer_name, location_name, fulfillment_method, order_status,
+        estimated_ready_time, scheduled_for, collection_code, created_at
+      FROM orders WHERE ticket_number = $1`,
+      [req.params.ticketNumber]
+    );
+    
+    if (orderResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Ticket not found', null, 'TICKET_NOT_FOUND'));
+    }
+    
+    client.release();
+    res.json({
+      success: true,
+      ticket: orderResult.rows[0]
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to fetch ticket', error, 'TICKET_FETCH_ERROR'));
+  }
+});
+
+// Scan ticket token (for staff QR code scanning)
+app.get('/api/ticket/scan', authenticateToken, requireRole(['staff', 'admin', 'manager']), async (req: AuthRequest, res: Response) => {
+  const client = await pool.connect();
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      client.release();
+      return res.status(400).json(createErrorResponse('Token is required', null, 'TOKEN_REQUIRED'));
+    }
+    
+    const orderResult = await client.query(
+      'SELECT * FROM orders WHERE ticket_token = $1',
+      [token]
+    );
+    
+    if (orderResult.rows.length === 0) {
+      client.release();
+      return res.status(404).json(createErrorResponse('Invalid ticket token', null, 'INVALID_TOKEN'));
+    }
+    
+    const order = orderResult.rows[0];
+    
+    // Staff can only scan orders for their assigned locations
+    if (req.user.user_type === 'staff') {
+      const assignmentCheck = await client.query(
+        'SELECT location_name FROM staff_assignments WHERE user_id = $1',
+        [req.user.user_id]
+      );
+      const assignedLocations = assignmentCheck.rows.map(r => r.location_name);
+      if (!assignedLocations.includes(order.location_name)) {
+        client.release();
+        return res.status(403).json(createErrorResponse('Cannot access orders for this location', null, 'FORBIDDEN'));
+      }
+    }
+    
+    // Get order items
+    const itemsResult = await client.query(
+      'SELECT * FROM order_items WHERE order_id = $1',
+      [order.order_id]
+    );
+    
+    // Get status history
+    const historyResult = await client.query(
+      'SELECT oh.*, u.first_name, u.last_name FROM order_status_history oh LEFT JOIN users u ON oh.changed_by_user_id = u.user_id WHERE oh.order_id = $1 ORDER BY oh.changed_at ASC',
+      [order.order_id]
+    );
+    
+    client.release();
+    
+    res.json({
+      success: true,
+      order: {
+        ...order,
+        subtotal: parseFloat(order.subtotal),
+        delivery_fee: parseFloat(order.delivery_fee),
+        discount_amount: parseFloat(order.discount_amount),
+        tax_amount: parseFloat(order.tax_amount),
+        total_amount: parseFloat(order.total_amount),
+        loyalty_points_used: parseFloat(order.loyalty_points_used),
+        loyalty_points_earned: parseFloat(order.loyalty_points_earned),
+      },
+      items: itemsResult.rows.map(item => ({
+        ...item,
+        price_at_purchase: parseFloat(item.price_at_purchase),
+        quantity: parseFloat(item.quantity),
+        subtotal: parseFloat(item.subtotal),
+      })),
+      status_history: historyResult.rows.map(h => ({
+        ...h,
+        changed_by_name: h.first_name ? `${h.first_name} ${h.last_name}` : null
+      })),
+    });
+  } catch (error) {
+    client.release();
+    res.status(500).json(createErrorResponse('Failed to scan ticket', error, 'TICKET_SCAN_ERROR'));
+  }
+});
+
+// ============================================================================
+// ADDRESS ENDPOINTS
+// ============================================================================
 
 app.get('/api/addresses', authenticateToken, async (req: AuthRequest, res: Response) => {
   const client = await pool.connect();
