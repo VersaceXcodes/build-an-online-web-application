@@ -567,9 +567,26 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
       just_eat_url, 
       deliveroo_url, 
       external_providers,
+      ordering_mode,
       opening_hours,
       is_active
     } = req.body;
+
+    // Validate: if ordering_mode is external_only, require at least 1 provider
+    if (ordering_mode === 'external_only') {
+      let providers: any[] = [];
+      if (external_providers) {
+        try {
+          providers = typeof external_providers === 'string' ? JSON.parse(external_providers) : external_providers;
+        } catch (e) {
+          providers = [];
+        }
+      }
+      if (!Array.isArray(providers) || providers.length === 0) {
+        client.release();
+        return res.status(400).json(createErrorResponse('At least one external provider is required when using 3rd-party delivery mode', null, 'VALIDATION_ERROR'));
+      }
+    }
 
     // Check if location exists
     const checkResult = await client.query('SELECT location_id FROM locations WHERE location_id = $1', [location_id]);
@@ -611,16 +628,17 @@ app.put('/api/locations/:location_id', authenticateToken, requireRole(['admin'])
         just_eat_url = $17,
         deliveroo_url = $18,
         external_providers = $19,
-        opening_hours = COALESCE($20, opening_hours),
-        is_active = COALESCE($21, is_active),
-        updated_at = $22
-      WHERE location_id = $23
+        ordering_mode = COALESCE($20, ordering_mode),
+        opening_hours = COALESCE($21, opening_hours),
+        is_active = COALESCE($22, is_active),
+        updated_at = $23
+      WHERE location_id = $24
       RETURNING *`,
       [
         location_name, slug, address_line1, address_line2, city, postal_code, phone_number, email,
         is_collection_enabled, is_delivery_enabled, delivery_radius_km, delivery_fee,
         free_delivery_threshold, estimated_delivery_time_minutes, estimated_preparation_time_minutes,
-        allow_scheduled_pickups, just_eat_url, deliveroo_url, external_providers, opening_hours, is_active, now, location_id
+        allow_scheduled_pickups, just_eat_url, deliveroo_url, external_providers, ordering_mode, opening_hours, is_active, now, location_id
       ]
     );
 
