@@ -12,6 +12,8 @@ import { CheckCircle, Package, MapPin, Calendar, CreditCard, Gift, ArrowRight } 
 interface Order {
   order_id: string;
   order_number: string;
+  ticket_number: string | null;
+  ticket_token: string | null;
   user_id: string | null;
   customer_email: string;
   customer_name: string;
@@ -251,9 +253,18 @@ const UV_Checkout_Step3: React.FC = () => {
               Your order has been successfully placed and confirmed.
             </p>
             
-            <div className="mt-6 inline-block bg-white rounded-xl shadow-lg px-8 py-4 border-2 border-blue-500">
-              <p className="text-sm text-gray-600 mb-1">Order Number</p>
-              <p className="text-3xl font-bold text-blue-600">#{order.order_number}</p>
+            <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="bg-white rounded-xl shadow-lg px-8 py-4 border-2 border-blue-500">
+                <p className="text-sm text-gray-600 mb-1">Order Number</p>
+                <p className="text-3xl font-bold text-blue-600">#{order.order_number}</p>
+              </div>
+              
+              {order.ticket_number && (
+                <div className="bg-white rounded-xl shadow-lg px-8 py-4 border-2 border-green-500">
+                  <p className="text-sm text-gray-600 mb-1">Ticket Number</p>
+                  <p className="text-3xl font-bold text-green-600">{order.ticket_number}</p>
+                </div>
+              )}
             </div>
           </div>
           

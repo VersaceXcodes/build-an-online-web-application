@@ -62,6 +62,8 @@ interface CreateOrderResponse {
   success: boolean;
   orderId: string;
   orderNumber: string;
+  ticketNumber: string;
+  ticketToken: string;
   confirmationUrl: string;
   order_id: string;
   order_number: string;
