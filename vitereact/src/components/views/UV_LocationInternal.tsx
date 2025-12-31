@@ -108,7 +108,6 @@ const getTodayDay = (): string => {
 
 const UV_LocationInternal: React.FC = () => {
   const { location_name } = useParams<{ location_name: string }>();
-  syntax_error_here !!!
   const navigate = useNavigate();
   
   // State for external provider modal (Glasnevin only)
